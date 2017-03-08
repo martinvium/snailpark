@@ -14,6 +14,7 @@ type GameServer struct {
 	messages []*Message
 	msgCh    chan *Message
 	doneCh   chan bool
+	deck     []*Card
 }
 
 func NewGameServer(ws *websocket.Conn, server *Server) *GameServer {
@@ -28,6 +29,7 @@ func NewGameServer(ws *websocket.Conn, server *Server) *GameServer {
 	messages := []*Message{}
 	msgCh := make(chan *Message, channelBufSize)
 	doneCh := make(chan bool)
+	deck := NewCollection()
 
 	return &GameServer{
 		ws,
@@ -35,6 +37,7 @@ func NewGameServer(ws *websocket.Conn, server *Server) *GameServer {
 		messages,
 		msgCh,
 		doneCh,
+		deck,
 	}
 }
 
@@ -92,5 +95,20 @@ func (g *GameServer) listenRead() {
 }
 
 func (g *GameServer) handleAction(msg *Message) {
-	log.Println("Handleling action from client!")
+	log.Println("Handle action from client!")
+	if msg.Action == "start" {
+		g.handleStartAction(msg)
+	} else {
+		log.Println("No handler for client action!")
+	}
+}
+
+func (g *GameServer) sendAddToHand(num int) {
+	cards := g.deck[len(g.deck)-num:]
+	g.deck = g.deck[:len(g.deck)-num]
+	g.msgCh <- &Message{"add_to_hand", cards}
+}
+
+func (g *GameServer) handleStartAction(msg *Message) {
+	g.sendAddToHand(2)
 }
