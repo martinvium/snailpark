@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Cardgame</title>
+    <link rel="stylesheet" media="all" href="/assets/stylesheets/meyer.reset.css" />
+    <link rel="stylesheet" media="all" href="/assets/stylesheets/clearfix.css" />
+    <link rel="stylesheet" media="all" href="/assets/stylesheets/application.css" />
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="/assets/javascripts/application.js"></script>
+  </head>
+  <body>
+
+    <input type="button" id="end-turn" value="End turn"/>
+
+    <div id="board">
+      <div id="you" style="display: none;">
+        <h2>You</h2>
+      </div>
+      <div id="me">
+        <h2>Board</h2>
+        <div class="board cf"></div>
+        <h2>Hand</h2>
+        <div class="hand cf"></div>
+      </div>
+    </div>
+
+    <div class="card" id="card-prototype" style="display: none;">
+      <div class="header">
+        <div class="title pull-left">Title</div>
+        <div class="cost pull-right">Cost</div>
+        <div class="cf"></div>
+      </div>
+      <div class="art"><img src=""/></div>
+      <div class="type">Type</div>
+      <div class="description">Description of mechanics and flavor text.</div>
+      <div class="power-toughness pull-right">
+        <span class="power">3</span>/<span class="toughness">3</span>
+      </div>
+    </div>
+  </body>
+</html>

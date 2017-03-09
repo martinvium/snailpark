@@ -1,0 +1,54 @@
+h2 {
+  font-size: 1.4em;
+}
+
+.board {
+  margin-bottom: 20px;
+}
+
+.card {
+  width: 220px;
+  height: 300px;
+  border: 5px solid black;
+  border-radius: 5px;
+  font-family: Helvetica;
+  font-size: .9em;
+  padding: 5px 10px;
+  float: left;
+  margin-right: 10px;
+
+}
+
+.card .header {
+  margin: 0px auto;
+}
+
+.card .title, .cost {
+  margin: 0px 2px;
+}
+
+.card .art {
+  height: 115px;
+  background-color: white;
+  margin: 0px auto;
+
+  img {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.card .description {
+  background-color: white;
+  height: 115px;
+  padding: 5px;
+}
+
+.card .power-toughness {
+
+}
+
+.card.orange {
+  background-color: #ffbb99;
+}
+

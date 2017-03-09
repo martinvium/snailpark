@@ -102,17 +102,23 @@ func (g *GameServer) handleAction(msg *Message) {
 		g.handleStartAction(msg)
 	} else if msg.Action == "play_card" {
 		g.handlePlayCardAction(msg)
+	} else if msg.Action == "end_turn" {
+		g.handleEndTurn(msg)
 	} else {
 		log.Println("No handler for client action!")
 	}
 }
 
 func (g *GameServer) handleStartAction(msg *Message) {
-	g.sendAddToHand(2)
+	g.sendAddToHand(3)
 }
 
 func (g *GameServer) handlePlayCardAction(msg *Message) {
 	g.sendAddToBoard(msg.Cards[0].Id)
+}
+
+func (g *GameServer) handleEndTurn(msg *Message) {
+	g.sendAddToHand(1)
 }
 
 func (g *GameServer) sendAddToHand(num int) {
@@ -131,5 +137,7 @@ func (g *GameServer) sendAddToBoard(id string) {
 		}
 	}
 
+	g.msgCh <- &Message{"put_on_stack", cards}
+	g.msgCh <- &Message{"empty_stack", []*Card{}}
 	g.msgCh <- &Message{"add_to_board", cards}
 }

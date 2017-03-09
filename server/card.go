@@ -22,6 +22,8 @@ func NewCollection() []*Card {
 		{CardProto{"orange", "My second card", 2, "Human", "A powerful creature.", 2, 2}, "2"},
 		{CardProto{"orange", "My third card", 3, "Human", "A powerful creature.", 3, 2}, "3"},
 		{CardProto{"orange", "My fourth card", 4, "Human", "A powerful creature.", 5, 3}, "4"},
+		{CardProto{"orange", "My fifth card", 5, "Human", "A powerful creature.", 5, 5}, "5"},
+		{CardProto{"orange", "My sixth card", 6, "Human", "A powerful creature.", 2, 9}, "6"},
 	}
 }
 
