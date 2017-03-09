@@ -10,7 +10,6 @@ const channelBufSize = 100
 
 type GameServer struct {
 	ws       *websocket.Conn
-	server   *Server
 	messages []*Message
 	msgCh    chan *Message
 	doneCh   chan bool
@@ -18,13 +17,9 @@ type GameServer struct {
 	hand     []*Card
 }
 
-func NewGameServer(ws *websocket.Conn, server *Server) *GameServer {
+func NewGameServer(ws *websocket.Conn) *GameServer {
 	if ws == nil {
 		panic("ws cannot be nil")
-	}
-
-	if server == nil {
-		panic("server cannot be nil")
 	}
 
 	messages := []*Message{}
@@ -34,7 +29,6 @@ func NewGameServer(ws *websocket.Conn, server *Server) *GameServer {
 
 	return &GameServer{
 		ws,
-		server,
 		messages,
 		msgCh,
 		doneCh,
@@ -88,7 +82,7 @@ func (g *GameServer) listenRead() {
 			if err == io.EOF {
 				g.doneCh <- true
 			} else if err != nil {
-				g.server.Err(err)
+				log.Println("Error:", err.Error())
 			} else {
 				g.handleAction(&msg)
 			}
