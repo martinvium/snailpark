@@ -2,19 +2,17 @@ package main
 
 import (
 	"golang.org/x/net/websocket"
-	"io"
 	"log"
 )
 
 const channelBufSize = 100
 
 type GameServer struct {
-	ws       *websocket.Conn
-	messages []*Message
-	msgCh    chan *Message
-	doneCh   chan bool
-	deck     []*Card
-	hand     []*Card
+	clients []Client
+	msgCh   chan *Message
+	doneCh  chan bool
+	deck    []*Card
+	hand    []*Card
 }
 
 func NewGameServer(ws *websocket.Conn) *GameServer {
@@ -22,14 +20,17 @@ func NewGameServer(ws *websocket.Conn) *GameServer {
 		panic("ws cannot be nil")
 	}
 
-	messages := []*Message{}
 	msgCh := make(chan *Message, channelBufSize)
 	doneCh := make(chan bool)
 	deck := NewCollection()
 
+	clients := []Client{
+		NewSocketClient(ws, msgCh, doneCh),
+		NewAIClient(msgCh),
+	}
+
 	return &GameServer{
-		ws,
-		messages,
+		clients,
 		msgCh,
 		doneCh,
 		deck,
@@ -37,56 +38,9 @@ func NewGameServer(ws *websocket.Conn) *GameServer {
 	}
 }
 
-// Listen Write and Read request via chanel
 func (g *GameServer) Listen() {
-	go g.listenWrite()
-	g.listenRead()
-}
-
-// Send stuff to the client over socket
-func (g *GameServer) listenWrite() {
-	log.Println("Listening write to client")
-
-	for {
-		select {
-
-		// send message to the client
-		case msg := <-g.msgCh:
-			log.Println("Send:", msg)
-			websocket.JSON.Send(g.ws, msg)
-
-		// receive done request
-		case <-g.doneCh:
-			g.doneCh <- true // for listenRead method
-			return
-		}
-	}
-}
-
-// Receive stuff from the client over socket
-func (g *GameServer) listenRead() {
-	log.Println("Listening read from client")
-
-	for {
-		select {
-
-		// receive done request
-		case <-g.doneCh:
-			g.doneCh <- true // for listenWrite method
-			return
-
-		// read data from websocket connection
-		default:
-			var msg Message
-			err := websocket.JSON.Receive(g.ws, &msg)
-			if err == io.EOF {
-				g.doneCh <- true
-			} else if err != nil {
-				log.Println("Error:", err.Error())
-			} else {
-				g.handleAction(&msg)
-			}
-		}
+	for _, client := range g.clients {
+		client.Listen(g)
 	}
 }
 
