@@ -3,7 +3,7 @@
 *.dll
 *.so
 *.dylib
-server
+cardgame
 
 # Test binary, build with `go test -c`
 *.test
