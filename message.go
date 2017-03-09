@@ -1,6 +1,7 @@
 package main
 
 type Message struct {
-	Action string  `json:"action"`
-	Cards  []*Card `json:"cards"`
+	ClientId string  `json:"clientId"`
+	Action   string  `json:"action"`
+	Cards    []*Card `json:"cards"`
 }

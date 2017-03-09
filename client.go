@@ -9,28 +9,40 @@ import (
 type Client interface {
 	Listen(gs *GameServer)
 	SendMessage(msg *Message)
+	ClientId() string
 }
+
+// # BaseClient definition
+
+type BaseClient struct {
+	clientId string
+	msgCh    chan *Message
+}
+
+func (c *BaseClient) SendMessage(msg *Message) {
+	c.msgCh <- msg
+}
+
+func (c *BaseClient) ClientId() string {
+	return c.clientId
+}
+
+// # AIClient definition
 
 type AIClient struct {
-	msgCh chan *Message
-}
-
-type SocketClient struct {
-	ws     *websocket.Conn
-	msgCh  chan *Message
-	doneCh chan bool
+	BaseClient
 }
 
 func (c *AIClient) Listen(gs *GameServer) {
 	// TODO implement
 }
 
-func (c *AIClient) SendMessage(msg *Message) {
-	c.msgCh <- msg
-}
+// # SocketClient definition
 
-func (c *SocketClient) SendMessage(msg *Message) {
-	c.msgCh <- msg
+type SocketClient struct {
+	BaseClient
+	ws     *websocket.Conn
+	doneCh chan bool
 }
 
 // Listen Write and Read request via chanel
@@ -80,7 +92,11 @@ func (c *SocketClient) listenRead(gs *GameServer) {
 			} else if err != nil {
 				log.Println("Error:", err.Error())
 			} else {
-				gs.handleAction(&msg)
+				if c.ClientId() == msg.ClientId {
+					gs.handleAction(&msg)
+				} else {
+					log.Println("Error: Wrong client id: " + c.ClientId() + " != " + msg.ClientId)
+				}
 			}
 		}
 	}

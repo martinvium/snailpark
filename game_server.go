@@ -23,8 +23,8 @@ func NewGameServer(ws *websocket.Conn) *GameServer {
 	deck := NewCollection()
 
 	clients := []Client{
-		&SocketClient{ws, make(chan *Message, channelBufSize), doneCh},
-		&AIClient{make(chan *Message, channelBufSize)},
+		&SocketClient{BaseClient{"player", make(chan *Message, channelBufSize)}, ws, doneCh},
+		&AIClient{BaseClient{"ai", make(chan *Message, channelBufSize)}},
 	}
 
 	return &GameServer{
@@ -55,15 +55,15 @@ func (g *GameServer) handleAction(msg *Message) {
 }
 
 func (g *GameServer) handleStartAction(msg *Message) {
-	g.sendAddToHand(3)
+	g.sendAddToHand(msg.ClientId, 3)
 }
 
 func (g *GameServer) handlePlayCardAction(msg *Message) {
-	g.sendAddToBoard(msg.Cards[0].Id)
+	g.sendAddToBoard(msg.ClientId, msg.Cards[0].Id)
 }
 
 func (g *GameServer) handleEndTurn(msg *Message) {
-	g.sendAddToHand(1)
+	g.sendAddToHand(msg.ClientId, 1)
 }
 
 func (g *GameServer) sendAll(msg *Message) {
@@ -72,14 +72,14 @@ func (g *GameServer) sendAll(msg *Message) {
 	}
 }
 
-func (g *GameServer) sendAddToHand(num int) {
+func (g *GameServer) sendAddToHand(clientId string, num int) {
 	cards := g.deck[len(g.deck)-num:]
 	g.deck = g.deck[:len(g.deck)-num]
 	g.hand = append(g.hand, cards...)
-	g.sendAll(&Message{"add_to_hand", cards})
+	g.sendAll(&Message{clientId, "add_to_hand", cards})
 }
 
-func (g *GameServer) sendAddToBoard(id string) {
+func (g *GameServer) sendAddToBoard(clientId string, id string) {
 	cards := []*Card{}
 	for index, card := range g.hand {
 		if card.Id == id {
@@ -88,7 +88,7 @@ func (g *GameServer) sendAddToBoard(id string) {
 		}
 	}
 
-	g.sendAll(&Message{"put_on_stack", cards})
-	g.sendAll(&Message{"empty_stack", []*Card{}})
-	g.sendAll(&Message{"add_to_board", cards})
+	g.sendAll(&Message{clientId, "put_on_stack", cards})
+	g.sendAll(&Message{clientId, "empty_stack", []*Card{}})
+	g.sendAll(&Message{clientId, "add_to_board", cards})
 }

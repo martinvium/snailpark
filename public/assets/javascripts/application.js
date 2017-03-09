@@ -1,17 +1,18 @@
 $(document).ready(function() {
   var card_proto = $('#card-prototype'),
-    ui_board = $('#me .board').html(''),
-    ui_hand = $('#me .hand').html(''),
+    ui_board = $('#player .board').html(''),
+    ui_hand = $('#player .hand').html(''),
     hand = [],
     board = [],
     stack = [],
     life = 100,
-    mana = 100;
+    mana = 100,
+    clientId = 'player';
 
   var ws = new WebSocket("ws://localhost:8080/entry");
 
   ws.onopen = function(event) {
-    ws.send(JSON.stringify({ "action": "start" }));
+    ws.send(JSON.stringify({ "clientId": clientId, "action": "start" }));
   }
 
   ws.onmessage = function(event) {
@@ -70,12 +71,12 @@ $(document).ready(function() {
 
   $('#end-turn').click(function() {
     console.log('End turn');
-    ws.send(JSON.stringify({ "action": "end_turn" }));
+    ws.send(JSON.stringify({ "clientId": clientId, "action": "end_turn" }));
   });
 
   function playCard(id) {
     console.log('Playing card: ' + id);
-    ws.send(JSON.stringify({ "action": "play_card", cards: [{ "id": id }] }));
+    ws.send(JSON.stringify({ "clientId": clientId, "action": "play_card", cards: [{ "id": id }] }));
   }
 
   function clearBoard() {
