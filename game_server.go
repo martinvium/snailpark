@@ -9,7 +9,6 @@ const channelBufSize = 100
 
 type GameServer struct {
 	clients []Client
-	msgCh   chan *Message
 	doneCh  chan bool
 	deck    []*Card
 	hand    []*Card
@@ -20,18 +19,16 @@ func NewGameServer(ws *websocket.Conn) *GameServer {
 		panic("ws cannot be nil")
 	}
 
-	msgCh := make(chan *Message, channelBufSize)
 	doneCh := make(chan bool)
 	deck := NewCollection()
 
 	clients := []Client{
-		NewSocketClient(ws, msgCh, doneCh),
-		NewAIClient(msgCh),
+		&SocketClient{ws, make(chan *Message, channelBufSize), doneCh},
+		&AIClient{make(chan *Message, channelBufSize)},
 	}
 
 	return &GameServer{
 		clients,
-		msgCh,
 		doneCh,
 		deck,
 		[]*Card{},
@@ -69,11 +66,17 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 	g.sendAddToHand(1)
 }
 
+func (g *GameServer) sendAll(msg *Message) {
+	for _, client := range g.clients {
+		client.SendMessage(msg)
+	}
+}
+
 func (g *GameServer) sendAddToHand(num int) {
 	cards := g.deck[len(g.deck)-num:]
 	g.deck = g.deck[:len(g.deck)-num]
 	g.hand = append(g.hand, cards...)
-	g.msgCh <- &Message{"add_to_hand", cards}
+	g.sendAll(&Message{"add_to_hand", cards})
 }
 
 func (g *GameServer) sendAddToBoard(id string) {
@@ -85,7 +88,7 @@ func (g *GameServer) sendAddToBoard(id string) {
 		}
 	}
 
-	g.msgCh <- &Message{"put_on_stack", cards}
-	g.msgCh <- &Message{"empty_stack", []*Card{}}
-	g.msgCh <- &Message{"add_to_board", cards}
+	g.sendAll(&Message{"put_on_stack", cards})
+	g.sendAll(&Message{"empty_stack", []*Card{}})
+	g.sendAll(&Message{"add_to_board", cards})
 }

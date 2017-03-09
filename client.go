@@ -8,6 +8,11 @@ import (
 
 type Client interface {
 	Listen(gs *GameServer)
+	SendMessage(msg *Message)
+}
+
+type AIClient struct {
+	msgCh chan *Message
 }
 
 type SocketClient struct {
@@ -16,26 +21,16 @@ type SocketClient struct {
 	doneCh chan bool
 }
 
-type AIClient struct {
-	msgCh chan *Message
-}
-
-func NewSocketClient(ws *websocket.Conn, msgCh chan *Message, doneCh chan bool) *SocketClient {
-	return &SocketClient{
-		ws,
-		msgCh,
-		doneCh,
-	}
-}
-
-func NewAIClient(msgCh chan *Message) *AIClient {
-	return &AIClient{
-		msgCh,
-	}
-}
-
 func (c *AIClient) Listen(gs *GameServer) {
 	// TODO implement
+}
+
+func (c *AIClient) SendMessage(msg *Message) {
+	c.msgCh <- msg
+}
+
+func (c *SocketClient) SendMessage(msg *Message) {
+	c.msgCh <- msg
 }
 
 // Listen Write and Read request via chanel
