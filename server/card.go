@@ -1,6 +1,6 @@
 package main
 
-type Card struct {
+type CardProto struct {
 	Color       string `json:"color"`
 	Title       string `json:"title"`
 	Cost        int    `json:"cost"`
@@ -10,11 +10,21 @@ type Card struct {
 	Toughness   int    `json:"toughness"`
 }
 
+type Card struct {
+	CardProto
+	Id string `json:"id"`
+	// Enchantments, effects, combat health state?
+}
+
 func NewCollection() []*Card {
 	return []*Card{
-		{"orange", "My first card", 1, "Human", "A powerful creature.", 1, 2},
-		{"orange", "My second card", 2, "Human", "A powerful creature.", 2, 2},
-		{"orange", "My third card", 3, "Human", "A powerful creature.", 3, 2},
-		{"orange", "My fourth card", 4, "Human", "A powerful creature.", 5, 3},
+		{CardProto{"orange", "My first card", 1, "Human", "A powerful creature.", 1, 2}, "1"},
+		{CardProto{"orange", "My second card", 2, "Human", "A powerful creature.", 2, 2}, "2"},
+		{CardProto{"orange", "My third card", 3, "Human", "A powerful creature.", 3, 2}, "3"},
+		{CardProto{"orange", "My fourth card", 4, "Human", "A powerful creature.", 5, 3}, "4"},
 	}
+}
+
+func (c *Card) String() string {
+	return "Card(" + c.Id + ", " + c.Title + ")"
 }
