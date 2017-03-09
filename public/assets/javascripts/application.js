@@ -1,18 +1,22 @@
 $(document).ready(function() {
   var card_proto = $('#card-prototype'),
-    ui_board = $('#player .board').html(''),
-    ui_hand = $('#player .hand').html(''),
-    hand = [],
-    board = [],
     stack = [],
-    life = 100,
-    mana = 100,
-    clientId = 'player';
+    playerClientId = 'player';
+
+  var clients = {
+    "player": { "id": "player", "hand": [], "board": [] },
+    "ai": { "id": "ai", "hand": [], "board": [] },
+  };
 
   var ws = new WebSocket("ws://localhost:8080/entry");
 
   ws.onopen = function(event) {
-    ws.send(JSON.stringify({ "clientId": clientId, "action": "start" }));
+    ws.send(
+      JSON.stringify({
+        "clientId": playerClientId,
+        "action": "start"
+      })
+    );
   }
 
   ws.onmessage = function(event) {
@@ -22,45 +26,33 @@ $(document).ready(function() {
     // msg also has a stack_resolved: true param, which means the user action
     // resolves and the ui can empty the stack?
     switch(msg.action) {
-      case "update":
-        // could represent start_turn, or a transition between states etc.
-        break;
       case "add_to_hand": // draw
-        console.log("Add to hand!");
-        for(var i in msg.cards) {
-          hand.push(msg.cards[i]);
-        }
+        clients[msg.clientId]["hand"] = $.merge(
+          clients[msg.clientId]["hand"],
+          msg.cards
+        );
         break;
       case "put_on_stack":
-        for(var i in msg.cards) {
-          for(var y in hand) {
-            if(hand[y].id == msg.cards[i].id) {
-              hand.splice(y, 1);
-              break;
+        // Remove cards from hand (really this verbose?)
+        $.each(msg.cards, function(_, card) {
+          $.each(clients[msg.clientId]["hand"], function(index, cardInHand) {
+            if(cardInHand.id == card.id) {
+              clients[msg.clientId]["hand"].splice(index, 1);
+              return false;
             }
-          }
+          });
+        });
 
-          stack.push(msg.cards[i]);
-        }
+        stack = $.merge(stack, msg.cards);
         break;
       case "empty_stack":
         stack = [];
         break;
       case "add_to_board":
-        for(var i in msg.cards) {
-          board.push(msg.cards[i]);
-        }
-        break;
-      case "hit_player":
-        break;
-      case "remove_from_board":
-        msg.cards // array of cards to be removed from board
-        break;
-      case "action_not_valid":
-        // cancel the user action in the ui
-        break;
-      case "pick_card": // a card you used triggered an event where you must select a card from a list of choices
-        msg.cards // array of cards to present for selection
+        clients[msg.clientId].board = $.merge(
+          clients[msg.clientId].board,
+          msg.cards
+        );
         break;
     }
 
@@ -71,33 +63,55 @@ $(document).ready(function() {
 
   $('#end-turn').click(function() {
     console.log('End turn');
-    ws.send(JSON.stringify({ "clientId": clientId, "action": "end_turn" }));
+    ws.send(JSON.stringify({ "clientId": playerClientId, "action": "end_turn" }));
   });
+
+  function boardEl(playerClientId) {
+    return $('#' + playerClientId + ' .board');
+  }
+
+  function handEl(playerClientId) {
+    return $('#' + playerClientId + ' .hand');
+  }
 
   function playCard(id) {
     console.log('Playing card: ' + id);
-    ws.send(JSON.stringify({ "clientId": clientId, "action": "play_card", cards: [{ "id": id }] }));
+
+    ws.send(
+      JSON.stringify({
+        "clientId": playerClientId,
+        "action": "play_card",
+        cards: [{ "id": id }]
+      })
+    );
   }
 
   function clearBoard() {
-    ui_board.empty();
-    ui_hand.empty();
+    $.each(clients, function(clientId, _) {
+      boardEl(clientId).empty();
+      handEl(clientId).empty();
+    });
   }
 
   function renderBoard() {
-    $.each(board, function(index, value) {
-      var card = renderCard(value);
-      ui_board.append(card);
+    $.each(clients, function(_, client) {
+      $.each(client["board"], function(index, card) {
+        boardEl(client["id"]).append(
+          renderCard(card)
+        );
+      });
     });
   }
 
   function renderHand() {
-    $.each(hand, function(index, value) {
-      var card = renderCard(value, function() {
-        playCard($(this).attr('data-id'));
+    $.each(clients, function(_, client) {
+      $.each(client["hand"], function(index, card) {
+        handEl(client["id"]).append(
+          renderCard(card, function() {
+            playCard($(this).attr('data-id'));
+          })
+        );
       });
-
-      ui_hand.append(card);
     });
   }
 
