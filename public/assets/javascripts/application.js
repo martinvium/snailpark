@@ -13,7 +13,7 @@ $(document).ready(function() {
   ws.onopen = function(event) {
     ws.send(
       JSON.stringify({
-        "clientId": playerId,
+        "playerId": playerId,
         "action": "start"
       })
     );
@@ -22,26 +22,26 @@ $(document).ready(function() {
   ws.onmessage = function(event) {
     var msg = JSON.parse(event.data);
 
-    players[msg.clientId]["currentMana"] = msg["currentMana"];
-    players[msg.clientId]["maxMana"] = msg["maxMana"];
-    console.log(players[msg.clientId]);
+    players[msg.playerId]["currentMana"] = msg["currentMana"];
+    players[msg.playerId]["maxMana"] = msg["maxMana"];
+    console.log(players[msg.playerId]);
 
     // msg also has state of the FSM and possibly priority e.g. you or me
     // msg also has a stack_resolved: true param, which means the user action
     // resolves and the ui can empty the stack?
     switch(msg.action) {
       case "add_to_hand": // draw
-        players[msg.clientId]["hand"] = $.merge(
-          players[msg.clientId]["hand"],
+        players[msg.playerId]["hand"] = $.merge(
+          players[msg.playerId]["hand"],
           msg.cards
         );
         break;
       case "put_on_stack":
         // Remove cards from hand (really this verbose?)
         $.each(msg.cards, function(_, card) {
-          $.each(players[msg.clientId]["hand"], function(index, cardInHand) {
+          $.each(players[msg.playerId]["hand"], function(index, cardInHand) {
             if(cardInHand.id == card.id) {
-              players[msg.clientId]["hand"].splice(index, 1);
+              players[msg.playerId]["hand"].splice(index, 1);
               return false;
             }
           });
@@ -53,8 +53,8 @@ $(document).ready(function() {
         stack = [];
         break;
       case "add_to_board":
-        players[msg.clientId].board = $.merge(
-          players[msg.clientId].board,
+        players[msg.playerId].board = $.merge(
+          players[msg.playerId].board,
           msg.cards
         );
         break;
@@ -68,7 +68,7 @@ $(document).ready(function() {
 
   $('#end-turn').click(function() {
     console.log('End turn');
-    ws.send(JSON.stringify({ "clientId": playerId, "action": "end_turn" }));
+    ws.send(JSON.stringify({ "playerId": playerId, "action": "end_turn" }));
   });
 
   function boardEl(playerId) {
@@ -88,7 +88,7 @@ $(document).ready(function() {
 
     ws.send(
       JSON.stringify({
-        "clientId": playerId,
+        "playerId": playerId,
         "action": "play_card",
         cards: [{ "id": id }]
       })
@@ -96,9 +96,9 @@ $(document).ready(function() {
   }
 
   function clearBoard() {
-    $.each(players, function(clientId, _) {
-      boardEl(clientId).empty();
-      handEl(clientId).empty();
+    $.each(players, function(playerId, _) {
+      boardEl(playerId).empty();
+      handEl(playerId).empty();
     });
   }
 

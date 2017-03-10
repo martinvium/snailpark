@@ -62,13 +62,13 @@ func (g *GameServer) SendRequest(msg *Message) {
 }
 
 func (g *GameServer) handleStartAction(msg *Message) {
-	g.sendAddToHand(g.players[msg.ClientId], 3)
+	g.sendAddToHand(g.players[msg.PlayerId], 3)
 }
 
 func (g *GameServer) handlePlayCardAction(msg *Message) {
 	g.ensureCurrentPlayer(msg)
-	if g.currentPlayer.Id != msg.ClientId {
-		log.Println("ERROR: Client calling action", msg.Action, "out of turn:", msg.ClientId)
+	if g.currentPlayer.Id != msg.PlayerId {
+		log.Println("ERROR: Client calling action", msg.Action, "out of turn:", msg.PlayerId)
 		return
 	}
 
@@ -76,8 +76,8 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 }
 
 func (g *GameServer) handleEndTurn(msg *Message) {
-	if g.currentPlayer.Id != msg.ClientId {
-		log.Println("ERROR: Client calling action", msg.Action, "out of turn:", msg.ClientId)
+	if g.currentPlayer.Id != msg.PlayerId {
+		log.Println("ERROR: Client calling action", msg.Action, "out of turn:", msg.PlayerId)
 		return
 	}
 
@@ -112,7 +112,7 @@ func (g *GameServer) sendAddToBoard(player *Player, id string) {
 }
 
 func (g *GameServer) ensureCurrentPlayer(msg *Message) {
-	if g.currentPlayer.Id != msg.ClientId {
-		panic("ERROR: Client calling action out of turn:" + msg.ClientId)
+	if g.currentPlayer.Id != msg.PlayerId {
+		panic("ERROR: Client calling action out of turn:" + msg.PlayerId)
 	}
 }

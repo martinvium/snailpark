@@ -7,7 +7,7 @@ import (
 
 type AI struct {
 	outCh    chan *Message
-	clientId string
+	playerId string
 }
 
 func NewAI() *AI {
@@ -18,8 +18,8 @@ func NewAI() *AI {
 
 func (a *AI) Send(msg *Message) {
 	log.Println("AI ack it received: ", msg)
-	if msg.ClientId == a.clientId && msg.Action == "add_to_hand" {
-		a.RespondDelayed(NewSimpleMessage(a.clientId, "end_turn"))
+	if msg.PlayerId == a.playerId && msg.Action == "add_to_hand" {
+		a.RespondDelayed(NewSimpleMessage(a.playerId, "end_turn"))
 	}
 }
 

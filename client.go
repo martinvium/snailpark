@@ -9,13 +9,13 @@ import (
 type Client interface {
 	Listen(g *GameServer)
 	SendResponse(msg *Message)
-	ClientId() string
+	PlayerId() string
 }
 
 // # BaseClient definition
 
 type BaseClient struct {
-	clientId string
+	playerId string
 	msgCh    chan *Message
 	doneCh   chan bool
 }
@@ -24,12 +24,12 @@ func (c *BaseClient) SendResponse(msg *Message) {
 	c.msgCh <- msg
 }
 
-func (c *BaseClient) ClientId() string {
-	return c.clientId
+func (c *BaseClient) PlayerId() string {
+	return c.playerId
 }
 
 func (c *BaseClient) String() string {
-	return "Client(" + c.ClientId() + ")"
+	return "Client(" + c.PlayerId() + ")"
 }
 
 // # AIClient definition
@@ -73,10 +73,10 @@ func (c *AIClient) listenRead(g *GameServer) {
 
 		// read data from websocket connection
 		case msg := <-c.ai.outCh:
-			if c.ClientId() == msg.ClientId {
+			if c.PlayerId() == msg.PlayerId {
 				g.SendRequest(msg)
 			} else {
-				log.Println("Error: Wrong client id: " + c.ClientId() + " != " + msg.ClientId)
+				log.Println("Error: Wrong client id: " + c.PlayerId() + " != " + msg.PlayerId)
 			}
 
 		// receive done request
@@ -142,10 +142,10 @@ func (c *SocketClient) listenRead(g *GameServer) {
 			} else if err != nil {
 				log.Println("Error:", err.Error())
 			} else {
-				if c.ClientId() == msg.ClientId {
+				if c.PlayerId() == msg.PlayerId {
 					g.SendRequest(&msg)
 				} else {
-					log.Println("Error: Wrong client id: " + c.ClientId() + " != " + msg.ClientId)
+					log.Println("Error: Wrong client id: " + c.PlayerId() + " != " + msg.PlayerId)
 				}
 			}
 		}

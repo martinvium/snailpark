@@ -1,7 +1,7 @@
 package main
 
 type Message struct {
-	ClientId    string  `json:"clientId"`
+	PlayerId    string  `json:"playerId"`
 	Action      string  `json:"action"`
 	Cards       []*Card `json:"cards"`
 	CurrentMana int     `json:"currentMana"`
