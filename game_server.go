@@ -87,6 +87,9 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 		g.currentPlayer = "player"
 	}
 
+	g.players[g.currentPlayer].AddMaxMana(1)
+	g.players[g.currentPlayer].ResetCurrentMana()
+
 	g.sendAddToHand(g.currentPlayer, 1)
 }
 
