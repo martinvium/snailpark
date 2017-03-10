@@ -8,9 +8,10 @@ import (
 const channelBufSize = 100
 
 type GameServer struct {
-	clients []Client
-	doneCh  chan bool
-	players map[string]*Player
+	clients       []Client
+	doneCh        chan bool
+	players       map[string]*Player
+	currentPlayer string
 }
 
 func NewGameServer(ws *websocket.Conn) *GameServer {
@@ -35,6 +36,7 @@ func NewGameServer(ws *websocket.Conn) *GameServer {
 		clients,
 		doneCh,
 		players,
+		"player", // currently always the player that starts
 	}
 }
 
@@ -64,11 +66,28 @@ func (g *GameServer) handleStartAction(msg *Message) {
 }
 
 func (g *GameServer) handlePlayCardAction(msg *Message) {
+	g.ensureCurrentPlayer(msg)
+	if g.currentPlayer != msg.ClientId {
+		log.Println("ERROR: Client calling action", msg.Action, "out of turn:", msg.ClientId)
+		return
+	}
+
 	g.sendAddToBoard(msg.ClientId, msg.Cards[0].Id)
 }
 
 func (g *GameServer) handleEndTurn(msg *Message) {
-	g.sendAddToHand(msg.ClientId, 1)
+	if g.currentPlayer != msg.ClientId {
+		log.Println("ERROR: Client calling action", msg.Action, "out of turn:", msg.ClientId)
+		return
+	}
+
+	if g.currentPlayer == "player" {
+		g.currentPlayer = "ai"
+	} else {
+		g.currentPlayer = "player"
+	}
+
+	g.sendAddToHand(g.currentPlayer, 1)
 }
 
 func (g *GameServer) sendResponseAll(msg *Message) {
@@ -87,4 +106,10 @@ func (g *GameServer) sendAddToBoard(clientId string, id string) {
 	g.sendResponseAll(&Message{clientId, "put_on_stack", cards})
 	g.sendResponseAll(&Message{clientId, "empty_stack", []*Card{}})
 	g.sendResponseAll(&Message{clientId, "add_to_board", cards})
+}
+
+func (g *GameServer) ensureCurrentPlayer(msg *Message) {
+	if g.currentPlayer != msg.ClientId {
+		panic("ERROR: Client calling action out of turn:" + msg.ClientId)
+	}
 }
