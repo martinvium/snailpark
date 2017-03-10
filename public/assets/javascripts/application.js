@@ -8,7 +8,7 @@ $(document).ready(function() {
     "ai": { "id": "ai", "hand": [], "board": [] },
   };
 
-  var ws = new WebSocket(getWebSocketUrl('/entry'));
+  var ws = new WebSocket(getWebSocketUrl('entry'));
 
   ws.onopen = function(event) {
     ws.send(
