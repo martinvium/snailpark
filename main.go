@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -15,5 +16,6 @@ func main() {
 	// static files
 	http.Handle("/", http.FileServer(http.Dir("public")))
 
+	log.Println("Listening on", ":"+os.Getenv("PORT"))
 	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
 }
