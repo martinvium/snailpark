@@ -2,17 +2,33 @@ h2 {
   font-size: 1.4em;
 }
 
+#board {
+  margin: 20px;
+}
+
 .board {
   margin-bottom: 20px;
 }
 
+#end-turn {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
 .card {
-  width: 220px;
-  height: 300px;
+  width: 150px;
+  height: 200px;
   border: 5px solid black;
   border-radius: 5px;
   font-family: Helvetica;
-  font-size: .9em;
+  font-size: .8em;
   padding: 5px 10px;
   float: left;
   margin-right: 10px;
@@ -28,7 +44,7 @@ h2 {
 }
 
 .card .art {
-  height: 115px;
+  height: 78px;
   background-color: white;
   margin: 0px auto;
 
@@ -40,7 +56,7 @@ h2 {
 
 .card .description {
   background-color: white;
-  height: 115px;
+  height: 78px;
   padding: 5px;
 }
 
