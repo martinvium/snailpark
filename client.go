@@ -7,8 +7,8 @@ import (
 )
 
 type Client interface {
-	Listen(gs *GameServer)
-	SendMessage(msg *Message)
+	Listen(g *GameServer)
+	SendResponse(msg *Message)
 	ClientId() string
 }
 
@@ -19,7 +19,7 @@ type BaseClient struct {
 	msgCh    chan *Message
 }
 
-func (c *BaseClient) SendMessage(msg *Message) {
+func (c *BaseClient) SendResponse(msg *Message) {
 	c.msgCh <- msg
 }
 
@@ -33,7 +33,7 @@ type AIClient struct {
 	BaseClient
 }
 
-func (c *AIClient) Listen(gs *GameServer) {
+func (c *AIClient) Listen(g *GameServer) {
 	// TODO implement
 }
 
@@ -46,9 +46,9 @@ type SocketClient struct {
 }
 
 // Listen Write and Read request via chanel
-func (c *SocketClient) Listen(gs *GameServer) {
+func (c *SocketClient) Listen(g *GameServer) {
 	go c.listenWrite()
-	c.listenRead(gs)
+	c.listenRead(g)
 }
 
 // Send stuff to the client over socket
@@ -72,7 +72,7 @@ func (c *SocketClient) listenWrite() {
 }
 
 // Receive stuff from the client over socket
-func (c *SocketClient) listenRead(gs *GameServer) {
+func (c *SocketClient) listenRead(g *GameServer) {
 	log.Println("Listening read from client")
 
 	for {
@@ -93,7 +93,7 @@ func (c *SocketClient) listenRead(gs *GameServer) {
 				log.Println("Error:", err.Error())
 			} else {
 				if c.ClientId() == msg.ClientId {
-					gs.handleAction(&msg)
+					g.SendRequest(&msg)
 				} else {
 					log.Println("Error: Wrong client id: " + c.ClientId() + " != " + msg.ClientId)
 				}

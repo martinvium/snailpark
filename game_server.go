@@ -41,7 +41,7 @@ func (g *GameServer) Listen() {
 	}
 }
 
-func (g *GameServer) handleAction(msg *Message) {
+func (g *GameServer) SendRequest(msg *Message) {
 	log.Println("Receive:", msg)
 	if msg.Action == "start" {
 		g.handleStartAction(msg)
@@ -66,9 +66,9 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 	g.sendAddToHand(msg.ClientId, 1)
 }
 
-func (g *GameServer) sendAll(msg *Message) {
+func (g *GameServer) sendResponseAll(msg *Message) {
 	for _, client := range g.clients {
-		client.SendMessage(msg)
+		client.SendResponse(msg)
 	}
 }
 
@@ -76,7 +76,7 @@ func (g *GameServer) sendAddToHand(clientId string, num int) {
 	cards := g.deck[len(g.deck)-num:]
 	g.deck = g.deck[:len(g.deck)-num]
 	g.hand = append(g.hand, cards...)
-	g.sendAll(&Message{clientId, "add_to_hand", cards})
+	g.sendResponseAll(&Message{clientId, "add_to_hand", cards})
 }
 
 func (g *GameServer) sendAddToBoard(clientId string, id string) {
@@ -88,7 +88,7 @@ func (g *GameServer) sendAddToBoard(clientId string, id string) {
 		}
 	}
 
-	g.sendAll(&Message{clientId, "put_on_stack", cards})
-	g.sendAll(&Message{clientId, "empty_stack", []*Card{}})
-	g.sendAll(&Message{clientId, "add_to_board", cards})
+	g.sendResponseAll(&Message{clientId, "put_on_stack", cards})
+	g.sendResponseAll(&Message{clientId, "empty_stack", []*Card{}})
+	g.sendResponseAll(&Message{clientId, "add_to_board", cards})
 }
