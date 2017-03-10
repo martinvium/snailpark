@@ -1,7 +1,7 @@
 package main
 
 type Player struct {
-	playerId    string
+	Id          string
 	deck        []*Card
 	hand        []*Card
 	currentMana int

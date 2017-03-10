@@ -11,7 +11,7 @@ type GameServer struct {
 	clients       []Client
 	doneCh        chan bool
 	players       map[string]*Player
-	currentPlayer string
+	currentPlayer *Player
 }
 
 func NewGameServer(ws *websocket.Conn) *GameServer {
@@ -36,7 +36,7 @@ func NewGameServer(ws *websocket.Conn) *GameServer {
 		clients,
 		doneCh,
 		players,
-		"player", // currently always the player that starts
+		players["player"], // currently always the player that starts
 	}
 }
 
@@ -62,33 +62,33 @@ func (g *GameServer) SendRequest(msg *Message) {
 }
 
 func (g *GameServer) handleStartAction(msg *Message) {
-	g.sendAddToHand(msg.ClientId, 3)
+	g.sendAddToHand(g.players[msg.ClientId], 3)
 }
 
 func (g *GameServer) handlePlayCardAction(msg *Message) {
 	g.ensureCurrentPlayer(msg)
-	if g.currentPlayer != msg.ClientId {
+	if g.currentPlayer.Id != msg.ClientId {
 		log.Println("ERROR: Client calling action", msg.Action, "out of turn:", msg.ClientId)
 		return
 	}
 
-	g.sendAddToBoard(msg.ClientId, msg.Cards[0].Id)
+	g.sendAddToBoard(g.currentPlayer, msg.Cards[0].Id)
 }
 
 func (g *GameServer) handleEndTurn(msg *Message) {
-	if g.currentPlayer != msg.ClientId {
+	if g.currentPlayer.Id != msg.ClientId {
 		log.Println("ERROR: Client calling action", msg.Action, "out of turn:", msg.ClientId)
 		return
 	}
 
-	if g.currentPlayer == "player" {
-		g.currentPlayer = "ai"
+	if g.currentPlayer.Id == "player" {
+		g.currentPlayer = g.players["ai"]
 	} else {
-		g.currentPlayer = "player"
+		g.currentPlayer = g.players["player"]
 	}
 
-	g.players[g.currentPlayer].AddMaxMana(1)
-	g.players[g.currentPlayer].ResetCurrentMana()
+	g.currentPlayer.AddMaxMana(1)
+	g.currentPlayer.ResetCurrentMana()
 
 	g.sendAddToHand(g.currentPlayer, 1)
 }
@@ -99,20 +99,20 @@ func (g *GameServer) sendResponseAll(msg *Message) {
 	}
 }
 
-func (g *GameServer) sendAddToHand(clientId string, num int) {
-	cards := g.players[clientId].AddToHand(num)
-	g.sendResponseAll(&Message{clientId, "add_to_hand", cards})
+func (g *GameServer) sendAddToHand(player *Player, num int) {
+	cards := player.AddToHand(num)
+	g.sendResponseAll(&Message{player.Id, "add_to_hand", cards})
 }
 
-func (g *GameServer) sendAddToBoard(clientId string, id string) {
-	cards := g.players[clientId].AddToBoard(id)
-	g.sendResponseAll(&Message{clientId, "put_on_stack", cards})
-	g.sendResponseAll(&Message{clientId, "empty_stack", []*Card{}})
-	g.sendResponseAll(&Message{clientId, "add_to_board", cards})
+func (g *GameServer) sendAddToBoard(player *Player, id string) {
+	cards := player.AddToBoard(id)
+	g.sendResponseAll(&Message{player.Id, "put_on_stack", cards})
+	g.sendResponseAll(&Message{player.Id, "empty_stack", []*Card{}})
+	g.sendResponseAll(&Message{player.Id, "add_to_board", cards})
 }
 
 func (g *GameServer) ensureCurrentPlayer(msg *Message) {
-	if g.currentPlayer != msg.ClientId {
+	if g.currentPlayer.Id != msg.ClientId {
 		panic("ERROR: Client calling action out of turn:" + msg.ClientId)
 	}
 }
