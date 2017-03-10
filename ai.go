@@ -1,15 +1,28 @@
 package main
 
-import "log"
+import (
+	"log"
+	"time"
+)
 
 type AI struct {
-	msgCh chan *Message
+	outCh    chan *Message
+	clientId string
 }
 
 func NewAI() *AI {
-	return &AI{make(chan *Message, channelBufSize)}
+	outCh := make(chan *Message, channelBufSize)
+	outCh <- NewSimpleMessage("ai", "start")
+	return &AI{outCh, "ai"}
 }
 
 func (a *AI) Send(msg *Message) {
 	log.Println("AI ack it received: ", msg)
+	a.RespondDelayed(NewSimpleMessage(a.clientId, "end_turn"))
+}
+
+func (a *AI) RespondDelayed(msg *Message) {
+	log.Println("AI responding delayed: ", msg)
+	time.Sleep(1000 * time.Millisecond)
+	a.outCh <- msg
 }

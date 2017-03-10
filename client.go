@@ -72,7 +72,7 @@ func (c *AIClient) listenRead(g *GameServer) {
 		select {
 
 		// read data from websocket connection
-		case msg := <-c.ai.msgCh:
+		case msg := <-c.ai.outCh:
 			if c.ClientId() == msg.ClientId {
 				g.SendRequest(msg)
 			} else {

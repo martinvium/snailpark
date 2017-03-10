@@ -5,3 +5,7 @@ type Message struct {
 	Action   string  `json:"action"`
 	Cards    []*Card `json:"cards"`
 }
+
+func NewSimpleMessage(clientId string, action string) *Message {
+	return &Message{clientId, action, []*Card{}}
+}
