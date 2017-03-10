@@ -22,9 +22,11 @@ func NewGameServer(ws *websocket.Conn) *GameServer {
 	doneCh := make(chan bool)
 	deck := NewCollection()
 
+	// NOTE: order is important here, because SocketClient is blocking
+	// when it returns in Listen, the connection is closed.
 	clients := []Client{
-		&SocketClient{BaseClient{"player", make(chan *Message, channelBufSize)}, ws, doneCh},
-		&AIClient{BaseClient{"ai", make(chan *Message, channelBufSize)}},
+		&AIClient{BaseClient{"ai", make(chan *Message, channelBufSize), doneCh}, NewAI()},
+		&SocketClient{BaseClient{"player", make(chan *Message, channelBufSize), doneCh}, ws},
 	}
 
 	return &GameServer{
@@ -36,7 +38,9 @@ func NewGameServer(ws *websocket.Conn) *GameServer {
 }
 
 func (g *GameServer) Listen() {
+	log.Println(g.clients)
 	for _, client := range g.clients {
+		log.Println("Listening to client: ", client)
 		client.Listen(g)
 	}
 }
