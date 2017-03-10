@@ -10,8 +10,7 @@ const channelBufSize = 100
 type GameServer struct {
 	clients []Client
 	doneCh  chan bool
-	deck    []*Card
-	hand    []*Card
+	players map[string]*Player
 }
 
 func NewGameServer(ws *websocket.Conn) *GameServer {
@@ -20,7 +19,6 @@ func NewGameServer(ws *websocket.Conn) *GameServer {
 	}
 
 	doneCh := make(chan bool)
-	deck := NewCollection()
 
 	// NOTE: order is important here, because SocketClient is blocking
 	// when it returns in Listen, the connection is closed.
@@ -29,11 +27,14 @@ func NewGameServer(ws *websocket.Conn) *GameServer {
 		&SocketClient{BaseClient{"player", make(chan *Message, channelBufSize), doneCh}, ws},
 	}
 
+	players := make(map[string]*Player)
+	players["ai"] = NewPlayer("ai")
+	players["player"] = NewPlayer("player")
+
 	return &GameServer{
 		clients,
 		doneCh,
-		deck,
-		[]*Card{},
+		players,
 	}
 }
 
@@ -77,21 +78,12 @@ func (g *GameServer) sendResponseAll(msg *Message) {
 }
 
 func (g *GameServer) sendAddToHand(clientId string, num int) {
-	cards := g.deck[len(g.deck)-num:]
-	g.deck = g.deck[:len(g.deck)-num]
-	g.hand = append(g.hand, cards...)
+	cards := g.players[clientId].AddToHand(num)
 	g.sendResponseAll(&Message{clientId, "add_to_hand", cards})
 }
 
 func (g *GameServer) sendAddToBoard(clientId string, id string) {
-	cards := []*Card{}
-	for index, card := range g.hand {
-		if card.Id == id {
-			g.hand = append(g.hand[:index], g.hand[index+1:]...) // remove from hand
-			cards = append(cards, card)                          // add to board
-		}
-	}
-
+	cards := g.players[clientId].AddToBoard(id)
 	g.sendResponseAll(&Message{clientId, "put_on_stack", cards})
 	g.sendResponseAll(&Message{clientId, "empty_stack", []*Card{}})
 	g.sendResponseAll(&Message{clientId, "add_to_board", cards})
