@@ -8,7 +8,7 @@ $(document).ready(function() {
     "ai": { "id": "ai", "hand": [], "board": [] },
   };
 
-  var ws = new WebSocket("ws://localhost:8080/entry");
+  var ws = new WebSocket(getWebSocketUrl('/entry'));
 
   ws.onopen = function(event) {
     ws.send(
@@ -125,6 +125,11 @@ $(document).ready(function() {
     $('.type', card).text(value['type']);
     $('.description', card).text(value['description']);
     return card;
+  }
+
+  function getWebSocketUrl(s) {
+    var l = window.location;
+    return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname + s;
   }
 });
 
