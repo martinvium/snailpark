@@ -1,11 +1,11 @@
 $(document).ready(function() {
   var card_proto = $('#card-prototype'),
     stack = [],
-    playerClientId = 'player';
+    playerId = 'player';
 
-  var clients = {
-    "player": { "id": "player", "hand": [], "board": [] },
-    "ai": { "id": "ai", "hand": [], "board": [] },
+  var players = {
+    "player": { "id": "player", "hand": [], "board": [], "currentMana": 0, "maxMana": 0 },
+    "ai": { "id": "ai", "hand": [], "board": [], "currentMana": 0, "maxMana": 0 },
   };
 
   var ws = new WebSocket(getWebSocketUrl('entry'));
@@ -13,7 +13,7 @@ $(document).ready(function() {
   ws.onopen = function(event) {
     ws.send(
       JSON.stringify({
-        "clientId": playerClientId,
+        "clientId": playerId,
         "action": "start"
       })
     );
@@ -22,22 +22,26 @@ $(document).ready(function() {
   ws.onmessage = function(event) {
     var msg = JSON.parse(event.data);
 
+    players[msg.clientId]["currentMana"] = msg["currentMana"];
+    players[msg.clientId]["maxMana"] = msg["maxMana"];
+    console.log(players[msg.clientId]);
+
     // msg also has state of the FSM and possibly priority e.g. you or me
     // msg also has a stack_resolved: true param, which means the user action
     // resolves and the ui can empty the stack?
     switch(msg.action) {
       case "add_to_hand": // draw
-        clients[msg.clientId]["hand"] = $.merge(
-          clients[msg.clientId]["hand"],
+        players[msg.clientId]["hand"] = $.merge(
+          players[msg.clientId]["hand"],
           msg.cards
         );
         break;
       case "put_on_stack":
         // Remove cards from hand (really this verbose?)
         $.each(msg.cards, function(_, card) {
-          $.each(clients[msg.clientId]["hand"], function(index, cardInHand) {
+          $.each(players[msg.clientId]["hand"], function(index, cardInHand) {
             if(cardInHand.id == card.id) {
-              clients[msg.clientId]["hand"].splice(index, 1);
+              players[msg.clientId]["hand"].splice(index, 1);
               return false;
             }
           });
@@ -49,8 +53,8 @@ $(document).ready(function() {
         stack = [];
         break;
       case "add_to_board":
-        clients[msg.clientId].board = $.merge(
-          clients[msg.clientId].board,
+        players[msg.clientId].board = $.merge(
+          players[msg.clientId].board,
           msg.cards
         );
         break;
@@ -59,19 +63,24 @@ $(document).ready(function() {
     clearBoard();
     renderBoard();
     renderHand();
+    renderMana();
   }
 
   $('#end-turn').click(function() {
     console.log('End turn');
-    ws.send(JSON.stringify({ "clientId": playerClientId, "action": "end_turn" }));
+    ws.send(JSON.stringify({ "clientId": playerId, "action": "end_turn" }));
   });
 
-  function boardEl(playerClientId) {
-    return $('#' + playerClientId + ' .board');
+  function boardEl(playerId) {
+    return $('#' + playerId + ' .board');
   }
 
-  function handEl(playerClientId) {
-    return $('#' + playerClientId + ' .hand');
+  function handEl(playerId) {
+    return $('#' + playerId + ' .hand');
+  }
+
+  function manaEl(playerId) {
+    return $('#' + playerId + ' .mana');
   }
 
   function playCard(id) {
@@ -79,7 +88,7 @@ $(document).ready(function() {
 
     ws.send(
       JSON.stringify({
-        "clientId": playerClientId,
+        "clientId": playerId,
         "action": "play_card",
         cards: [{ "id": id }]
       })
@@ -87,14 +96,14 @@ $(document).ready(function() {
   }
 
   function clearBoard() {
-    $.each(clients, function(clientId, _) {
+    $.each(players, function(clientId, _) {
       boardEl(clientId).empty();
       handEl(clientId).empty();
     });
   }
 
   function renderBoard() {
-    $.each(clients, function(_, client) {
+    $.each(players, function(_, client) {
       $.each(client["board"], function(index, card) {
         boardEl(client["id"]).append(
           renderCard(card)
@@ -104,7 +113,7 @@ $(document).ready(function() {
   }
 
   function renderHand() {
-    $.each(clients, function(_, client) {
+    $.each(players, function(_, client) {
       $.each(client["hand"], function(index, card) {
         handEl(client["id"]).append(
           renderCard(card, function() {
@@ -125,6 +134,13 @@ $(document).ready(function() {
     $('.type', card).text(value['type']);
     $('.description', card).text(value['description']);
     return card;
+  }
+
+  function renderMana() {
+    $.each(players, function(_, client) {
+      $('.current', manaEl(client["id"])).text(client["currentMana"]);
+      $('.max', manaEl(client["id"])).text(client["maxMana"]);
+    });
   }
 
   function getWebSocketUrl(s) {

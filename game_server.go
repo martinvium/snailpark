@@ -101,14 +101,14 @@ func (g *GameServer) sendResponseAll(msg *Message) {
 
 func (g *GameServer) sendAddToHand(player *Player, num int) {
 	cards := player.AddToHand(num)
-	g.sendResponseAll(&Message{player.Id, "add_to_hand", cards})
+	g.sendResponseAll(NewMessage(player.Id, "add_to_hand", cards, player))
 }
 
 func (g *GameServer) sendAddToBoard(player *Player, id string) {
 	cards := player.AddToBoard(id)
-	g.sendResponseAll(&Message{player.Id, "put_on_stack", cards})
-	g.sendResponseAll(&Message{player.Id, "empty_stack", []*Card{}})
-	g.sendResponseAll(&Message{player.Id, "add_to_board", cards})
+	g.sendResponseAll(NewMessage(player.Id, "put_on_stack", cards, player))
+	g.sendResponseAll(NewMessage(player.Id, "empty_stack", []*Card{}, player))
+	g.sendResponseAll(NewMessage(player.Id, "add_to_board", cards, player))
 }
 
 func (g *GameServer) ensureCurrentPlayer(msg *Message) {

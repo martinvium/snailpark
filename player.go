@@ -2,19 +2,19 @@ package main
 
 type Player struct {
 	Id          string
+	CurrentMana int
+	MaxMana     int
 	deck        []*Card
 	hand        []*Card
-	currentMana int
-	maxMana     int
 }
 
 func NewPlayer(id string) *Player {
 	return &Player{
 		id,
+		0,
+		0,
 		NewCollection(),
 		[]*Card{},
-		0,
-		0,
 	}
 }
 
@@ -38,9 +38,9 @@ func (p *Player) AddToBoard(id string) []*Card {
 }
 
 func (p *Player) AddMaxMana(num int) {
-	p.maxMana += num
+	p.MaxMana += num
 }
 
 func (p *Player) ResetCurrentMana() {
-	p.currentMana = p.maxMana
+	p.CurrentMana = p.MaxMana
 }
