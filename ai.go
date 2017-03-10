@@ -18,7 +18,9 @@ func NewAI() *AI {
 
 func (a *AI) Send(msg *Message) {
 	log.Println("AI ack it received: ", msg)
-	a.RespondDelayed(NewSimpleMessage(a.clientId, "end_turn"))
+	if msg.ClientId == a.clientId && msg.Action == "draw_card" {
+		a.RespondDelayed(NewSimpleMessage(a.clientId, "end_turn"))
+	}
 }
 
 func (a *AI) RespondDelayed(msg *Message) {
