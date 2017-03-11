@@ -16,14 +16,39 @@ type Card struct {
 	// Enchantments, effects, combat health state?
 }
 
-func NewCollection() []*Card {
-	return []*Card{
-		{CardProto{"orange", "My first card", 1, "Human", "A powerful creature.", 1, 2}, "1"},
-		{CardProto{"orange", "My second card", 2, "Human", "A powerful creature.", 2, 2}, "2"},
-		{CardProto{"orange", "My third card", 3, "Human", "A powerful creature.", 3, 2}, "3"},
-		{CardProto{"orange", "My fourth card", 4, "Human", "A powerful creature.", 5, 3}, "4"},
-		{CardProto{"orange", "My fifth card", 5, "Human", "A powerful creature.", 5, 5}, "5"},
-		{CardProto{"orange", "My sixth card", 6, "Human", "A powerful creature.", 2, 9}, "6"},
+func NewCard(proto *CardProto) *Card {
+	return &Card{*proto, NewUUID()}
+}
+
+func NewDeck(collection map[string]*Card) []*Card {
+	deck := []*Card{}
+	for _, value := range collection {
+		deck = append(deck, value)
+	}
+
+	return deck
+}
+
+func NewCardCollection() map[string]*Card {
+	collection := make(map[string]*Card)
+	for _, proto := range NewCardRepo() {
+		for i := 0; i < 4; i++ {
+			card := NewCard(proto)
+			collection[card.Id] = card
+		}
+	}
+
+	return collection
+}
+
+func NewCardRepo() []*CardProto {
+	return []*CardProto{
+		{"orange", "Dodgy Fella", 1, "Human", "Something stinks.", 1, 2},
+		{"orange", "Pugnent Cheese", 2, "Ravaging Edible", "Who died in here?!", 2, 2},
+		{"orange", "Hungry Goat Herder", 3, "Wolf", "But what will I do tomorrow?", 3, 2},
+		{"orange", "Empty Flask", 4, "Container", "Fill me up, or i Kill You.", 5, 3},
+		{"orange", "Tower Guard", 5, "Human", "Zzzzz", 5, 5},
+		{"orange", "Lord Zembaio", 6, "Royalty", "Today, I shall get out of bed!", 2, 9},
 	}
 }
 

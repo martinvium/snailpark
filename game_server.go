@@ -72,6 +72,10 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 		return
 	}
 
+	if g.currentPlayer.CanPlayCards(msg.Cards) == false {
+		return
+	}
+
 	g.sendAddToBoard(g.currentPlayer, msg.Cards[0].Id)
 }
 
