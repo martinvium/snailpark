@@ -108,7 +108,7 @@ func (g *GameServer) sendAddToHand(player *Player, num int) {
 }
 
 func (g *GameServer) sendAddToBoard(player *Player, id string) {
-	cards := player.AddToBoard(id)
+	cards := player.PlayCardFromHand(id)
 	g.sendResponseAll(NewMessage(player.Id, "put_on_stack", cards, player))
 	g.sendResponseAll(NewMessage(player.Id, "empty_stack", []*Card{}, player))
 	g.sendResponseAll(NewMessage(player.Id, "add_to_board", cards, player))

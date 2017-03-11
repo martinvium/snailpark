@@ -35,10 +35,12 @@ func (p *Player) AddToHand(num int) []*Card {
 	return cards
 }
 
-func (p *Player) AddToBoard(id string) []*Card {
-	cards := []*Card{p.hand[id]}
+// One card might yield multiple?
+func (p *Player) PlayCardFromHand(id string) []*Card {
 	delete(p.hand, id)
-	return cards
+	card := p.collection[id]
+	p.CurrentMana -= card.Cost
+	return []*Card{card}
 }
 
 func (p *Player) CanPlayCards(cards []*Card) bool {
