@@ -19,8 +19,28 @@ func NewAI() *AI {
 func (a *AI) Send(msg *ResponseMessage) {
 	log.Println("AI ack it received: ", msg)
 	if msg.CurrentPlayerId == a.playerId && msg.State == "main" {
-		a.RespondDelayed(NewSimpleMessage(a.playerId, "end_turn"))
+		card := a.FirstPlayableCard(msg)
+		if card != nil {
+			a.PlayCard(card)
+		} else {
+			a.RespondDelayed(NewSimpleMessage(a.playerId, "end_turn"))
+		}
 	}
+}
+
+func (a *AI) FirstPlayableCard(msg *ResponseMessage) *Card {
+	me := msg.Players[a.playerId]
+	for _, card := range me.Hand {
+		if card.Cost <= me.CurrentMana {
+			return card
+		}
+	}
+
+	return nil
+}
+
+func (a *AI) PlayCard(card *Card) {
+	a.RespondDelayed(NewMessage(a.playerId, "play_card", []*Card{card}))
 }
 
 func (a *AI) RespondDelayed(msg *Message) {
