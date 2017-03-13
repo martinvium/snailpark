@@ -16,9 +16,9 @@ func NewAI() *AI {
 	return &AI{outCh, "ai"}
 }
 
-func (a *AI) Send(msg *Message) {
+func (a *AI) Send(msg *ResponseMessage) {
 	log.Println("AI ack it received: ", msg)
-	if msg.PlayerId == a.playerId && msg.Action == "add_to_hand" {
+	if msg.CurrentPlayerId == a.playerId && msg.State == "main" {
 		a.RespondDelayed(NewSimpleMessage(a.playerId, "end_turn"))
 	}
 }

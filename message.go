@@ -8,6 +8,31 @@ type Message struct {
 	MaxMana     int     `json:"maxMana"`
 }
 
+type ResponseMessage struct {
+	State           string                     `json:"state"`
+	CurrentPlayerId string                     `json:"currentPlayerId"`
+	Players         map[string]*ResponsePlayer `json:"players"`
+	Stack           []*Card                    `json:"stack"`
+}
+
+type ResponsePlayer struct {
+	Id          string           `json:"id"`
+	CurrentMana int              `json:"currentMana"`
+	MaxMana     int              `json:"maxMana"`
+	Deck        []*Card          `json:"deck"`
+	Hand        map[string]*Card `json:"hand"`
+	Board       map[string]*Card `json:"board"`
+}
+
+func NewResponseMessage(state string, playerId string, players map[string]*Player, stack []*Card) *ResponseMessage {
+	responsePlayers := make(map[string]*ResponsePlayer)
+	for key, player := range players {
+		responsePlayers[key] = &ResponsePlayer{player.Id, player.CurrentMana, player.MaxMana, player.Deck, player.Hand, player.Board}
+	}
+
+	return &ResponseMessage{state, playerId, responsePlayers, stack}
+}
+
 func NewSimpleMessage(playerId string, action string) *Message {
 	return &Message{playerId, action, []*Card{}, 0, 0}
 }

@@ -3,44 +3,56 @@ package main
 import "log"
 
 type Player struct {
+	Ready       bool
 	Id          string
 	CurrentMana int
 	MaxMana     int
 	collection  map[string]*Card
-	deck        []*Card
-	hand        map[string]*Card
+	Deck        []*Card
+	Hand        map[string]*Card
+	Board       map[string]*Card
 }
 
 func NewPlayer(id string) *Player {
 	collection := NewCardCollection()
 
 	return &Player{
+		false,
 		id,
 		0,
 		0,
 		collection,
 		NewDeck(collection),
 		make(map[string]*Card),
+		make(map[string]*Card),
 	}
 }
 
+func AllPlayers(vs map[string]*Player, f func(*Player) bool) bool {
+	for _, v := range vs {
+		if !f(v) {
+			return false
+		}
+	}
+	return true
+}
+
 func (p *Player) AddToHand(num int) []*Card {
-	cards := p.deck[len(p.deck)-num:] // Pick num cards from deck
-	p.deck = p.deck[:len(p.deck)-num] // Remove them
+	cards := p.Deck[len(p.Deck)-num:] // Pick num cards from deck
+	p.Deck = p.Deck[:len(p.Deck)-num] // Remove them
 
 	for _, card := range cards {
-		p.hand[card.Id] = card
+		p.Hand[card.Id] = card
 	}
 
 	return cards
 }
 
-// One card might yield multiple?
-func (p *Player) PlayCardFromHand(id string) []*Card {
-	delete(p.hand, id)
+func (p *Player) PlayCardFromHand(id string) {
+	delete(p.Hand, id)
 	card := p.collection[id]
 	p.CurrentMana -= card.Cost
-	return []*Card{card}
+	p.Board[card.Id] = card
 }
 
 func (p *Player) CanPlayCards(cards []*Card) bool {

@@ -8,7 +8,7 @@ import (
 
 type Client interface {
 	Listen(g *GameServer)
-	SendResponse(msg *Message)
+	SendResponse(msg *ResponseMessage)
 	PlayerId() string
 }
 
@@ -16,11 +16,11 @@ type Client interface {
 
 type BaseClient struct {
 	playerId string
-	msgCh    chan *Message
+	msgCh    chan *ResponseMessage
 	doneCh   chan bool
 }
 
-func (c *BaseClient) SendResponse(msg *Message) {
+func (c *BaseClient) SendResponse(msg *ResponseMessage) {
 	c.msgCh <- msg
 }
 

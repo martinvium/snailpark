@@ -1,0 +1,24 @@
+{
+  "rev": 1,
+  "currentPlayer": "me",
+  "state": "main",
+  "priority": "you",
+  "stack": [],
+  "players": {
+    "player": {
+      "board": [
+        "card-id"
+      ],
+      "hand": [
+        "card-id",
+        "card-id"
+      ],
+      "mana": [
+        "mana-id": "tapped",
+        "mana-id": "untapped"
+      ]
+    },
+    "ai": {}
+  }
+}
+

@@ -12,6 +12,7 @@ type GameServer struct {
 	doneCh        chan bool
 	players       map[string]*Player
 	currentPlayer *Player
+	state         *StateMachine
 }
 
 func NewGameServer(ws *websocket.Conn) *GameServer {
@@ -24,8 +25,8 @@ func NewGameServer(ws *websocket.Conn) *GameServer {
 	// NOTE: order is important here, because SocketClient is blocking
 	// when it returns in Listen, the connection is closed.
 	clients := []Client{
-		&AIClient{BaseClient{"ai", make(chan *Message, channelBufSize), doneCh}, NewAI()},
-		&SocketClient{BaseClient{"player", make(chan *Message, channelBufSize), doneCh}, ws},
+		&AIClient{BaseClient{"ai", make(chan *ResponseMessage, channelBufSize), doneCh}, NewAI()},
+		&SocketClient{BaseClient{"player", make(chan *ResponseMessage, channelBufSize), doneCh}, ws},
 	}
 
 	players := make(map[string]*Player)
@@ -37,6 +38,7 @@ func NewGameServer(ws *websocket.Conn) *GameServer {
 		doneCh,
 		players,
 		players["player"], // currently always the player that starts
+		nil,
 	}
 }
 
@@ -45,6 +47,22 @@ func (g *GameServer) Listen() {
 	for _, client := range g.clients {
 		log.Println("Listening to client: ", client)
 		client.Listen(g)
+	}
+}
+
+func (g *GameServer) CurrentState() *StateMachine {
+	if g.state == nil {
+		g.state = NewStateMachine(g)
+	}
+
+	return g.state
+}
+
+func (g *GameServer) NextPlayer() {
+	if g.currentPlayer.Id == "player" {
+		g.currentPlayer = g.players["ai"]
+	} else {
+		g.currentPlayer = g.players["player"]
 	}
 }
 
@@ -61,8 +79,28 @@ func (g *GameServer) SendRequest(msg *Message) {
 	}
 }
 
+func (g *GameServer) AddCardsToAllPlayerHands(num int) {
+	for _, player := range g.players {
+		player.AddToHand(num)
+	}
+}
+
+func (g *GameServer) SendStateResponseAll() {
+	g.sendResponseAll(NewResponseMessage(g.CurrentState().String(), g.currentPlayer.Id, g.players, []*Card{}))
+}
+
+// private
+
 func (g *GameServer) handleStartAction(msg *Message) {
-	g.sendAddToHand(g.players[msg.PlayerId], 3)
+	g.players[msg.PlayerId].Ready = true
+
+	allReady := AllPlayers(g.players, func(player *Player) bool {
+		return player.Ready == true
+	})
+
+	if allReady {
+		g.CurrentState().ToMulligan()
+	}
 }
 
 func (g *GameServer) handlePlayCardAction(msg *Message) {
@@ -75,7 +113,8 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 		return
 	}
 
-	g.sendAddToBoard(g.currentPlayer, msg.Cards[0].Id)
+	g.currentPlayer.PlayCardFromHand(msg.Cards[0].Id)
+	g.SendStateResponseAll()
 }
 
 func (g *GameServer) handleEndTurn(msg *Message) {
@@ -84,32 +123,11 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 		return
 	}
 
-	if g.currentPlayer.Id == "player" {
-		g.currentPlayer = g.players["ai"]
-	} else {
-		g.currentPlayer = g.players["player"]
-	}
-
-	g.currentPlayer.AddMaxMana(1)
-	g.currentPlayer.ResetCurrentMana()
-
-	g.sendAddToHand(g.currentPlayer, 1)
+	g.CurrentState().ToEnd()
 }
 
-func (g *GameServer) sendResponseAll(msg *Message) {
+func (g *GameServer) sendResponseAll(msg *ResponseMessage) {
 	for _, client := range g.clients {
 		client.SendResponse(msg)
 	}
-}
-
-func (g *GameServer) sendAddToHand(player *Player, num int) {
-	cards := player.AddToHand(num)
-	g.sendResponseAll(NewMessage(player.Id, "add_to_hand", cards, player))
-}
-
-func (g *GameServer) sendAddToBoard(player *Player, id string) {
-	cards := player.PlayCardFromHand(id)
-	g.sendResponseAll(NewMessage(player.Id, "put_on_stack", cards, player))
-	g.sendResponseAll(NewMessage(player.Id, "empty_stack", []*Card{}, player))
-	g.sendResponseAll(NewMessage(player.Id, "add_to_board", cards, player))
 }

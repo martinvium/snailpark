@@ -22,43 +22,7 @@ $(document).ready(function() {
   ws.onmessage = function(event) {
     var msg = JSON.parse(event.data);
 
-    players[msg.playerId]["currentMana"] = msg["currentMana"];
-    players[msg.playerId]["maxMana"] = msg["maxMana"];
-    console.log(players[msg.playerId]);
-
-    // msg also has state of the FSM and possibly priority e.g. you or me
-    // msg also has a stack_resolved: true param, which means the user action
-    // resolves and the ui can empty the stack?
-    switch(msg.action) {
-      case "add_to_hand": // draw
-        players[msg.playerId]["hand"] = $.merge(
-          players[msg.playerId]["hand"],
-          msg.cards
-        );
-        break;
-      case "put_on_stack":
-        // Remove cards from hand (really this verbose?)
-        $.each(msg.cards, function(_, card) {
-          $.each(players[msg.playerId]["hand"], function(index, cardInHand) {
-            if(cardInHand.id == card.id) {
-              players[msg.playerId]["hand"].splice(index, 1);
-              return false;
-            }
-          });
-        });
-
-        stack = $.merge(stack, msg.cards);
-        break;
-      case "empty_stack":
-        stack = [];
-        break;
-      case "add_to_board":
-        players[msg.playerId].board = $.merge(
-          players[msg.playerId].board,
-          msg.cards
-        );
-        break;
-    }
+    players = msg.players;
 
     clearBoard();
     renderBoard();
@@ -103,9 +67,9 @@ $(document).ready(function() {
   }
 
   function renderBoard() {
-    $.each(players, function(_, client) {
-      $.each(client["board"], function(index, card) {
-        boardEl(client["id"]).append(
+    $.each(players, function(_, player) {
+      $.each(player["board"], function(index, card) {
+        boardEl(player["id"]).append(
           renderCard(card)
         );
       });
@@ -113,9 +77,9 @@ $(document).ready(function() {
   }
 
   function renderHand() {
-    $.each(players, function(_, client) {
-      $.each(client["hand"], function(index, card) {
-        handEl(client["id"]).append(
+    $.each(players, function(_, player) {
+      $.each(player["hand"], function(index, card) {
+        handEl(player["id"]).append(
           renderCard(card, function() {
             playCard($(this).attr('data-id'));
           })
@@ -137,9 +101,9 @@ $(document).ready(function() {
   }
 
   function renderMana() {
-    $.each(players, function(_, client) {
-      $('.current', manaEl(client["id"])).text(client["currentMana"]);
-      $('.max', manaEl(client["id"])).text(client["maxMana"]);
+    $.each(players, function(_, player) {
+      $('.current', manaEl(player["id"])).text(player["currentMana"]);
+      $('.max', manaEl(player["id"])).text(player["maxMana"]);
     });
   }
 
