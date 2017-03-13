@@ -95,6 +95,7 @@ $(document).ready(function() {
     card.addClass('orange').show();
     card.click(callback);
     $('.title', card).text(value['title']);
+    $('.cost', card).text(value['cost']);
     $('.type', card).text(value['type']);
     $('.description', card).text(value['description']);
     return card;
