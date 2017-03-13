@@ -75,3 +75,20 @@ h2 {
 .pull-right {
   float: right;
 }
+
+.modal {
+  width: 50%;
+  margin: 100px auto 0px auto;
+  color: white;
+  font-size: 1.4em;
+  padding: 50px;
+  text-align: center;
+}
+
+.green {
+  background-color: green;
+}
+
+.red {
+  background-color: red;
+}

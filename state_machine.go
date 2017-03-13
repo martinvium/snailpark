@@ -31,6 +31,13 @@ func (s *StateMachine) ToMain() {
 	s.gameServer.SendStateResponseAll()
 }
 
+func (s *StateMachine) ToCombat() {
+	s.state = "combat"
+	s.gameServer.AllCreaturesAttackFace()
+	s.gameServer.SendStateResponseAll()
+	s.ToEnd()
+}
+
 func (s *StateMachine) ToEnd() {
 	s.state = "end"
 	s.gameServer.NextPlayer()

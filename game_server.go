@@ -66,6 +66,14 @@ func (g *GameServer) NextPlayer() {
 	}
 }
 
+func (g *GameServer) DefendingPlayer() *Player {
+	if g.currentPlayer.Id == "player" {
+		return g.players["ai"]
+	} else {
+		return g.players["player"]
+	}
+}
+
 func (g *GameServer) SendRequest(msg *Message) {
 	log.Println("Receive:", msg)
 	if msg.Action == "start" {
@@ -87,6 +95,12 @@ func (g *GameServer) AddCardsToAllPlayerHands(num int) {
 
 func (g *GameServer) SendStateResponseAll() {
 	g.sendResponseAll(NewResponseMessage(g.CurrentState().String(), g.currentPlayer.Id, g.players, []*Card{}))
+}
+
+func (g *GameServer) AllCreaturesAttackFace() {
+	for _, card := range g.currentPlayer.Board {
+		g.DefendingPlayer().ReceiveDamage(card.Power)
+	}
 }
 
 // private
@@ -123,7 +137,7 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 		return
 	}
 
-	g.CurrentState().ToEnd()
+	g.CurrentState().ToCombat()
 }
 
 func (g *GameServer) sendResponseAll(msg *ResponseMessage) {

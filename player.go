@@ -5,6 +5,7 @@ import "log"
 type Player struct {
 	Ready       bool
 	Id          string
+	Health      int
 	CurrentMana int
 	MaxMana     int
 	collection  map[string]*Card
@@ -19,6 +20,7 @@ func NewPlayer(id string) *Player {
 	return &Player{
 		false,
 		id,
+		30,
 		0,
 		0,
 		collection,
@@ -35,6 +37,10 @@ func AllPlayers(vs map[string]*Player, f func(*Player) bool) bool {
 		}
 	}
 	return true
+}
+
+func (p *Player) ReceiveDamage(power int) {
+	p.Health -= power
 }
 
 func (p *Player) AddToHand(num int) []*Card {

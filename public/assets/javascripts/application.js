@@ -28,6 +28,13 @@ $(document).ready(function() {
     renderBoard();
     renderHand();
     renderMana();
+    renderHealth();
+
+    if(players["player"]["health"] <= 0) {
+      $('#board').html('<div class="modal red">You lost! :(</div>');
+    } else if(players["ai"]["health"] <= 0) {
+      $('#board').html('<div class="modal green">You won! :)</div>');
+    }
   }
 
   $('#end-turn').click(function() {
@@ -45,6 +52,10 @@ $(document).ready(function() {
 
   function manaEl(playerId) {
     return $('#' + playerId + ' .mana');
+  }
+
+  function healthEl(playerId) {
+    return $('#' + playerId + ' .health');
   }
 
   function playCard(id) {
@@ -105,6 +116,12 @@ $(document).ready(function() {
     $.each(players, function(_, player) {
       $('.current', manaEl(player["id"])).text(player["currentMana"]);
       $('.max', manaEl(player["id"])).text(player["maxMana"]);
+    });
+  }
+
+  function renderHealth() {
+    $.each(players, function(_, player) {
+      $('.current', healthEl(player["id"])).text(player["health"]);
     });
   }
 
