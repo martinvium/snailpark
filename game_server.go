@@ -13,6 +13,7 @@ type GameServer struct {
 	players       map[string]*Player
 	currentPlayer *Player
 	state         *StateMachine
+	requestCh     chan *Message
 }
 
 func NewGameServer(ws *websocket.Conn) *GameServer {
@@ -21,12 +22,13 @@ func NewGameServer(ws *websocket.Conn) *GameServer {
 	}
 
 	doneCh := make(chan bool)
+	requestCh := make(chan *Message)
 
 	// NOTE: order is important here, because SocketClient is blocking
 	// when it returns in Listen, the connection is closed.
 	clients := []Client{
-		&AIClient{BaseClient{"ai", make(chan *ResponseMessage, channelBufSize), doneCh}, NewAI()},
-		&SocketClient{BaseClient{"player", make(chan *ResponseMessage, channelBufSize), doneCh}, ws},
+		&AIClient{BaseClient{"ai", make(chan *ResponseMessage, channelBufSize), doneCh, requestCh}, NewAI()},
+		&SocketClient{BaseClient{"player", make(chan *ResponseMessage, channelBufSize), doneCh, requestCh}, ws},
 	}
 
 	players := make(map[string]*Player)
@@ -39,14 +41,34 @@ func NewGameServer(ws *websocket.Conn) *GameServer {
 		players,
 		players["player"], // currently always the player that starts
 		nil,
+		requestCh,
 	}
 }
 
 func (g *GameServer) Listen() {
+	go g.ListenAndConsumeClientRequests()
+
 	log.Println(g.clients)
 	for _, client := range g.clients {
 		log.Println("Listening to client: ", client)
-		client.Listen(g)
+		client.Listen()
+	}
+}
+
+func (g *GameServer) ListenAndConsumeClientRequests() {
+	for {
+		select {
+
+		// process requests from client
+		case msg := <-g.requestCh:
+			log.Println("Receive:", msg)
+			g.processClientRequest(msg)
+
+		// receive done request
+		case <-g.doneCh:
+			g.doneCh <- true // for listenRead method
+			return
+		}
 	}
 }
 
@@ -74,8 +96,7 @@ func (g *GameServer) DefendingPlayer() *Player {
 	}
 }
 
-func (g *GameServer) SendRequest(msg *Message) {
-	log.Println("Receive:", msg)
+func (g *GameServer) processClientRequest(msg *Message) {
 	if msg.Action == "start" {
 		g.handleStartAction(msg)
 	} else if msg.Action == "play_card" {
@@ -112,6 +133,11 @@ func (g *GameServer) AnyPlayerDead() bool {
 // private
 
 func (g *GameServer) handleStartAction(msg *Message) {
+	if g.CurrentState().String() != "unstarted" {
+		g.SendStateResponseAll()
+		return
+	}
+
 	g.players[msg.PlayerId].Ready = true
 
 	allReady := AllPlayers(g.players, func(player *Player) bool {

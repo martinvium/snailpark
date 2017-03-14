@@ -7,7 +7,7 @@ import (
 )
 
 type Client interface {
-	Listen(g *GameServer)
+	Listen()
 	SendResponse(msg *ResponseMessage)
 	PlayerId() string
 }
@@ -15,9 +15,10 @@ type Client interface {
 // # BaseClient definition
 
 type BaseClient struct {
-	playerId string
-	msgCh    chan *ResponseMessage
-	doneCh   chan bool
+	playerId  string
+	msgCh     chan *ResponseMessage
+	doneCh    chan bool
+	requestCh chan *Message
 }
 
 func (c *BaseClient) SendResponse(msg *ResponseMessage) {
@@ -39,9 +40,9 @@ type AIClient struct {
 	ai *AI
 }
 
-func (c *AIClient) Listen(g *GameServer) {
+func (c *AIClient) Listen() {
 	go c.listenWrite()
-	go c.listenRead(g)
+	go c.listenRead()
 }
 
 // Send stuff to the AI over channel
@@ -65,7 +66,7 @@ func (c *AIClient) listenWrite() {
 }
 
 // Receive stuff from the AI over channel
-func (c *AIClient) listenRead(g *GameServer) {
+func (c *AIClient) listenRead() {
 	log.Println("Listening read from AI")
 
 	for {
@@ -74,7 +75,7 @@ func (c *AIClient) listenRead(g *GameServer) {
 		// read data from websocket connection
 		case msg := <-c.ai.outCh:
 			if c.PlayerId() == msg.PlayerId {
-				g.SendRequest(msg)
+				c.requestCh <- msg
 			} else {
 				log.Println("Error: Wrong client id: " + c.PlayerId() + " != " + msg.PlayerId)
 			}
@@ -96,9 +97,9 @@ type SocketClient struct {
 }
 
 // Listen Write and Read request via chanel
-func (c *SocketClient) Listen(g *GameServer) {
+func (c *SocketClient) Listen() {
 	go c.listenWrite()
-	c.listenRead(g)
+	c.listenRead()
 }
 
 // Send stuff to the client over socket
@@ -122,7 +123,7 @@ func (c *SocketClient) listenWrite() {
 }
 
 // Receive stuff from the client over socket
-func (c *SocketClient) listenRead(g *GameServer) {
+func (c *SocketClient) listenRead() {
 	log.Println("Listening read from client")
 
 	for {
@@ -141,9 +142,11 @@ func (c *SocketClient) listenRead(g *GameServer) {
 				c.doneCh <- true
 			} else if err != nil {
 				log.Println("Error:", err.Error())
+				c.doneCh <- true
 			} else {
 				if c.PlayerId() == msg.PlayerId {
-					g.SendRequest(&msg)
+					log.Println("Added message to request queue")
+					c.requestCh <- &msg
 				} else {
 					log.Println("Error: Wrong client id: " + c.PlayerId() + " != " + msg.PlayerId)
 				}
