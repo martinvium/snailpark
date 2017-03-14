@@ -35,7 +35,12 @@ func (s *StateMachine) ToCombat() {
 	s.state = "combat"
 	s.gameServer.AllCreaturesAttackFace()
 	s.gameServer.SendStateResponseAll()
-	s.ToEnd()
+
+	if s.gameServer.AnyPlayerDead() {
+		s.ToFinished()
+	} else {
+		s.ToEnd()
+	}
 }
 
 func (s *StateMachine) ToEnd() {
@@ -43,6 +48,11 @@ func (s *StateMachine) ToEnd() {
 	s.gameServer.NextPlayer()
 	s.gameServer.SendStateResponseAll()
 	s.ToUpkeep()
+}
+
+func (s *StateMachine) ToFinished() {
+	s.state = "finished"
+	s.gameServer.SendStateResponseAll()
 }
 
 func (s *StateMachine) String() string {

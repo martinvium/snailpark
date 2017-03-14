@@ -39,6 +39,15 @@ func AllPlayers(vs map[string]*Player, f func(*Player) bool) bool {
 	return true
 }
 
+func AnyPlayer(vs map[string]*Player, f func(*Player) bool) bool {
+	for _, v := range vs {
+		if f(v) {
+			return true
+		}
+	}
+	return false
+}
+
 func (p *Player) ReceiveDamage(power int) {
 	p.Health -= power
 }

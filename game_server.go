@@ -103,6 +103,12 @@ func (g *GameServer) AllCreaturesAttackFace() {
 	}
 }
 
+func (g *GameServer) AnyPlayerDead() bool {
+	return AnyPlayer(g.players, func(p *Player) bool {
+		return p.Health <= 0
+	})
+}
+
 // private
 
 func (g *GameServer) handleStartAction(msg *Message) {

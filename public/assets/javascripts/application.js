@@ -30,10 +30,12 @@ $(document).ready(function() {
     renderMana();
     renderHealth();
 
-    if(players["player"]["health"] <= 0) {
-      $('#board').html('<div class="modal red">You lost! :(</div>');
-    } else if(players["ai"]["health"] <= 0) {
-      $('#board').html('<div class="modal green">You won! :)</div>');
+    if(msg.state == "finished") {
+      if(players["player"]["health"] <= 0) {
+        $('#board').html('<div class="modal red">You lost! :(</div>');
+      } else {
+        $('#board').html('<div class="modal green">You won! :)</div>');
+      }
     }
   }
 
