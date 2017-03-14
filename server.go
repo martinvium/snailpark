@@ -1,10 +1,15 @@
 package main
 
 import (
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 )
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
 
 // Chat server.
 type Server struct {
@@ -32,20 +37,18 @@ func (s *Server) Listen() {
 	log.Println("Listening server...")
 
 	// websocket handler
-	onConnected := func(ws *websocket.Conn) {
-		defer func() {
-			err := ws.Close()
-			if err != nil {
-				log.Println("Error:", err.Error())
-			}
-		}()
+	onConnected := func(w http.ResponseWriter, r *http.Request) {
+		ws, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
 		game := NewGameServer(ws)
 		game.Listen()
 	}
 
-	http.Handle(s.path, websocket.Handler(onConnected))
-	log.Println("Created handler")
+	http.HandleFunc(s.path, onConnected)
 
 	for {
 		select {

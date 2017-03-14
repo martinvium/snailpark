@@ -10,7 +10,7 @@ func main() {
 	log.SetFlags(log.Lshortfile)
 
 	// websocket server
-	server := NewServer("/entry")
+	server := NewServer("/game/connect")
 	go server.Listen()
 
 	// static files

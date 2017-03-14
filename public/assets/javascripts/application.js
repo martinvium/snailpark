@@ -8,41 +8,53 @@ $(document).ready(function() {
     "ai": { "id": "ai", "hand": [], "board": [], "currentMana": 0, "maxMana": 0 },
   };
 
-  var ws = new WebSocket(getWebSocketUrl('entry'));
+  var gameId = guid();
 
-  ws.onopen = function(event) {
-    ws.send(
-      JSON.stringify({
-        "playerId": playerId,
-        "action": "start"
-      })
-    );
-  }
+  var ws;
 
-  ws.onmessage = function(event) {
-    var msg = JSON.parse(event.data);
-
-    players = msg.players;
-
-    clearBoard();
-    renderBoard();
-    renderHand();
-    renderMana();
-    renderHealth();
-
-    if(msg.state == "finished") {
-      if(players["player"]["health"] <= 0) {
-        $('#board').html('<div class="modal red">You lost! :(</div>');
-      } else {
-        $('#board').html('<div class="modal green">You won! :)</div>');
-      }
-    }
-  }
+  openWebsocket();
 
   $('#end-turn').click(function() {
     console.log('End turn');
     ws.send(JSON.stringify({ "playerId": playerId, "action": "end_turn" }));
   });
+
+  function openWebsocket() {
+    ws = new WebSocket(getWebSocketUrl('game/connect?game_id=' + gameId));
+
+    ws.onopen = function(event) {
+      ws.send(
+        JSON.stringify({
+          "playerId": playerId,
+          "action": "start"
+        })
+      );
+    }
+
+    ws.onmessage = function(event) {
+      var msg = JSON.parse(event.data);
+
+      players = msg.players;
+
+      clearBoard();
+      renderBoard();
+      renderHand();
+      renderMana();
+      renderHealth();
+
+      if(msg.state == "finished") {
+        if(players["player"]["health"] <= 0) {
+          $('#board').html('<div class="modal red">You lost! :(</div>');
+        } else {
+          $('#board').html('<div class="modal green">You won! :)</div>');
+        }
+      }
+    }
+
+    ws.onclose = function(event) {
+      setTimeout(openWebsocket, 1000);
+    }
+  }
 
   function boardEl(playerId) {
     return $('#' + playerId + ' .board');
@@ -130,6 +142,16 @@ $(document).ready(function() {
   function getWebSocketUrl(s) {
     var l = window.location;
     return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname + s;
+  }
+
+  function guid() {
+    function s4() {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+      s4() + '-' + s4() + s4() + s4();
   }
 });
 

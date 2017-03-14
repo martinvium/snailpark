@@ -1,7 +1,7 @@
 package main
 
 import (
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 	"io"
 	"log"
 )
@@ -111,7 +111,7 @@ func (c *SocketClient) listenWrite() {
 		// send message to the client
 		case msg := <-c.msgCh:
 			log.Println("Send:", msg)
-			websocket.JSON.Send(c.ws, msg)
+			c.ws.WriteJSON(msg)
 
 		// receive done request
 		case <-c.doneCh:
@@ -136,7 +136,7 @@ func (c *SocketClient) listenRead(g *GameServer) {
 		// read data from websocket connection
 		default:
 			var msg Message
-			err := websocket.JSON.Receive(c.ws, &msg)
+			err := c.ws.ReadJSON(&msg)
 			if err == io.EOF {
 				c.doneCh <- true
 			} else if err != nil {
