@@ -1,14 +1,13 @@
 package main
 
 import (
-	"github.com/gorilla/websocket"
 	"log"
 )
 
 const channelBufSize = 100
 
 type GameServer struct {
-	clients       []Client
+	clients       map[string]Client
 	doneCh        chan bool
 	players       map[string]*Player
 	currentPlayer *Player
@@ -16,20 +15,10 @@ type GameServer struct {
 	requestCh     chan *Message
 }
 
-func NewGameServer(ws *websocket.Conn) *GameServer {
-	if ws == nil {
-		panic("ws cannot be nil")
-	}
-
-	doneCh := make(chan bool)
-	requestCh := make(chan *Message)
-
-	// NOTE: order is important here, because SocketClient is blocking
-	// when it returns in Listen, the connection is closed.
-	clients := []Client{
-		&AIClient{BaseClient{"ai", make(chan *ResponseMessage, channelBufSize), doneCh, requestCh}, NewAI()},
-		&SocketClient{BaseClient{"player", make(chan *ResponseMessage, channelBufSize), doneCh, requestCh}, ws},
-	}
+func NewGameServer() *GameServer {
+	aiClient := NewAIClient(NewAI())
+	clients := make(map[string]Client)
+	clients[aiClient.PlayerId()] = aiClient
 
 	players := make(map[string]*Player)
 	players["ai"] = NewPlayer("ai")
@@ -37,22 +26,27 @@ func NewGameServer(ws *websocket.Conn) *GameServer {
 
 	return &GameServer{
 		clients,
-		doneCh,
+		make(chan bool),
 		players,
 		players["player"], // currently always the player that starts
 		nil,
-		requestCh,
+		make(chan *Message, channelBufSize),
 	}
 }
 
+func (g *GameServer) SetClient(c *SocketClient) {
+	g.clients[c.PlayerId()] = c
+}
+
 func (g *GameServer) Listen() {
+	log.Println("Listen")
 	go g.ListenAndConsumeClientRequests()
 
 	log.Println(g.clients)
-	for _, client := range g.clients {
-		log.Println("Listening to client: ", client)
-		client.Listen()
-	}
+
+	// Order matters here, because SocketClient is blocking
+	g.clients["ai"].Listen(g.requestCh)
+	g.clients["player"].Listen(g.requestCh)
 }
 
 func (g *GameServer) ListenAndConsumeClientRequests() {

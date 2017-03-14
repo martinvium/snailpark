@@ -7,7 +7,7 @@ import (
 )
 
 type Client interface {
-	Listen()
+	Listen(chan *Message)
 	SendResponse(msg *ResponseMessage)
 	PlayerId() string
 }
@@ -15,10 +15,9 @@ type Client interface {
 // # BaseClient definition
 
 type BaseClient struct {
-	playerId  string
-	msgCh     chan *ResponseMessage
-	doneCh    chan bool
-	requestCh chan *Message
+	playerId string
+	msgCh    chan *ResponseMessage
+	doneCh   chan bool
 }
 
 func (c *BaseClient) SendResponse(msg *ResponseMessage) {
@@ -40,9 +39,20 @@ type AIClient struct {
 	ai *AI
 }
 
-func (c *AIClient) Listen() {
+func NewAIClient(ai *AI) *AIClient {
+	return &AIClient{
+		BaseClient{
+			"ai",
+			make(chan *ResponseMessage, channelBufSize),
+			make(chan bool),
+		},
+		NewAI(),
+	}
+}
+
+func (c *AIClient) Listen(requestCh chan *Message) {
 	go c.listenWrite()
-	go c.listenRead()
+	go c.listenRead(requestCh)
 }
 
 // Send stuff to the AI over channel
@@ -59,6 +69,7 @@ func (c *AIClient) listenWrite() {
 
 		// receive done request
 		case <-c.doneCh:
+			log.Println("Done received")
 			c.doneCh <- true // for listenRead method
 			return
 		}
@@ -66,7 +77,7 @@ func (c *AIClient) listenWrite() {
 }
 
 // Receive stuff from the AI over channel
-func (c *AIClient) listenRead() {
+func (c *AIClient) listenRead(requestCh chan *Message) {
 	log.Println("Listening read from AI")
 
 	for {
@@ -75,13 +86,14 @@ func (c *AIClient) listenRead() {
 		// read data from websocket connection
 		case msg := <-c.ai.outCh:
 			if c.PlayerId() == msg.PlayerId {
-				c.requestCh <- msg
+				requestCh <- msg
 			} else {
 				log.Println("Error: Wrong client id: " + c.PlayerId() + " != " + msg.PlayerId)
 			}
 
 		// receive done request
 		case <-c.doneCh:
+			log.Println("Done received")
 			c.doneCh <- true // for listenWrite method
 			return
 
@@ -96,10 +108,21 @@ type SocketClient struct {
 	ws *websocket.Conn
 }
 
+func NewSocketClient(ws *websocket.Conn) *SocketClient {
+	return &SocketClient{
+		BaseClient{
+			"player",
+			make(chan *ResponseMessage, channelBufSize),
+			make(chan bool),
+		},
+		ws,
+	}
+}
+
 // Listen Write and Read request via chanel
-func (c *SocketClient) Listen() {
+func (c *SocketClient) Listen(requestCh chan *Message) {
 	go c.listenWrite()
-	c.listenRead()
+	c.listenRead(requestCh)
 }
 
 // Send stuff to the client over socket
@@ -123,7 +146,7 @@ func (c *SocketClient) listenWrite() {
 }
 
 // Receive stuff from the client over socket
-func (c *SocketClient) listenRead() {
+func (c *SocketClient) listenRead(requestCh chan *Message) {
 	log.Println("Listening read from client")
 
 	for {
@@ -146,7 +169,7 @@ func (c *SocketClient) listenRead() {
 			} else {
 				if c.PlayerId() == msg.PlayerId {
 					log.Println("Added message to request queue")
-					c.requestCh <- &msg
+					requestCh <- &msg
 				} else {
 					log.Println("Error: Wrong client id: " + c.PlayerId() + " != " + msg.PlayerId)
 				}

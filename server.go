@@ -13,22 +13,18 @@ var upgrader = websocket.Upgrader{
 
 // Chat server.
 type Server struct {
-	path   string
-	doneCh chan bool
+	path    string
+	gamesCh chan *GameServer
+	games   map[string]*GameServer
 }
 
 // Create new chat server.
 func NewServer(path string) *Server {
-	doneCh := make(chan bool)
-
 	return &Server{
 		path,
-		doneCh,
+		make(chan *GameServer),
+		make(map[string]*GameServer),
 	}
-}
-
-func (s *Server) Done() {
-	s.doneCh <- true
 }
 
 // Listen and serve.
@@ -44,17 +40,28 @@ func (s *Server) Listen() {
 			return
 		}
 
-		game := NewGameServer(ws)
+		defer ws.Close()
+
+		id := r.URL.Query().Get("gameId")
+		game := s.FindOrCreateGameServer(id, ws)
 		game.Listen()
+		log.Println("Websocket exit")
 	}
 
 	http.HandleFunc(s.path, onConnected)
+}
 
-	for {
-		select {
+func (s *Server) FindOrCreateGameServer(id string, ws *websocket.Conn) *GameServer {
+	client := NewSocketClient(ws)
 
-		case <-s.doneCh:
-			return
-		}
+	if _, ok := s.games[id]; ok {
+		log.Println("Reconnecting to game:", id)
+	} else {
+		log.Println("Creating game:", id)
+		s.games[id] = NewGameServer()
 	}
+
+	s.games[id].SetClient(client)
+
+	return s.games[id]
 }

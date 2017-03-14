@@ -10,7 +10,7 @@ h2 {
   margin-bottom: 20px;
 }
 
-#end-turn {
+.btn {
   background-color: #4CAF50; /* Green */
   border: none;
   color: white;
@@ -76,13 +76,17 @@ h2 {
   float: right;
 }
 
-.modal {
+#messages {
   width: 50%;
-  margin: 100px auto 0px auto;
+  margin: 10px auto;
   color: white;
   font-size: 1.4em;
-  padding: 50px;
+  padding: 25px 50px;
   text-align: center;
+}
+
+.yellow {
+  background-color: orange;
 }
 
 .green {

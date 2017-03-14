@@ -8,7 +8,10 @@ $(document).ready(function() {
     "ai": { "id": "ai", "hand": [], "board": [], "currentMana": 0, "maxMana": 0 },
   };
 
-  var gameId = guid();
+  var gameId = urlParam('guid');
+  if(!gameId) {
+    gameId = guid();
+  }
 
   var ws;
 
@@ -19,10 +22,17 @@ $(document).ready(function() {
     ws.send(JSON.stringify({ "playerId": playerId, "action": "end_turn" }));
   });
 
+  $('#reconnect').click(function() {
+    console.log('Reconnect');
+    ws.close();
+  });
+
   function openWebsocket() {
-    ws = new WebSocket(getWebSocketUrl('game/connect?game_id=' + gameId));
+    ws = new WebSocket(getWebSocketUrl('game/connect?gameId=' + gameId));
 
     ws.onopen = function(event) {
+      $('#messages').text('').removeClass().hide();
+
       ws.send(
         JSON.stringify({
           "playerId": playerId,
@@ -44,15 +54,20 @@ $(document).ready(function() {
 
       if(msg.state == "finished") {
         if(players["player"]["health"] <= 0) {
-          $('#board').html('<div class="modal red">You lost! :(</div>');
+          $('#messages').text('You lost! :(').addClass('red').show();
         } else {
-          $('#board').html('<div class="modal green">You won! :)</div>');
+          $('#messages').text('You won! :)').addClass('green').show();
         }
       }
     }
 
+    ws.onerror = function(event) {
+      console.log("ERROR", event);
+    }
+
     ws.onclose = function(event) {
-      setTimeout(openWebsocket, 1000);
+      $('#messages').text('Disconnected! Reconnecting...').addClass('yellow').show();
+      setTimeout(openWebsocket, 5000);
     }
   }
 
@@ -152,6 +167,17 @@ $(document).ready(function() {
     }
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
       s4() + '-' + s4() + s4() + s4();
+  }
+
+  function urlParam(sParam) {
+    var sPageURL = window.location.search.substring(1);
+    var sURLVariables = sPageURL.split('&');
+    for (var i = 0; i < sURLVariables.length; i++) {
+      var sParameterName = sURLVariables[i].split('=');
+      if (sParameterName[0] == sParam) {
+        return sParameterName[1];
+      }
+    }
   }
 });
 
