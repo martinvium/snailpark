@@ -10,6 +10,7 @@ type Client interface {
 	Listen(chan *Message)
 	SendResponse(msg *ResponseMessage)
 	PlayerId() string
+	Done()
 }
 
 // # BaseClient definition
@@ -30,6 +31,11 @@ func (c *BaseClient) PlayerId() string {
 
 func (c *BaseClient) String() string {
 	return "Client(" + c.PlayerId() + ")"
+}
+
+func (c *BaseClient) Done() {
+	log.Println("Client done")
+	c.doneCh <- true
 }
 
 // # AIClient definition

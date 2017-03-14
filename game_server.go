@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 )
 
 const channelBufSize = 100
@@ -13,6 +14,7 @@ type GameServer struct {
 	currentPlayer *Player
 	state         *StateMachine
 	requestCh     chan *Message
+	StartTime     time.Time
 }
 
 func NewGameServer() *GameServer {
@@ -26,16 +28,26 @@ func NewGameServer() *GameServer {
 
 	return &GameServer{
 		clients,
-		make(chan bool),
+		make(chan bool, channelBufSize),
 		players,
 		players["player"], // currently always the player that starts
 		nil,
 		make(chan *Message, channelBufSize),
+		time.Now(),
 	}
 }
 
 func (g *GameServer) SetClient(c *SocketClient) {
 	g.clients[c.PlayerId()] = c
+}
+
+func (g *GameServer) Done() {
+	log.Println("GameServer done")
+	g.doneCh <- true
+
+	for _, client := range g.clients {
+		go client.Done()
+	}
 }
 
 func (g *GameServer) Listen() {
