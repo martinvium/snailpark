@@ -78,6 +78,11 @@ func (p *Player) CanPlayCards(cards []*Card) bool {
 
 	card := p.collection[cards[0].Id]
 
+	if card == nil {
+		log.Println("ERROR: Client trying to use invalid card:", cards)
+		return false
+	}
+
 	if p.CurrentMana < card.Cost {
 		log.Println("ERROR: Client trying to use card without enough mana", p.CurrentMana, ":", card.Cost)
 		return false
