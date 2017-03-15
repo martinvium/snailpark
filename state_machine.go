@@ -11,7 +11,8 @@ var transitions = map[string][]string{
 	"unstarted": []string{"mulligan"},
 	"mulligan":  []string{"upkeep"},
 	"upkeep":    []string{"main"},
-	"main":      []string{"combat"},
+	"main":      []string{"combat", "stack"},
+	"stack":     []string{"main"},
 	"combat":    []string{"end", "finished"},
 	"end":       []string{"upkeep"},
 	"finished":  []string{},
@@ -60,6 +61,8 @@ func (s *StateMachine) transitionCallback() {
 		s.toEnd()
 	case "finished":
 		s.toFinished()
+	default:
+		s.gameServer.SendStateResponseAll()
 	}
 }
 

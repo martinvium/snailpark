@@ -15,6 +15,7 @@ type GameServer struct {
 	state         *StateMachine
 	requestCh     chan *Message
 	StartTime     time.Time
+	stack         []*Card
 }
 
 func NewGameServer() *GameServer {
@@ -34,6 +35,7 @@ func NewGameServer() *GameServer {
 		nil,
 		make(chan *Message, channelBufSize),
 		time.Now(),
+		[]*Card{},
 	}
 }
 
@@ -123,7 +125,7 @@ func (g *GameServer) AddCardsToAllPlayerHands(num int) {
 }
 
 func (g *GameServer) SendStateResponseAll() {
-	g.sendResponseAll(NewResponseMessage(g.CurrentState().String(), g.currentPlayer.Id, g.players, []*Card{}))
+	g.sendResponseAll(NewResponseMessage(g.CurrentState().String(), g.currentPlayer.Id, g.players, g.stack))
 }
 
 func (g *GameServer) AllCreaturesAttackFace() {
@@ -172,8 +174,19 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 		return
 	}
 
-	g.currentPlayer.PlayCardFromHand(msg.Cards[0].Id)
-	g.SendStateResponseAll()
+	g.stack = append(g.stack, g.currentPlayer.PlayCardFromHand(msg.Cards[0].Id))
+	g.CurrentState().Transition("stack")
+
+	g.ResolveStack()
+	g.CurrentState().Transition("main")
+}
+
+func (g *GameServer) ResolveStack() {
+	for _, card := range g.stack {
+		g.currentPlayer.AddToBoard(card)
+	}
+
+	g.stack = []*Card{}
 }
 
 func (g *GameServer) handleEndTurn(msg *Message) {
