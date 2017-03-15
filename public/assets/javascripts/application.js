@@ -144,7 +144,6 @@ $(document).ready(function() {
   }
 
   function renderCard(value, callback) {
-    console.log('Rendering: ' + value.title);
     var card = card_proto.clone();
     card.attr('data-id', value.id);
     card.addClass('orange').show();
@@ -153,6 +152,12 @@ $(document).ready(function() {
     $('.cost', card).text(value['cost']);
     $('.type', card).text(value['type']);
     $('.description', card).text(value['description']);
+    if(value['type'] == 'creature') {
+      $('.power-toughness .power', card).text(value['power']);
+      $('.power-toughness .toughness', card).text(value['toughness']);
+    } else {
+      $('.power-toughness', card).hide();
+    }
     return card;
   }
 
