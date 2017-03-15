@@ -16,6 +16,10 @@ type Card struct {
 	// Enchantments, effects, combat health state?
 }
 
+func NewCreatureProto(title string, cost int, desc string, power int, toughness int) *CardProto {
+	return &CardProto{"orange", title, cost, "creature", desc, power, toughness}
+}
+
 func NewCard(proto *CardProto) *Card {
 	return &Card{*proto, NewUUID()}
 }
@@ -31,7 +35,7 @@ func NewDeck(collection map[string]*Card) []*Card {
 
 func NewCardCollection() map[string]*Card {
 	collection := make(map[string]*Card)
-	for _, proto := range NewCardRepo() {
+	for _, proto := range CardRepo {
 		for i := 0; i < 4; i++ {
 			card := NewCard(proto)
 			collection[card.Id] = card
@@ -39,17 +43,6 @@ func NewCardCollection() map[string]*Card {
 	}
 
 	return collection
-}
-
-func NewCardRepo() []*CardProto {
-	return []*CardProto{
-		{"orange", "Dodgy Fella", 1, "Human", "Something stinks.", 1, 2},
-		{"orange", "Pugnent Cheese", 2, "Ravaging Edible", "Who died in here?!", 2, 2},
-		{"orange", "Hungry Goat Herder", 3, "Wolf", "But what will I do tomorrow?", 3, 2},
-		{"orange", "Empty Flask", 4, "Container", "Fill me up, or i Kill You.", 5, 3},
-		{"orange", "Tower Guard", 5, "Human", "Zzzzz", 5, 5},
-		{"orange", "Lord Zembaio", 6, "Royalty", "Today, I shall get out of bed!", 2, 9},
-	}
 }
 
 func (c *Card) String() string {
