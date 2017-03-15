@@ -156,6 +156,11 @@ func (g *GameServer) handleStartAction(msg *Message) {
 }
 
 func (g *GameServer) handlePlayCardAction(msg *Message) {
+	if g.CurrentState().String() != "main" {
+		log.Println("ERROR: Playing card out of main phase:", msg.PlayerId)
+		return
+	}
+
 	if g.currentPlayer.Id != msg.PlayerId {
 		log.Println("ERROR: Client calling action", msg.Action, "out of turn:", msg.PlayerId)
 		return
