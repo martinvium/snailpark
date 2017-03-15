@@ -15,6 +15,9 @@ $(document).ready(function() {
 
   var ws;
 
+  var pingTime = 45 * 1000;
+  var ping;
+
   openWebsocket();
 
   $('#end-turn').click(function() {
@@ -59,6 +62,9 @@ $(document).ready(function() {
           $('#messages').text('You won! :)').addClass('green').show();
         }
       }
+
+      clearTimeout(ping);
+      ping = setTimeout(pingSocket, pingTime);
     }
 
     ws.onerror = function(event) {
@@ -85,6 +91,15 @@ $(document).ready(function() {
 
   function healthEl(playerId) {
     return $('#' + playerId + ' .health');
+  }
+
+  function pingSocket(id) {
+    ws.send(JSON.stringify({
+      "playerId": playerId,
+      "action": "ping"
+    }));
+
+    ping = setTimeout(pingSocket, pingTime);
   }
 
   function playCard(id) {

@@ -105,6 +105,8 @@ func (g *GameServer) DefendingPlayer() *Player {
 func (g *GameServer) processClientRequest(msg *Message) {
 	if msg.Action == "start" {
 		g.handleStartAction(msg)
+	} else if msg.Action == "ping" {
+		// do nothing
 	} else if msg.Action == "play_card" {
 		g.handlePlayCardAction(msg)
 	} else if msg.Action == "end_turn" {

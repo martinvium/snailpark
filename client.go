@@ -174,7 +174,6 @@ func (c *SocketClient) listenRead(requestCh chan *Message) {
 				c.doneCh <- true
 			} else {
 				if c.PlayerId() == msg.PlayerId {
-					log.Println("Added message to request queue")
 					requestCh <- &msg
 				} else {
 					log.Println("Error: Wrong client id: " + c.PlayerId() + " != " + msg.PlayerId)
