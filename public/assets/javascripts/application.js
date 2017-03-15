@@ -3,7 +3,8 @@ $(document).ready(function() {
     stack = [],
     playerId = 'player';
 
-  var players = {};
+  var players = {},
+    oldPlayers = null;
 
   var gameId = urlParam('guid');
   if(!gameId) {
@@ -38,6 +39,11 @@ $(document).ready(function() {
     ws.onmessage = function(event) {
       var msg = JSON.parse(event.data);
 
+      if(oldPlayers == null) {
+        oldPlayers = msg.players;
+      } else {
+        oldPlayers = players;
+      }
       players = msg.players;
 
       clearBoard();
@@ -53,6 +59,14 @@ $(document).ready(function() {
           $('#messages').text('You won! :)').addClass('green').show();
         }
       }
+
+      $.each(players, function(key, player) {
+        if(player["health"] < oldPlayers[key]["health"]) {
+          $('.current', healthEl(player["id"])).effect('highlight', { color: 'red' }, 3000);
+        } else if (player['health'] > oldPlayers[key]['health']) {
+          $('.current', healthEl(player["id"])).effect('highlight', { color: 'cyan' }, 3000);
+        }
+      });
 
       if(msg.currentPlayerId == playerId) {
         $('#end-turn').removeClass('btn-disabled');
