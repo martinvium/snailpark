@@ -1,60 +1,103 @@
 package main
 
+import "log"
+
 type StateMachine struct {
 	gameServer *GameServer
 	state      string
+}
+
+var transitions = map[string][]string{
+	"unstarted": []string{"mulligan"},
+	"mulligan":  []string{"upkeep"},
+	"upkeep":    []string{"main"},
+	"main":      []string{"combat"},
+	"combat":    []string{"end", "finished"},
+	"end":       []string{"upkeep"},
+	"finished":  []string{},
 }
 
 func NewStateMachine(gameServer *GameServer) *StateMachine {
 	return &StateMachine{gameServer, "unstarted"}
 }
 
-func (s *StateMachine) ToMulligan() {
-	s.state = "mulligan"
-	// s.gameServer.NextPlayer()
-	s.gameServer.AddCardsToAllPlayerHands(4)
-	s.gameServer.SendStateResponseAll()
-	s.ToUpkeep()
-}
-
-func (s *StateMachine) ToUpkeep() {
-	s.state = "upkeep"
-	s.gameServer.currentPlayer.AddToHand(1)
-	s.gameServer.currentPlayer.AddMaxMana(1)
-	s.gameServer.currentPlayer.ResetCurrentMana()
-	s.gameServer.SendStateResponseAll()
-	s.ToMain()
-}
-
-func (s *StateMachine) ToMain() {
-	s.state = "main"
-	s.gameServer.SendStateResponseAll()
-}
-
-func (s *StateMachine) ToCombat() {
-	s.state = "combat"
-	s.gameServer.AllCreaturesAttackFace()
-	s.gameServer.SendStateResponseAll()
-
-	if s.gameServer.AnyPlayerDead() {
-		s.ToFinished()
+func (s *StateMachine) Transition(newState string) {
+	if s.validTransition(newState) {
+		s.state = newState
+		s.transitionCallback()
 	} else {
-		s.ToEnd()
+		log.Println("Invalid state transision ", s.state, "=>", newState)
 	}
 }
 
-func (s *StateMachine) ToEnd() {
-	s.state = "end"
-	s.gameServer.NextPlayer()
-	s.gameServer.SendStateResponseAll()
-	s.ToUpkeep()
-}
+func (s *StateMachine) validTransition(newState string) bool {
+	for _, state := range transitions[s.state] {
+		if state == newState {
+			return true
+		}
+	}
 
-func (s *StateMachine) ToFinished() {
-	s.state = "finished"
-	s.gameServer.SendStateResponseAll()
+	return false
 }
 
 func (s *StateMachine) String() string {
 	return s.state
+}
+
+// private
+
+func (s *StateMachine) transitionCallback() {
+	switch s.state {
+	case "mulligan":
+		s.toMulligan()
+	case "upkeep":
+		s.toUpkeep()
+	case "main":
+		s.toMain()
+	case "combat":
+		s.toCombat()
+	case "end":
+		s.toEnd()
+	case "finished":
+		s.toFinished()
+	}
+}
+
+func (s *StateMachine) toMulligan() {
+	s.gameServer.AddCardsToAllPlayerHands(4)
+	s.gameServer.SendStateResponseAll()
+	s.Transition("upkeep")
+}
+
+func (s *StateMachine) toUpkeep() {
+	s.gameServer.currentPlayer.AddToHand(1)
+	s.gameServer.currentPlayer.AddMaxMana(1)
+	s.gameServer.currentPlayer.ResetCurrentMana()
+	s.gameServer.SendStateResponseAll()
+	s.Transition("main")
+}
+
+func (s *StateMachine) toMain() {
+	s.gameServer.SendStateResponseAll()
+}
+
+func (s *StateMachine) toCombat() {
+	s.gameServer.AllCreaturesAttackFace()
+	s.gameServer.SendStateResponseAll()
+
+	if s.gameServer.AnyPlayerDead() {
+		s.Transition("finished")
+	} else {
+		s.Transition("end")
+	}
+}
+
+func (s *StateMachine) toEnd() {
+	s.gameServer.NextPlayer()
+	s.gameServer.SendStateResponseAll()
+	s.Transition("upkeep")
+}
+
+func (s *StateMachine) toFinished() {
+	s.gameServer.SendStateResponseAll()
 }

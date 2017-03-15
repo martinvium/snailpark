@@ -151,7 +151,7 @@ func (g *GameServer) handleStartAction(msg *Message) {
 	})
 
 	if allReady {
-		g.CurrentState().ToMulligan()
+		g.CurrentState().Transition("mulligan")
 	}
 }
 
@@ -180,7 +180,7 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 		return
 	}
 
-	g.CurrentState().ToCombat()
+	g.CurrentState().Transition("combat")
 }
 
 func (g *GameServer) sendResponseAll(msg *ResponseMessage) {
