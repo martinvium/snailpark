@@ -177,6 +177,7 @@ $(document).ready(function() {
     $('.cost', card).text(value['cost']);
     $('.type', card).text(value['type']);
     $('.description', card).text(value['description']);
+    $('img', card).attr('src', '/assets/images/' + value['type'] + '.jpg');
     if(value['type'] == 'creature') {
       $('.power-toughness .power', card).text(value['power']);
       $('.power-toughness .toughness', card).text(value['toughness']);
