@@ -12,9 +12,6 @@
     <div id="messages" style="display: none;"></div>
 
     <div id="board">
-      <input type="button" id="end-turn" value="End turn" class="btn"/>
-      <input type="button" id="reconnect" value="Reconnect" class="btn"/>
-
       <div id="ai">
         <div class="mana">
           Mana:
@@ -31,21 +28,23 @@
         <div class="board cf"></div>
       </div>
 
-      <div class="middle"></div>
+      <div class="middle">
+        <input type="button" id="end-turn" value="End turn" class="btn"/>
+      </div>
 
       <div id="player">
         <h2>Your Board</h2>
         <div class="board cf"></div>
         <h2>Your Hand</h2>
         <div class="hand cf"></div>
+        <div class="health">
+          Health:
+          <label class="current"></label>
+        </div>
         <div class="mana">
           Mana:
           <label class="current"></label> of 
           <label class="max"></label>
-        </div>
-        <div class="health">
-          Health:
-          <label class="current"></label>
         </div>
       </div>
     </div>

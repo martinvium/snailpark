@@ -125,7 +125,7 @@ func (g *GameServer) AddCardsToAllPlayerHands(num int) {
 }
 
 func (g *GameServer) SendStateResponseAll() {
-	g.sendResponseAll(NewResponseMessage(g.CurrentState().String(), g.currentPlayer.Id, g.players, g.stack))
+	g.sendResponseAll()
 }
 
 func (g *GameServer) AllCreaturesAttackFace() {
@@ -220,8 +220,18 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 	g.CurrentState().Transition("combat")
 }
 
-func (g *GameServer) sendResponseAll(msg *ResponseMessage) {
+func (g *GameServer) sendResponseAll() {
 	for _, client := range g.clients {
+		msg := NewResponseMessage(g.CurrentState().String(), g.currentPlayer.Id, g.players, g.stack)
+		msg.Players[OtherPlayerId(client.PlayerId())].Hand = make(map[string]*Card)
 		client.SendResponse(msg)
+	}
+}
+
+func OtherPlayerId(playerId string) string {
+	if playerId == "player" {
+		return "ai"
+	} else {
+		return "player"
 	}
 }

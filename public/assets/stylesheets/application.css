@@ -22,6 +22,14 @@ h2 {
   margin-bottom: 20px;
 }
 
+.btn:focus {
+  outline: none;
+}
+
+.btn-disabled {
+  background-color: gray !important;
+}
+
 .card {
   width: 150px;
   height: 200px;
@@ -33,6 +41,11 @@ h2 {
   float: left;
   margin-right: 10px;
 
+}
+
+.card-back {
+  background-color: #e74c3c;
+  border-color: #c0392b;
 }
 
 .card .header {
@@ -95,4 +108,8 @@ h2 {
 
 .red {
   background-color: red;
+}
+
+.health {
+  font-size: 1.4em;
 }

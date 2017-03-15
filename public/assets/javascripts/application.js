@@ -3,10 +3,7 @@ $(document).ready(function() {
     stack = [],
     playerId = 'player';
 
-  var players = {
-    "player": { "id": "player", "hand": [], "board": [], "currentMana": 0, "maxMana": 0 },
-    "ai": { "id": "ai", "hand": [], "board": [], "currentMana": 0, "maxMana": 0 },
-  };
+  var players = {};
 
   var gameId = urlParam('guid');
   if(!gameId) {
@@ -21,13 +18,7 @@ $(document).ready(function() {
   openWebsocket();
 
   $('#end-turn').click(function() {
-    console.log('End turn');
     ws.send(JSON.stringify({ "playerId": playerId, "action": "end_turn" }));
-  });
-
-  $('#reconnect').click(function() {
-    console.log('Reconnect');
-    ws.close();
   });
 
   function openWebsocket() {
@@ -61,6 +52,12 @@ $(document).ready(function() {
         } else {
           $('#messages').text('You won! :)').addClass('green').show();
         }
+      }
+
+      if(msg.currentPlayerId == playerId) {
+        $('#end-turn').removeClass('btn-disabled');
+      } else {
+        $('#end-turn').addClass('btn-disabled');
       }
 
       clearTimeout(ping);
@@ -133,14 +130,28 @@ $(document).ready(function() {
 
   function renderHand() {
     $.each(players, function(_, player) {
-      $.each(player["hand"], function(index, card) {
-        handEl(player["id"]).append(
-          renderCard(card, function() {
-            playCard($(this).attr('data-id'));
-          })
-        );
-      });
+      if(player["id"] == playerId) {
+        $.each(player["hand"], function(index, card) {
+          handEl(player["id"]).append(
+            renderCard(card, function() {
+              playCard($(this).attr('data-id'));
+            })
+          );
+        });
+      } else {
+        for(var i = 0; i < player["handSize"]; i++) {
+          handEl(player["id"]).append(
+            renderCardBack()
+          );
+        }
+      }
     });
+  }
+
+  function renderCardBack(value, callback) {
+    var card = card_proto.clone();
+    card.text('').addClass('card-back').show();
+    return card;
   }
 
   function renderCard(value, callback) {
