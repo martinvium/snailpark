@@ -130,7 +130,7 @@ func (g *GameServer) SendStateResponseAll() {
 
 func (g *GameServer) AllCreaturesAttackFace() {
 	for _, card := range g.currentPlayer.Board {
-		g.DefendingPlayer().ReceiveDamage(card.Power)
+		g.DefendingPlayer().Damage(card.Power)
 	}
 }
 
@@ -177,13 +177,35 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 	g.stack = append(g.stack, g.currentPlayer.PlayCardFromHand(msg.Cards[0].Id))
 	g.CurrentState().Transition("stack")
 
+	if g.stack[0].Ability != nil {
+		g.resolveAbility(g.stack[0].Ability)
+	}
+
 	g.ResolveStack()
 	g.CurrentState().Transition("main")
 }
 
+func (g *GameServer) resolveAbility(ability *Ability) {
+	if ability.Context != "players" {
+		return
+	}
+
+	playerMap := map[string]*Player{"me": g.currentPlayer, "you": g.DefendingPlayer()}
+	player := playerMap[ability.Target]
+
+	switch ability.Effect {
+	case "damage":
+		player.Damage(ability.Modifier)
+	case "heal":
+		player.Heal(ability.Modifier)
+	}
+}
+
 func (g *GameServer) ResolveStack() {
 	for _, card := range g.stack {
-		g.currentPlayer.AddToBoard(card)
+		if card.CardType == "creature" {
+			g.currentPlayer.AddToBoard(card)
+		}
 	}
 
 	g.stack = []*Card{}

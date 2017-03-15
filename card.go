@@ -1,13 +1,14 @@
 package main
 
 type CardProto struct {
-	Color       string `json:"color"`
-	Title       string `json:"title"`
-	Cost        int    `json:"cost"`
-	CardType    string `json:"type"`
-	Description string `json:"description"`
-	Power       int    `json:"power"`
-	Toughness   int    `json:"toughness"`
+	Color       string   `json:"color"`
+	Title       string   `json:"title"`
+	Cost        int      `json:"cost"`
+	CardType    string   `json:"type"`
+	Description string   `json:"description"`
+	Power       int      `json:"power"`
+	Toughness   int      `json:"toughness"`
+	Ability     *Ability `json:"ability"`
 }
 
 type Card struct {
@@ -16,8 +17,12 @@ type Card struct {
 	// Enchantments, effects, combat health state?
 }
 
+func NewSpellProto(title string, cost int, desc string, ability *Ability) *CardProto {
+	return &CardProto{"orange", title, cost, "spell", desc, 0, 0, ability}
+}
+
 func NewCreatureProto(title string, cost int, desc string, power int, toughness int) *CardProto {
-	return &CardProto{"orange", title, cost, "creature", desc, power, toughness}
+	return &CardProto{"orange", title, cost, "creature", desc, power, toughness, nil}
 }
 
 func NewCard(proto *CardProto) *Card {

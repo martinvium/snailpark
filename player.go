@@ -48,8 +48,12 @@ func AnyPlayer(vs map[string]*Player, f func(*Player) bool) bool {
 	return false
 }
 
-func (p *Player) ReceiveDamage(power int) {
+func (p *Player) Damage(power int) {
 	p.Health -= power
+}
+
+func (p *Player) Heal(num int) {
+	p.Health += num
 }
 
 func (p *Player) AddToHand(num int) []*Card {
