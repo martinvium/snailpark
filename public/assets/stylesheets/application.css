@@ -10,6 +10,10 @@ h2 {
   margin-bottom: 20px;
 }
 
+.hand {
+  margin-bottom: 20px;
+}
+
 .btn {
   background-color: #4CAF50; /* Green */
   border: none;
@@ -112,4 +116,10 @@ h2 {
 
 .health {
   font-size: 1.4em;
+  margin-bottom: 20px;
+}
+
+.mana {
+  font-size: 1.4em;
+  margin-bottom: 10px;
 }

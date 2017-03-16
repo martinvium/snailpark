@@ -49,11 +49,10 @@ $(document).ready(function() {
       clearBoard();
       renderBoard();
       renderHand();
-      renderMana();
-      renderHealth();
+      renderPlayers();
 
       if(msg.state == "finished") {
-        if(players["player"]["health"] <= 0) {
+        if(getAvatar(players["player"])["currentToughness"] <= 0) {
           $('#messages').text('You lost! :(').addClass('red').show();
         } else {
           $('#messages').text('You won! :)').addClass('green').show();
@@ -61,9 +60,12 @@ $(document).ready(function() {
       }
 
       $.each(players, function(key, player) {
-        if(player["health"] < oldPlayers[key]["health"]) {
+        var old = getAvatar(oldPlayers[key])["currentToughness"],
+            now = getAvatar(player)["currentToughness"];
+
+        if(now < old) {
           $('.current', healthEl(player["id"])).effect('highlight', { color: 'red' }, 3000);
-        } else if (player['health'] > oldPlayers[key]['health']) {
+        } else if (now > old) {
           $('.current', healthEl(player["id"])).effect('highlight', { color: 'cyan' }, 3000);
         }
       });
@@ -85,6 +87,14 @@ $(document).ready(function() {
     ws.onclose = function(event) {
       $('#messages').text('Disconnected! Reconnecting...').addClass('yellow').show();
       setTimeout(openWebsocket, 5000);
+    }
+  }
+
+  function getAvatar(player) {
+    for(var i in player["board"]) {
+      if(player["board"][i]["type"] === "avatar") {
+        return player["board"][i];
+      }
     }
   }
 
@@ -135,6 +145,10 @@ $(document).ready(function() {
   function renderBoard() {
     $.each(players, function(_, player) {
       $.each(player["board"], function(index, card) {
+        if(card.type != "creature") {
+          return;
+        }
+
         boardEl(player["id"]).append(
           renderCard(card)
         );
@@ -160,6 +174,11 @@ $(document).ready(function() {
         }
       }
     });
+  }
+
+  function renderPlayers() {
+    renderMana();
+    renderHealth();
   }
 
   function renderCardBack(value, callback) {
@@ -196,7 +215,8 @@ $(document).ready(function() {
 
   function renderHealth() {
     $.each(players, function(_, player) {
-      $('.current', healthEl(player["id"])).text(player["health"]);
+      var avatar = getAvatar(player);
+      $('.current', healthEl(player["id"])).text(avatar["currentToughness"]);
     });
   }
 

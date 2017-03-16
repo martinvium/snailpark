@@ -15,7 +15,6 @@ type ResponseMessage struct {
 
 type ResponsePlayer struct {
 	Id          string           `json:"id"`
-	Health      int              `json:"health"`
 	CurrentMana int              `json:"currentMana"`
 	MaxMana     int              `json:"maxMana"`
 	Deck        []*Card          `json:"deck"`
@@ -29,7 +28,6 @@ func NewResponseMessage(state string, playerId string, players map[string]*Playe
 	for key, player := range players {
 		responsePlayers[key] = &ResponsePlayer{
 			player.Id,
-			player.Health,
 			player.CurrentMana,
 			player.MaxMana,
 			player.Deck,

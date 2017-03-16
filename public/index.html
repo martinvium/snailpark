@@ -11,42 +11,41 @@
     <script src="/assets/javascripts/application.js"></script>
   </head>
   <body>
-    <div id="messages" style="display: none;"></div>
-
     <div id="board">
       <div id="ai">
         <div class="mana">
-          Mana:
+          Enemy AI (Mana:
           <label class="current"></label> of 
           <label class="max"></label>
+          )
         </div>
+
+        <div class="hand cf"></div>
+        <div class="board cf"></div>
+
         <div class="health">
           Health:
           <label class="current"></label>
         </div>
-        <h2>Enemy AI Hand</h2>
-        <div class="hand cf"></div>
-        <h2>Enemy AI Board</h2>
-        <div class="board cf"></div>
       </div>
 
       <div class="middle">
         <input type="button" id="end-turn" value="End turn" class="btn"/>
+        <div id="messages" style="display: none;"></div>
       </div>
 
       <div id="player">
-        <h2>Your Board</h2>
-        <div class="board cf"></div>
-        <h2>Your Hand</h2>
-        <div class="hand cf"></div>
         <div class="health">
           Health:
           <label class="current"></label>
         </div>
+        <div class="board cf"></div>
+        <div class="hand cf"></div>
         <div class="mana">
-          Mana:
+          You (Mana:
           <label class="current"></label> of 
           <label class="max"></label>
+          )
         </div>
       </div>
     </div>

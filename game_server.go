@@ -136,7 +136,7 @@ func (g *GameServer) AllCreaturesAttackFace() {
 
 func (g *GameServer) AnyPlayerDead() bool {
 	return AnyPlayer(g.players, func(p *Player) bool {
-		return p.Health <= 0
+		return p.Avatar.CurrentToughness <= 0
 	})
 }
 

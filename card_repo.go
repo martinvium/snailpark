@@ -8,5 +8,5 @@ var CardRepo = []*CardProto{
 	NewCreatureProto("Lord Zembaio", 6, "Today, I shall get out of bed!", 2, 9),
 	NewSpellProto("Goo-to-the-face", 3, "Deal 5 damage to enemy player -- That's not nice.", NewPlayerDamageAbility(5)),
 	NewSpellProto("Green smelly liquid", 4, "Heal your self for 5 -- But it taste awful!", NewPlayerHealAbility(5)),
-	NewSpellProto("Diluted poison", 1, "Heal your self for 5 -- I promise it won't hurt.", NewAbility("players", "me", "damage", 5)),
+	NewAvatarProto("The Bald One", 30),
 }

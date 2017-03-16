@@ -13,7 +13,8 @@ type CardProto struct {
 
 type Card struct {
 	CardProto
-	Id string `json:"id"`
+	Id               string `json:"id"`
+	CurrentToughness int    `json:"currentToughness"`
 	// Enchantments, effects, combat health state?
 }
 
@@ -25,14 +26,20 @@ func NewCreatureProto(title string, cost int, desc string, power int, toughness 
 	return &CardProto{"orange", title, cost, "creature", desc, power, toughness, nil}
 }
 
+func NewAvatarProto(title string, toughness int) *CardProto {
+	return &CardProto{"orange", title, 0, "avatar", "", 0, toughness, nil}
+}
+
 func NewCard(proto *CardProto) *Card {
-	return &Card{*proto, NewUUID()}
+	return &Card{*proto, NewUUID(), proto.Toughness}
 }
 
 func NewDeck(collection map[string]*Card) []*Card {
 	deck := []*Card{}
-	for _, value := range collection {
-		deck = append(deck, value)
+	for _, card := range collection {
+		if card.CardType != "avatar" {
+			deck = append(deck, card)
+		}
 	}
 
 	return deck
@@ -41,7 +48,12 @@ func NewDeck(collection map[string]*Card) []*Card {
 func NewCardCollection() map[string]*Card {
 	collection := make(map[string]*Card)
 	for _, proto := range CardRepo {
-		for i := 0; i < 4; i++ {
+		amount := 4
+		if proto.CardType == "avatar" {
+			amount = 1
+		}
+
+		for i := 0; i < amount; i++ {
 			card := NewCard(proto)
 			collection[card.Id] = card
 		}
