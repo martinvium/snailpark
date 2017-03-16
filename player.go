@@ -12,10 +12,13 @@ type Player struct {
 	Deck        []*Card
 	Hand        map[string]*Card
 	Board       map[string]*Card
+	Avatar      *Card
 }
 
 func NewPlayer(id string) *Player {
 	collection := NewCardCollection()
+
+	avatar := FirstAvatar(collection)
 
 	return &Player{
 		false,
@@ -25,9 +28,21 @@ func NewPlayer(id string) *Player {
 		0,
 		collection,
 		NewDeck(collection),
-		make(map[string]*Card),
-		make(map[string]*Card),
+		map[string]*Card{},
+		map[string]*Card{avatar.Id: avatar},
+		avatar,
 	}
+}
+
+func FirstAvatar(collection map[string]*Card) *Card {
+	for _, card := range collection {
+		if card.CardType == "avatar" {
+			return card
+		}
+	}
+
+	log.Println("ERROR: no avatar in collection!")
+	return nil
 }
 
 func AllPlayers(vs map[string]*Player, f func(*Player) bool) bool {

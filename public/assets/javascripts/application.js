@@ -49,8 +49,7 @@ $(document).ready(function() {
       clearBoard();
       renderBoard();
       renderHand();
-      renderMana();
-      renderHealth();
+      renderPlayers();
 
       if(msg.state == "finished") {
         if(players["player"]["health"] <= 0) {
@@ -135,6 +134,11 @@ $(document).ready(function() {
   function renderBoard() {
     $.each(players, function(_, player) {
       $.each(player["board"], function(index, card) {
+        if(card.type != "creature") {
+          console.log("skipping non creature");
+          return;
+        }
+
         boardEl(player["id"]).append(
           renderCard(card)
         );
@@ -160,6 +164,11 @@ $(document).ready(function() {
         }
       }
     });
+  }
+
+  function renderPlayers() {
+    renderMana();
+    renderHealth();
   }
 
   function renderCardBack(value, callback) {
