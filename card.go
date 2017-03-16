@@ -13,7 +13,8 @@ type CardProto struct {
 
 type Card struct {
 	CardProto
-	Id string `json:"id"`
+	Id               string `json:"id"`
+	CurrentToughness int    `json:"currentToughness"`
 	// Enchantments, effects, combat health state?
 }
 
@@ -30,7 +31,7 @@ func NewAvatarProto(title string, toughness int) *CardProto {
 }
 
 func NewCard(proto *CardProto) *Card {
-	return &Card{*proto, NewUUID()}
+	return &Card{*proto, NewUUID(), proto.Toughness}
 }
 
 func NewDeck(collection map[string]*Card) []*Card {
