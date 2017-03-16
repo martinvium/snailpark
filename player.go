@@ -91,16 +91,11 @@ func (p *Player) PlayCardFromHand(id string) *Card {
 	return card
 }
 
-func (p *Player) CanPlayCards(cards []*Card) bool {
-	if len(cards) > 1 {
-		log.Println("ERROR: Only play 1 card at a time")
-		return false
-	}
-
-	card := p.collection[cards[0].Id]
+func (p *Player) CanPlayCard(cardId string) bool {
+	card := p.collection[cardId]
 
 	if card == nil {
-		log.Println("ERROR: Client trying to use invalid card:", cards)
+		log.Println("ERROR: Client trying to use invalid card:", cardId)
 		return false
 	}
 

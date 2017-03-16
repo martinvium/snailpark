@@ -1,9 +1,10 @@
 package main
 
 type Message struct {
-	PlayerId string  `json:"playerId"`
-	Action   string  `json:"action"`
-	Cards    []*Card `json:"cards"`
+	PlayerId    string            `json:"playerId"`
+	Action      string            `json:"action"`
+	PlayedCard  string            `json:"playedCard"`
+	Assignments map[string]string `json:"assignments"`
 }
 
 type ResponseMessage struct {
@@ -41,9 +42,9 @@ func NewResponseMessage(state string, playerId string, players map[string]*Playe
 }
 
 func NewSimpleMessage(playerId string, action string) *Message {
-	return &Message{playerId, action, []*Card{}}
+	return &Message{playerId, action, "", map[string]string{}}
 }
 
-func NewMessage(playerId string, action string, cards []*Card) *Message {
-	return &Message{playerId, action, cards}
+func NewPlayCardMessage(playerId string, action string, cardId string) *Message {
+	return &Message{playerId, action, cardId, map[string]string{}}
 }

@@ -40,7 +40,7 @@ func (a *AI) FirstPlayableCard(msg *ResponseMessage) *Card {
 }
 
 func (a *AI) PlayCard(card *Card) {
-	a.RespondDelayed(NewMessage(a.playerId, "play_card", []*Card{card}))
+	a.RespondDelayed(NewPlayCardMessage(a.playerId, "play_card", card.Id))
 }
 
 func (a *AI) RespondDelayed(msg *Message) {

@@ -170,11 +170,11 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 		return
 	}
 
-	if g.currentPlayer.CanPlayCards(msg.Cards) == false {
+	if g.currentPlayer.CanPlayCard(msg.PlayedCard) == false {
 		return
 	}
 
-	g.stack = append(g.stack, g.currentPlayer.PlayCardFromHand(msg.Cards[0].Id))
+	g.stack = append(g.stack, g.currentPlayer.PlayCardFromHand(msg.PlayedCard))
 	g.CurrentState().Transition("stack")
 
 	if g.stack[0].Ability != nil {

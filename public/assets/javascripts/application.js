@@ -130,7 +130,7 @@ $(document).ready(function() {
       JSON.stringify({
         "playerId": playerId,
         "action": "play_card",
-        cards: [{ "id": id }]
+        "playedCard": id
       })
     );
   }
