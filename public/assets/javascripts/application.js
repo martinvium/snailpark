@@ -190,7 +190,7 @@ $(document).ready(function() {
   function renderCard(value, callback) {
     var card = card_proto.clone();
     card.attr('data-id', value.id);
-    card.addClass('orange').show();
+    card.addClass(value['color']).show();
     card.click(callback);
     $('.title', card).text(value['title']);
     $('.cost', card).text(value['cost']);

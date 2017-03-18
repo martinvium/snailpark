@@ -19,15 +19,15 @@ type Card struct {
 }
 
 func NewSpellProto(title string, cost int, desc string, ability *Ability) *CardProto {
-	return &CardProto{"orange", title, cost, "spell", desc, 0, 0, ability}
+	return &CardProto{"white", title, cost, "spell", desc, 0, 0, ability}
 }
 
 func NewCreatureProto(title string, cost int, desc string, power int, toughness int) *CardProto {
-	return &CardProto{"orange", title, cost, "creature", desc, power, toughness, nil}
+	return &CardProto{"white", title, cost, "creature", desc, power, toughness, nil}
 }
 
 func NewAvatarProto(title string, toughness int) *CardProto {
-	return &CardProto{"orange", title, 0, "avatar", "", 0, toughness, nil}
+	return &CardProto{"gold", title, 0, "avatar", "", 0, toughness, nil}
 }
 
 func NewCard(proto *CardProto) *Card {
