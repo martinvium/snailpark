@@ -31,7 +31,7 @@ func (a *AI) Send(msg *ResponseMessage) {
 func (a *AI) FirstPlayableCard(msg *ResponseMessage) *Card {
 	me := msg.Players[a.playerId]
 	for _, card := range me.Hand {
-		if card.Cost <= me.CurrentMana {
+		if card.CardType == "creature" && card.Cost <= me.CurrentMana {
 			return card
 		}
 	}
