@@ -27,7 +27,7 @@ func NewCreatureProto(title string, cost int, desc string, power int, toughness 
 }
 
 func NewAvatarProto(title string, toughness int) *CardProto {
-	return &CardProto{"gold", title, 0, "avatar", "", 0, toughness, nil}
+	return &CardProto{"gold", title, 0, "avatar", "When this card dies, the opponent player wins!", 0, toughness, nil}
 }
 
 func NewCard(proto *CardProto) *Card {
