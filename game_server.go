@@ -16,6 +16,7 @@ type GameServer struct {
 	requestCh     chan *Message
 	StartTime     time.Time
 	stack         *Card
+	attackers     []*Card
 }
 
 func NewGameServer() *GameServer {
@@ -36,6 +37,7 @@ func NewGameServer() *GameServer {
 		make(chan *Message, channelBufSize),
 		time.Now(),
 		nil,
+		[]*Card{},
 	}
 }
 
@@ -132,24 +134,22 @@ func (g *GameServer) SendStateResponseAll() {
 	}
 }
 
+func (g *GameServer) ClearAttackers() {
+	g.attackers = []*Card{}
+}
+
 func (g *GameServer) SendOptionsResponse() {
 	cards := FilterCards(g.allBoardCards(), func(c *Card) bool {
 		return c.CardType == g.stack.Ability.Condition
 	})
 
-	log.Println("Option cards:", len(cards))
-
-	options := MapCards(cards, func(c *Card) string {
-		return c.Id
-	})
-
+	options := MapCardIds(cards)
 	log.Println("Options:", options)
-
 	g.sendBoardStateToClient(g.clients[g.currentPlayer.Id], options)
 }
 
-func (g *GameServer) AllCreaturesAttackFace() {
-	for _, card := range g.currentPlayer.Board {
+func (g *GameServer) CreaturesAttackFace() {
+	for _, card := range g.attackers {
 		g.DefendingPlayer().Damage(card.Power)
 	}
 }
@@ -218,16 +218,34 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 }
 
 func (g *GameServer) handleTarget(msg *Message) {
-	if g.CurrentState().String() != "targeting" {
-		log.Println("ERROR: Playing card out of targeting phase:", msg.PlayerId)
-		return
-	}
-
 	if g.currentPlayer.Id != msg.PlayerId {
 		log.Println("ERROR: Client calling action", msg.Action, "out of turn:", msg.PlayerId)
 		return
 	}
 
+	switch g.CurrentState().String() {
+	case "main":
+		fallthrough
+	case "attackers":
+		g.assignAttacker(msg)
+	case "targeting":
+		g.targetAbility(msg)
+	}
+}
+
+func (g *GameServer) assignAttacker(msg *Message) {
+	card, ok := g.currentPlayer.Board[msg.Card]
+	if ok {
+		log.Println("Assigned attacker:", msg.Card)
+		g.attackers = append(g.attackers, card)
+	} else {
+		log.Println("ERROR: assigning invalid attacker:", msg.Card)
+	}
+
+	g.CurrentState().Transition("attackers")
+}
+
+func (g *GameServer) targetAbility(msg *Message) {
 	target := g.getCardOnBoard(msg.Card)
 	if target == nil {
 		log.Println("ERROR: Card is not found:", msg.Card)
@@ -289,7 +307,8 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 }
 
 func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
-	msg := NewResponseMessage(g.CurrentState().String(), g.currentPlayer.Id, g.players, g.stack, options)
+	attackerIds := MapCardIds(g.attackers)
+	msg := NewResponseMessage(g.CurrentState().String(), g.currentPlayer.Id, g.players, g.stack, options, attackerIds)
 	msg.Players[OtherPlayerId(client.PlayerId())].Hand = make(map[string]*Card)
 	client.SendResponse(msg)
 }

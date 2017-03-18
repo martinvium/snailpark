@@ -23,6 +23,7 @@ func (a *AI) Send(msg *ResponseMessage) {
 		if card != nil {
 			a.PlayCard(card)
 		} else {
+			a.AttackWithAll(msg)
 			a.RespondDelayed(NewSimpleMessage(a.playerId, "end_turn"))
 		}
 	}
@@ -47,4 +48,11 @@ func (a *AI) RespondDelayed(msg *Message) {
 	log.Println("AI responding delayed: ", msg)
 	time.Sleep(1000 * time.Millisecond)
 	a.outCh <- msg
+}
+
+func (a *AI) AttackWithAll(msg *ResponseMessage) {
+	me := msg.Players[a.playerId]
+	for id, _ := range me.Board {
+		a.outCh <- NewPlayCardMessage(a.playerId, "target", id)
+	}
 }

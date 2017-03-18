@@ -11,7 +11,8 @@ var transitions = map[string][]string{
 	"unstarted": []string{"mulligan"},
 	"mulligan":  []string{"upkeep"},
 	"upkeep":    []string{"main"},
-	"main":      []string{"combat", "stack"},
+	"main":      []string{"attackers", "stack", "combat"},
+	"attackers": []string{"combat", "attackers"},
 	"stack":     []string{"targeting", "main"},
 	"targeting": []string{"main"},
 	"combat":    []string{"end", "finished"},
@@ -54,16 +55,12 @@ func (s *StateMachine) transitionCallback() {
 		s.toMulligan()
 	case "upkeep":
 		s.toUpkeep()
-	case "main":
-		s.toMain()
 	case "targeting":
 		s.toTargeting()
 	case "combat":
 		s.toCombat()
 	case "end":
 		s.toEnd()
-	case "finished":
-		s.toFinished()
 	default:
 		s.gameServer.SendStateResponseAll()
 	}
@@ -78,6 +75,7 @@ func (s *StateMachine) toUpkeep() {
 	s.gameServer.currentPlayer.AddToHand(1)
 	s.gameServer.currentPlayer.AddMaxMana(1)
 	s.gameServer.currentPlayer.ResetCurrentMana()
+	s.gameServer.ClearAttackers()
 	s.Transition("main")
 }
 
@@ -89,8 +87,12 @@ func (s *StateMachine) toTargeting() {
 	s.gameServer.SendOptionsResponse()
 }
 
+func (s *StateMachine) toAttackers() {
+	s.gameServer.SendOptionsResponse()
+}
+
 func (s *StateMachine) toCombat() {
-	s.gameServer.AllCreaturesAttackFace()
+	s.gameServer.CreaturesAttackFace()
 
 	if s.gameServer.AnyPlayerDead() {
 		s.Transition("finished")

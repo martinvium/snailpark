@@ -72,10 +72,10 @@ func FilterCards(vs []*Card, f func(*Card) bool) []*Card {
 	return vsf
 }
 
-func MapCards(vs []*Card, f func(*Card) string) []string {
+func MapCardIds(vs []*Card) []string {
 	vsm := make([]string, len(vs))
 	for i, v := range vs {
-		vsm[i] = f(v)
+		vsm[i] = v.Id
 	}
 	return vsm
 }

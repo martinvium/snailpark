@@ -223,7 +223,7 @@ $(document).ready(function() {
   function updateStateHelp() {
     var el = $('#state-help');
     if(state == "main") {
-      el.text('Play a card...');
+      el.text('Play a card or attack with your creatures by clicking on them...');
     } else if(state == "targeting") {
       el.text('Pick a target...');
     }
