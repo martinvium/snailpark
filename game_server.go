@@ -209,7 +209,7 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 	g.stack = g.currentPlayer.PlayCardFromHand(msg.Card)
 	g.CurrentState().Transition("stack")
 
-	if g.stack.Ability != nil {
+	if g.stack.Ability != nil && g.stack.Ability.RequiresTarget() {
 		g.CurrentState().Transition("targeting")
 	} else {
 		g.ResolveStack()
