@@ -234,6 +234,9 @@ func (g *GameServer) handleTarget(msg *Message) {
 		return
 	}
 
+	// TODO: we should instead assign the target to the effect, and let this resolve
+	// in ResolveStack, because that would allow abilities without a target to use
+	// the same code?
 	ability := g.stack.Ability
 	switch ability.Effect {
 	case "damage":
@@ -251,7 +254,19 @@ func (g *GameServer) ResolveStack() {
 		g.currentPlayer.AddToBoard(g.stack)
 	}
 
+	g.cleanUpDeadCreatures()
+
 	g.stack = nil
+}
+
+func (g *GameServer) cleanUpDeadCreatures() {
+	for _, player := range g.players {
+		for key, card := range player.Board {
+			if card.CurrentToughness <= 0 {
+				delete(player.Board, key)
+			}
+		}
+	}
 }
 
 func (g *GameServer) getCardOnBoard(id string) *Card {
