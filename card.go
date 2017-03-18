@@ -62,6 +62,32 @@ func NewCardCollection() map[string]*Card {
 	return collection
 }
 
+func FilterCards(vs []*Card, f func(*Card) bool) []*Card {
+	vsf := make([]*Card, 0)
+	for _, v := range vs {
+		if f(v) {
+			vsf = append(vsf, v)
+		}
+	}
+	return vsf
+}
+
+func MapCards(vs []*Card, f func(*Card) string) []string {
+	vsm := make([]string, len(vs))
+	for i, v := range vs {
+		vsm[i] = f(v)
+	}
+	return vsm
+}
+
 func (c *Card) String() string {
 	return "Card(" + c.Id + ", " + c.Title + ")"
+}
+
+func (c *Card) Damage(amount int) {
+	c.CurrentToughness -= amount
+}
+
+func (c *Card) Heal(amount int) {
+	c.CurrentToughness += amount
 }

@@ -1,6 +1,5 @@
 $(document).ready(function() {
   var card_proto = $('#card-prototype'),
-    stack = [],
     playerId = 'player';
 
   var players = {},
@@ -123,14 +122,14 @@ $(document).ready(function() {
     ping = setTimeout(pingSocket, pingTime);
   }
 
-  function playCard(id) {
+  function clickCard(id, action) {
     console.log('Playing card: ' + id);
 
     ws.send(
       JSON.stringify({
         "playerId": playerId,
-        "action": "play_card",
-        "playedCard": id
+        "action": action,
+        "card": id
       })
     );
   }
@@ -145,12 +144,10 @@ $(document).ready(function() {
   function renderBoard() {
     $.each(players, function(_, player) {
       $.each(player["board"], function(index, card) {
-        if(card.type != "creature") {
-          return;
-        }
-
         boardEl(player["id"]).append(
-          renderCard(card)
+          renderCard(card, function() {
+            clickCard($(this).attr('data-id'), 'target');
+          })
         );
       });
     });
@@ -162,7 +159,7 @@ $(document).ready(function() {
         $.each(player["hand"], function(index, card) {
           handEl(player["id"]).append(
             renderCard(card, function() {
-              playCard($(this).attr('data-id'));
+              clickCard($(this).attr('data-id'), 'play_card');
             })
           );
         });

@@ -12,7 +12,8 @@ var transitions = map[string][]string{
 	"mulligan":  []string{"upkeep"},
 	"upkeep":    []string{"main"},
 	"main":      []string{"combat", "stack"},
-	"stack":     []string{"main"},
+	"stack":     []string{"targeting", "main"},
+	"targeting": []string{"main"},
 	"combat":    []string{"end", "finished"},
 	"end":       []string{"upkeep"},
 	"finished":  []string{},
@@ -55,6 +56,8 @@ func (s *StateMachine) transitionCallback() {
 		s.toUpkeep()
 	case "main":
 		s.toMain()
+	case "targeting":
+		s.toTargeting()
 	case "combat":
 		s.toCombat()
 	case "end":
@@ -82,6 +85,10 @@ func (s *StateMachine) toUpkeep() {
 
 func (s *StateMachine) toMain() {
 	s.gameServer.SendStateResponseAll()
+}
+
+func (s *StateMachine) toTargeting() {
+	s.gameServer.SendOptionsResponse()
 }
 
 func (s *StateMachine) toCombat() {

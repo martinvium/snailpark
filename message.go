@@ -1,17 +1,17 @@
 package main
 
 type Message struct {
-	PlayerId    string            `json:"playerId"`
-	Action      string            `json:"action"`
-	PlayedCard  string            `json:"playedCard"`
-	Assignments map[string]string `json:"assignments"`
+	PlayerId string `json:"playerId"`
+	Action   string `json:"action"`
+	Card     string `json:"card"`
 }
 
 type ResponseMessage struct {
 	State           string                     `json:"state"`
 	CurrentPlayerId string                     `json:"currentPlayerId"`
 	Players         map[string]*ResponsePlayer `json:"players"`
-	Stack           []*Card                    `json:"stack"`
+	Stack           *Card                      `json:"stack"`
+	Options         []string
 }
 
 type ResponsePlayer struct {
@@ -24,7 +24,20 @@ type ResponsePlayer struct {
 	Board       map[string]*Card `json:"board"`
 }
 
-func NewResponseMessage(state string, playerId string, players map[string]*Player, stack []*Card) *ResponseMessage {
+func NewResponseMessage(state string, playerId string, players map[string]*Player, stack *Card, options []string) *ResponseMessage {
+	responsePlayers := newResponsePlayers(players)
+	return &ResponseMessage{state, playerId, responsePlayers, stack, options}
+}
+
+func NewSimpleMessage(playerId string, action string) *Message {
+	return &Message{playerId, action, ""}
+}
+
+func NewPlayCardMessage(playerId string, action string, cardId string) *Message {
+	return &Message{playerId, action, cardId}
+}
+
+func newResponsePlayers(players map[string]*Player) map[string]*ResponsePlayer {
 	responsePlayers := make(map[string]*ResponsePlayer)
 	for key, player := range players {
 		responsePlayers[key] = &ResponsePlayer{
@@ -38,13 +51,5 @@ func NewResponseMessage(state string, playerId string, players map[string]*Playe
 		}
 	}
 
-	return &ResponseMessage{state, playerId, responsePlayers, stack}
-}
-
-func NewSimpleMessage(playerId string, action string) *Message {
-	return &Message{playerId, action, "", map[string]string{}}
-}
-
-func NewPlayCardMessage(playerId string, action string, cardId string) *Message {
-	return &Message{playerId, action, cardId, map[string]string{}}
+	return responsePlayers
 }

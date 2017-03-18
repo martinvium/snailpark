@@ -62,11 +62,11 @@ func AnyPlayer(vs map[string]*Player, f func(*Player) bool) bool {
 }
 
 func (p *Player) Damage(power int) {
-	p.Avatar.CurrentToughness -= power
+	p.Avatar.Damage(power)
 }
 
 func (p *Player) Heal(num int) {
-	p.Avatar.CurrentToughness += num
+	p.Avatar.Heal(num)
 }
 
 func (p *Player) AddToHand(num int) []*Card {

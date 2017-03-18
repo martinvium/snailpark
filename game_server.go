@@ -15,7 +15,7 @@ type GameServer struct {
 	state         *StateMachine
 	requestCh     chan *Message
 	StartTime     time.Time
-	stack         []*Card
+	stack         *Card
 }
 
 func NewGameServer() *GameServer {
@@ -35,7 +35,7 @@ func NewGameServer() *GameServer {
 		nil,
 		make(chan *Message, channelBufSize),
 		time.Now(),
-		[]*Card{},
+		nil,
 	}
 }
 
@@ -113,6 +113,8 @@ func (g *GameServer) processClientRequest(msg *Message) {
 		g.handlePlayCardAction(msg)
 	} else if msg.Action == "end_turn" {
 		g.handleEndTurn(msg)
+	} else if msg.Action == "target" {
+		g.handleTarget(msg)
 	} else {
 		log.Println("No handler for client action!")
 	}
@@ -125,7 +127,25 @@ func (g *GameServer) AddCardsToAllPlayerHands(num int) {
 }
 
 func (g *GameServer) SendStateResponseAll() {
-	g.sendResponseAll()
+	for _, client := range g.clients {
+		g.sendBoardStateToClient(client, []string{})
+	}
+}
+
+func (g *GameServer) SendOptionsResponse() {
+	cards := FilterCards(g.allBoardCards(), func(c *Card) bool {
+		return c.CardType == g.stack.Ability.Condition
+	})
+
+	log.Println("Option cards:", len(cards))
+
+	options := MapCards(cards, func(c *Card) string {
+		return c.Id
+	})
+
+	log.Println("Options:", options)
+
+	g.sendBoardStateToClient(g.clients[g.currentPlayer.Id], options)
 }
 
 func (g *GameServer) AllCreaturesAttackFace() {
@@ -141,6 +161,17 @@ func (g *GameServer) AnyPlayerDead() bool {
 }
 
 // private
+
+func (g *GameServer) allBoardCards() []*Card {
+	cards := []*Card{}
+	for _, player := range g.players {
+		for _, card := range player.Board {
+			cards = append(cards, card)
+		}
+	}
+
+	return cards
+}
 
 func (g *GameServer) handleStartAction(msg *Message) {
 	if g.CurrentState().String() != "unstarted" {
@@ -170,45 +201,67 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 		return
 	}
 
-	if g.currentPlayer.CanPlayCard(msg.PlayedCard) == false {
+	if g.currentPlayer.CanPlayCard(msg.Card) == false {
+		log.Println("ERROR: Cannot play card:", msg.Card)
 		return
 	}
 
-	g.stack = append(g.stack, g.currentPlayer.PlayCardFromHand(msg.PlayedCard))
+	g.stack = g.currentPlayer.PlayCardFromHand(msg.Card)
 	g.CurrentState().Transition("stack")
 
-	if g.stack[0].Ability != nil {
-		g.resolveAbility(g.stack[0].Ability)
+	if g.stack.Ability != nil {
+		g.CurrentState().Transition("targeting")
+	} else {
+		g.ResolveStack()
+		g.CurrentState().Transition("main")
+	}
+}
+
+func (g *GameServer) handleTarget(msg *Message) {
+	if g.CurrentState().String() != "targeting" {
+		log.Println("ERROR: Playing card out of targeting phase:", msg.PlayerId)
+		return
+	}
+
+	if g.currentPlayer.Id != msg.PlayerId {
+		log.Println("ERROR: Client calling action", msg.Action, "out of turn:", msg.PlayerId)
+		return
+	}
+
+	target := g.getCardOnBoard(msg.Card)
+	if target == nil {
+		log.Println("ERROR: Card is not found:", msg.Card)
+		return
+	}
+
+	ability := g.stack.Ability
+	switch ability.Effect {
+	case "damage":
+		target.Damage(ability.Modifier)
+	case "heal":
+		target.Heal(ability.Modifier)
 	}
 
 	g.ResolveStack()
 	g.CurrentState().Transition("main")
 }
 
-func (g *GameServer) resolveAbility(ability *Ability) {
-	if ability.Context != "players" {
-		return
+func (g *GameServer) ResolveStack() {
+	if g.stack.CardType == "creature" {
+		g.currentPlayer.AddToBoard(g.stack)
 	}
 
-	playerMap := map[string]*Player{"me": g.currentPlayer, "you": g.DefendingPlayer()}
-	player := playerMap[ability.Target]
-
-	switch ability.Effect {
-	case "damage":
-		player.Damage(ability.Modifier)
-	case "heal":
-		player.Heal(ability.Modifier)
-	}
+	g.stack = nil
 }
 
-func (g *GameServer) ResolveStack() {
-	for _, card := range g.stack {
-		if card.CardType == "creature" {
-			g.currentPlayer.AddToBoard(card)
+func (g *GameServer) getCardOnBoard(id string) *Card {
+	for _, card := range g.allBoardCards() {
+		if card.Id == id {
+			return card
 		}
 	}
 
-	g.stack = []*Card{}
+	return nil
 }
 
 func (g *GameServer) handleEndTurn(msg *Message) {
@@ -220,12 +273,10 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 	g.CurrentState().Transition("combat")
 }
 
-func (g *GameServer) sendResponseAll() {
-	for _, client := range g.clients {
-		msg := NewResponseMessage(g.CurrentState().String(), g.currentPlayer.Id, g.players, g.stack)
-		msg.Players[OtherPlayerId(client.PlayerId())].Hand = make(map[string]*Card)
-		client.SendResponse(msg)
-	}
+func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
+	msg := NewResponseMessage(g.CurrentState().String(), g.currentPlayer.Id, g.players, g.stack, options)
+	msg.Players[OtherPlayerId(client.PlayerId())].Hand = make(map[string]*Card)
+	client.SendResponse(msg)
 }
 
 func OtherPlayerId(playerId string) string {
