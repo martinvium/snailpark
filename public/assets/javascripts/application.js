@@ -1,9 +1,9 @@
 $(document).ready(function() {
   var card_proto = $('#card-prototype'),
-    playerId = 'player';
-
-  var players = {},
-    oldPlayers = null;
+    playerId = 'player',
+    players = {},
+    oldPlayers = null,
+    state;
 
   var gameId = urlParam('guid');
   if(!gameId) {
@@ -38,6 +38,8 @@ $(document).ready(function() {
     ws.onmessage = function(event) {
       var msg = JSON.parse(event.data);
 
+      state = msg.state;
+
       if(oldPlayers == null) {
         oldPlayers = msg.players;
       } else {
@@ -45,6 +47,7 @@ $(document).ready(function() {
       }
       players = msg.players;
 
+      updateStateHelp();
       clearBoard();
       renderBoard();
       renderHand();
@@ -215,6 +218,15 @@ $(document).ready(function() {
       var avatar = getAvatar(player);
       $('.current', healthEl(player["id"])).text(avatar["currentToughness"]);
     });
+  }
+
+  function updateStateHelp() {
+    var el = $('#state-help');
+    if(state == "main") {
+      el.text('Play a card...');
+    } else if(state == "targeting") {
+      el.text('Pick a target...');
+    }
   }
 
   function getWebSocketUrl(s) {

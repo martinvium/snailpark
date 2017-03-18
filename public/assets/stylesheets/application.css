@@ -112,6 +112,12 @@ h2 {
   text-align: center;
 }
 
+#state-help {
+  font-size: 1.2em;
+  padding: 15px;
+  color: #555;
+}
+
 .yellow {
   background-color: orange;
 }
