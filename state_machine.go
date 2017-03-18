@@ -71,7 +71,6 @@ func (s *StateMachine) transitionCallback() {
 
 func (s *StateMachine) toMulligan() {
 	s.gameServer.AddCardsToAllPlayerHands(4)
-	s.gameServer.SendStateResponseAll()
 	s.Transition("upkeep")
 }
 
@@ -79,7 +78,6 @@ func (s *StateMachine) toUpkeep() {
 	s.gameServer.currentPlayer.AddToHand(1)
 	s.gameServer.currentPlayer.AddMaxMana(1)
 	s.gameServer.currentPlayer.ResetCurrentMana()
-	s.gameServer.SendStateResponseAll()
 	s.Transition("main")
 }
 
@@ -93,7 +91,6 @@ func (s *StateMachine) toTargeting() {
 
 func (s *StateMachine) toCombat() {
 	s.gameServer.AllCreaturesAttackFace()
-	s.gameServer.SendStateResponseAll()
 
 	if s.gameServer.AnyPlayerDead() {
 		s.Transition("finished")
@@ -104,7 +101,6 @@ func (s *StateMachine) toCombat() {
 
 func (s *StateMachine) toEnd() {
 	s.gameServer.NextPlayer()
-	s.gameServer.SendStateResponseAll()
 	s.Transition("upkeep")
 }
 
