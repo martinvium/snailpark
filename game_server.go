@@ -23,11 +23,11 @@ type GameServer struct {
 type Engagement struct {
 	Attacker *Card
 	Blocker  *Card
-	// Target   *Card
+	Target   *Card
 }
 
-func NewEngagement(attacker *Card) *Engagement {
-	return &Engagement{attacker, nil}
+func NewEngagement(attacker *Card, target *Card) *Engagement {
+	return &Engagement{attacker, nil, target}
 }
 
 func NewGameServer() *GameServer {
@@ -278,7 +278,7 @@ func (g *GameServer) assignAttacker(msg *Message) {
 	card, ok := g.currentPlayer.Board[msg.Card]
 	if ok {
 		log.Println("Assigned attacker:", msg.Card)
-		g.Engagements = append(g.Engagements, NewEngagement(card))
+		g.Engagements = append(g.Engagements, NewEngagement(card, g.DefendingPlayer().Avatar))
 	} else {
 		log.Println("ERROR: assigning invalid attacker:", msg.Card)
 	}
