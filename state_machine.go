@@ -105,7 +105,7 @@ func (s *StateMachine) toAttackers() {
 }
 
 func (s *StateMachine) toCombat() {
-	s.gameServer.CreaturesAttackFace()
+	ResolveCombat(s.gameServer, s.gameServer.Engagements)
 
 	if s.gameServer.AnyPlayerDead() {
 		s.Transition("finished")

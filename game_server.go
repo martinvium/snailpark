@@ -16,7 +16,7 @@ type GameServer struct {
 	requestCh      chan *Message
 	StartTime      time.Time
 	stack          *Card
-	engagements    []*Engagement
+	Engagements    []*Engagement
 	currentBlocker *Card
 }
 
@@ -95,7 +95,7 @@ func (g *GameServer) ListenAndConsumeClientRequests() {
 }
 
 func (g *GameServer) AnyEngagements() bool {
-	return len(g.engagements) > 0
+	return len(g.Engagements) > 0
 }
 
 func (g *GameServer) CurrentState() *StateMachine {
@@ -151,7 +151,7 @@ func (g *GameServer) SendStateResponseAll() {
 }
 
 func (g *GameServer) ClearAttackers() {
-	g.engagements = []*Engagement{}
+	g.Engagements = []*Engagement{}
 }
 
 func (g *GameServer) SendOptionsResponse() {
@@ -162,14 +162,6 @@ func (g *GameServer) SendOptionsResponse() {
 	options := MapCardIds(cards)
 	log.Println("Options:", options)
 	g.sendBoardStateToClient(g.clients[g.currentPlayer.Id], options)
-}
-
-// TODO: should just target the engagement target, unless blocked?
-// All of this needs to be put into a CombatResolver or something anyways
-func (g *GameServer) CreaturesAttackFace() {
-	for _, engagement := range g.engagements {
-		g.DefendingPlayer().Damage(engagement.Attacker.Power)
-	}
 }
 
 func (g *GameServer) AnyPlayerDead() bool {
@@ -269,7 +261,7 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 	card, ok := g.DefendingPlayer().Board[msg.Card]
 	if ok {
 		log.Println("Assigned blocker target:", card)
-		for _, engagement := range g.engagements {
+		for _, engagement := range g.Engagements {
 			if engagement.Attacker == card {
 				engagement.Blocker = g.currentBlocker
 			}
@@ -286,7 +278,7 @@ func (g *GameServer) assignAttacker(msg *Message) {
 	card, ok := g.currentPlayer.Board[msg.Card]
 	if ok {
 		log.Println("Assigned attacker:", msg.Card)
-		g.engagements = append(g.engagements, NewEngagement(card))
+		g.Engagements = append(g.Engagements, NewEngagement(card))
 	} else {
 		log.Println("ERROR: assigning invalid attacker:", msg.Card)
 	}
@@ -357,7 +349,7 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 }
 
 func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
-	msg := NewResponseMessage(g.CurrentState().String(), g.Priority().Id, g.players, g.stack, options, g.engagements)
+	msg := NewResponseMessage(g.CurrentState().String(), g.Priority().Id, g.players, g.stack, options, g.Engagements)
 	msg.Players[OtherPlayerId(client.PlayerId())].Hand = make(map[string]*Card)
 	client.SendResponse(msg)
 }
