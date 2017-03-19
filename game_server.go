@@ -20,16 +20,6 @@ type GameServer struct {
 	currentBlocker *Card
 }
 
-type Engagement struct {
-	Attacker *Card
-	Blocker  *Card
-	Target   *Card
-}
-
-func NewEngagement(attacker *Card, target *Card) *Engagement {
-	return &Engagement{attacker, nil, target}
-}
-
 func NewGameServer() *GameServer {
 	aiClient := NewAIClient(NewAI())
 	clients := make(map[string]Client)

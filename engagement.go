@@ -2,7 +2,17 @@ package main
 
 import "log"
 
-func ResolveCombat(engagements []*Engagement) {
+type Engagement struct {
+	Attacker *Card
+	Blocker  *Card
+	Target   *Card
+}
+
+func NewEngagement(attacker *Card, target *Card) *Engagement {
+	return &Engagement{attacker, nil, target}
+}
+
+func ResolveEngagement(engagements []*Engagement) {
 	for _, e := range engagements {
 		if e.Blocker != nil {
 			log.Println("Attacker and blocker battle it out")
