@@ -47,7 +47,7 @@ $(document).ready(function() {
       }
       players = msg.players;
 
-      updateStateHelp();
+      updateStateHelp(msg);
       clearBoard();
       renderBoard();
       renderHand();
@@ -220,12 +220,20 @@ $(document).ready(function() {
     });
   }
 
-  function updateStateHelp() {
+  function updateStateHelp(msg) {
     var el = $('#state-help');
+
+    if(msg.currentPlayerId != playerId) {
+      el.text('Your opponent is thinking...')
+      return
+    }
+
     if(state == "main") {
-      el.text('Play a card or attack with your creatures by clicking on them...');
+      el.text('Play a card, or attack with your creatures by clicking on them...');
     } else if(state == "targeting") {
       el.text('Pick a target...');
+    } else if(state == "blockers" || state == "blockTarget") {
+      el.text('Opponent is attacking! Assign blockers and end turn when you are ready');
     }
   }
 

@@ -8,16 +8,18 @@ type StateMachine struct {
 }
 
 var transitions = map[string][]string{
-	"unstarted": []string{"mulligan"},
-	"mulligan":  []string{"upkeep"},
-	"upkeep":    []string{"main"},
-	"main":      []string{"attackers", "stack", "combat"},
-	"attackers": []string{"combat", "attackers"},
-	"stack":     []string{"targeting", "main"},
-	"targeting": []string{"main"},
-	"combat":    []string{"end", "finished"},
-	"end":       []string{"upkeep"},
-	"finished":  []string{},
+	"unstarted":   []string{"mulligan"},
+	"mulligan":    []string{"upkeep"},
+	"upkeep":      []string{"main"},
+	"main":        []string{"attackers", "stack", "blockers"},
+	"stack":       []string{"targeting", "main"},
+	"targeting":   []string{"main"},
+	"attackers":   []string{"blockers", "attackers"},
+	"blockers":    []string{"combat", "blockers", "blockTarget"},
+	"blockTarget": []string{"blockers"},
+	"combat":      []string{"end", "finished"},
+	"end":         []string{"upkeep"},
+	"finished":    []string{},
 }
 
 func NewStateMachine(gameServer *GameServer) *StateMachine {
@@ -26,6 +28,7 @@ func NewStateMachine(gameServer *GameServer) *StateMachine {
 
 func (s *StateMachine) Transition(newState string) {
 	if s.validTransition(newState) {
+		log.Println("Transition state", s.state, " => ", newState)
 		s.state = newState
 		s.transitionCallback()
 	} else {
@@ -57,6 +60,8 @@ func (s *StateMachine) transitionCallback() {
 		s.toUpkeep()
 	case "targeting":
 		s.toTargeting()
+	case "blockers":
+		s.toBlockers()
 	case "combat":
 		s.toCombat()
 	case "end":
@@ -85,6 +90,14 @@ func (s *StateMachine) toMain() {
 
 func (s *StateMachine) toTargeting() {
 	s.gameServer.SendOptionsResponse()
+}
+
+func (s *StateMachine) toBlockers() {
+	if s.gameServer.AnyEngagements() == false {
+		s.Transition("combat")
+	} else {
+		s.gameServer.SendStateResponseAll()
+	}
 }
 
 func (s *StateMachine) toAttackers() {
