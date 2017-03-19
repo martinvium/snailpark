@@ -91,3 +91,7 @@ func (c *Card) Damage(amount int) {
 func (c *Card) Heal(amount int) {
 	c.CurrentToughness += amount
 }
+
+func (c *Card) CanAttack() bool {
+	return c.Power > 0
+}

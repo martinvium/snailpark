@@ -18,7 +18,12 @@ func NewAI() *AI {
 
 func (a *AI) Send(msg *ResponseMessage) {
 	log.Println("AI ack it received: ", msg)
-	if msg.CurrentPlayerId == a.playerId && msg.State == "main" {
+
+	if msg.CurrentPlayerId != a.playerId {
+		return
+	}
+
+	if msg.State == "main" {
 		card := a.FirstPlayableCard(msg)
 		if card != nil {
 			a.PlayCard(card)
@@ -26,6 +31,8 @@ func (a *AI) Send(msg *ResponseMessage) {
 			a.AttackWithAll(msg)
 			a.RespondDelayed(NewSimpleMessage(a.playerId, "end_turn"))
 		}
+	} else if msg.State == "blockers" {
+		a.RespondDelayed(NewSimpleMessage(a.playerId, "end_turn"))
 	}
 }
 
@@ -52,7 +59,9 @@ func (a *AI) RespondDelayed(msg *Message) {
 
 func (a *AI) AttackWithAll(msg *ResponseMessage) {
 	me := msg.Players[a.playerId]
-	for id, _ := range me.Board {
-		a.outCh <- NewPlayCardMessage(a.playerId, "target", id)
+	for id, card := range me.Board {
+		if card.CanAttack() {
+			a.outCh <- NewPlayCardMessage(a.playerId, "target", id)
+		}
 	}
 }
