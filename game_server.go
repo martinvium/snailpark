@@ -258,7 +258,7 @@ func (g *GameServer) assignBlocker(msg *Message) {
 }
 
 func (g *GameServer) assignBlockTarget(msg *Message) {
-	card, ok := g.DefendingPlayer().Board[msg.Card]
+	card, ok := g.currentPlayer.Board[msg.Card]
 	if ok {
 		log.Println("Assigned blocker target:", card)
 		for _, engagement := range g.Engagements {
@@ -313,12 +313,12 @@ func (g *GameServer) ResolveStack() {
 		g.currentPlayer.AddToBoard(g.stack)
 	}
 
-	g.cleanUpDeadCreatures()
+	g.CleanUpDeadCreatures()
 
 	g.stack = nil
 }
 
-func (g *GameServer) cleanUpDeadCreatures() {
+func (g *GameServer) CleanUpDeadCreatures() {
 	for _, player := range g.players {
 		for key, card := range player.Board {
 			if card.CurrentToughness <= 0 {
