@@ -77,9 +77,9 @@ func (s *StateMachine) toMulligan() {
 }
 
 func (s *StateMachine) toUpkeep() {
-	s.gameServer.currentPlayer.AddToHand(1)
-	s.gameServer.currentPlayer.AddMaxMana(1)
-	s.gameServer.currentPlayer.ResetCurrentMana()
+	s.gameServer.CurrentPlayer.AddToHand(1)
+	s.gameServer.CurrentPlayer.AddMaxMana(1)
+	s.gameServer.CurrentPlayer.ResetCurrentMana()
 	s.gameServer.ClearAttackers()
 	s.Transition("main")
 }
