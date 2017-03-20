@@ -30,6 +30,10 @@ func NewAvatarProto(title string, toughness int) *CardProto {
 	return &CardProto{"gold", title, 0, "avatar", "When this card dies, the opponent player wins!", 0, toughness, nil}
 }
 
+func NewRandomCreatureCard(power int, toughness int) *Card {
+	return NewCard(NewCreatureProto("random", 0, "", power, toughness))
+}
+
 func NewCard(proto *CardProto) *Card {
 	return &Card{*proto, NewUUID(), proto.Toughness}
 }
