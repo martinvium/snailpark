@@ -98,6 +98,8 @@ $(document).ready(function() {
         return player["board"][i];
       }
     }
+
+    return { "currentToughness": 0 };
   }
 
   function boardEl(playerId) {
