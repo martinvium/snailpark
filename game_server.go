@@ -29,14 +29,23 @@ func NewGameServer() *GameServer {
 	players["ai"] = NewPlayer("ai")
 	players["player"] = NewPlayer("player")
 
-	return &GameServer{
+	game := NewGame(players)
+
+	gs := &GameServer{
 		clients,
 		make(chan bool, channelBufSize),
-		nil,
 		make(chan *Message, channelBufSize),
 		time.Now(),
-		NewGame(players),
+		game,
 	}
+
+	gs.SetStateMachineDeps()
+
+	return gs
+}
+
+func (g *GameServer) SetStateMachineDeps() {
+	g.game.SetStateMachineDeps(g)
 }
 
 func (g *GameServer) SetClient(c *SocketClient) {

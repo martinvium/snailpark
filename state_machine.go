@@ -4,7 +4,7 @@ import "log"
 
 type StateMachine struct {
 	game      *Game
-	msgSender *MessageSender
+	msgSender MessageSender
 	state     string
 }
 
@@ -23,8 +23,16 @@ var transitions = map[string][]string{
 	"finished":    []string{},
 }
 
-func NewStateMachine(game *Game, msgSender *MessageSender) *StateMachine {
-	return &StateMachine{game, msgSender, "unstarted"}
+func NewStateMachine() *StateMachine {
+	return &StateMachine{nil, nil, "unstarted"}
+}
+
+func (s *StateMachine) SetMessageSender(msgSender MessageSender) {
+	s.msgSender = msgSender
+}
+
+func (s *StateMachine) SetGame(g *Game) {
+	s.game = g
 }
 
 func (s *StateMachine) Transition(newState string) {

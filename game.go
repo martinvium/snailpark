@@ -13,7 +13,7 @@ func NewGame(players map[string]*Player) *Game {
 	return &Game{
 		players,
 		players["player"], // currently always the player that starts
-		nil,
+		NewStateMachine(),
 		nil,
 		[]*Engagement{},
 		nil,
@@ -22,6 +22,11 @@ func NewGame(players map[string]*Player) *Game {
 
 func (g *Game) CurrentState() *StateMachine {
 	return g.state
+}
+
+func (g *Game) SetStateMachineDeps(msgSender MessageSender) {
+	g.state.SetGame(g)
+	g.state.SetMessageSender(msgSender)
 }
 
 func (g *Game) NextPlayer() {
