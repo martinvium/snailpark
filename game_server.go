@@ -10,7 +10,6 @@ const channelBufSize = 100
 type GameServer struct {
 	clients   map[string]Client
 	doneCh    chan bool
-	state     *StateMachine
 	requestCh chan *Message
 	StartTime time.Time
 	game      *Game
@@ -78,14 +77,6 @@ func (g *GameServer) ListenAndConsumeClientRequests() {
 
 func (g *GameServer) AnyEngagements() bool {
 	return len(g.game.Engagements) > 0
-}
-
-func (g *GameServer) CurrentState() *StateMachine {
-	if g.state == nil {
-		g.state = NewStateMachine(g)
-	}
-
-	return g.state
 }
 
 func (g *GameServer) NextPlayer() {
@@ -166,7 +157,7 @@ func (g *GameServer) allBoardCards() []*Card {
 }
 
 func (g *GameServer) handleStartAction(msg *Message) {
-	if g.CurrentState().String() != "unstarted" {
+	if g.game.CurrentState().String() != "unstarted" {
 		g.SendStateResponseAll()
 		return
 	}
@@ -178,12 +169,12 @@ func (g *GameServer) handleStartAction(msg *Message) {
 	})
 
 	if allReady {
-		g.CurrentState().Transition("mulligan")
+		g.game.CurrentState().Transition("mulligan")
 	}
 }
 
 func (g *GameServer) handlePlayCardAction(msg *Message) {
-	if g.CurrentState().String() != "main" {
+	if g.game.CurrentState().String() != "main" {
 		log.Println("ERROR: Playing card out of main phase:", msg.PlayerId)
 		return
 	}
@@ -199,13 +190,13 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 	}
 
 	g.game.Stack = g.game.CurrentPlayer.PlayCardFromHand(msg.Card)
-	g.CurrentState().Transition("stack")
+	g.game.CurrentState().Transition("stack")
 
 	if g.game.Stack.Ability != nil && g.game.Stack.Ability.RequiresTarget() {
-		g.CurrentState().Transition("targeting")
+		g.game.CurrentState().Transition("targeting")
 	} else {
 		g.ResolveStack()
-		g.CurrentState().Transition("main")
+		g.game.CurrentState().Transition("main")
 	}
 }
 
@@ -215,7 +206,7 @@ func (g *GameServer) handleTarget(msg *Message) {
 		return
 	}
 
-	switch g.CurrentState().String() {
+	switch g.game.CurrentState().String() {
 	case "main":
 		fallthrough
 	case "attackers":
@@ -236,7 +227,7 @@ func (g *GameServer) assignBlocker(msg *Message) {
 		g.game.CurrentBlocker = card
 	}
 
-	g.CurrentState().Transition("blockTarget")
+	g.game.CurrentState().Transition("blockTarget")
 }
 
 func (g *GameServer) assignBlockTarget(msg *Message) {
@@ -253,7 +244,7 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 	}
 
 	g.game.CurrentBlocker = nil
-	g.CurrentState().Transition("blockers")
+	g.game.CurrentState().Transition("blockers")
 }
 
 func (g *GameServer) assignAttacker(msg *Message) {
@@ -265,7 +256,7 @@ func (g *GameServer) assignAttacker(msg *Message) {
 		log.Println("ERROR: assigning invalid attacker:", msg.Card)
 	}
 
-	g.CurrentState().Transition("attackers")
+	g.game.CurrentState().Transition("attackers")
 }
 
 func (g *GameServer) targetAbility(msg *Message) {
@@ -287,7 +278,7 @@ func (g *GameServer) targetAbility(msg *Message) {
 	}
 
 	g.ResolveStack()
-	g.CurrentState().Transition("main")
+	g.game.CurrentState().Transition("main")
 }
 
 func (g *GameServer) ResolveStack() {
@@ -323,15 +314,15 @@ func (g *GameServer) getCardOnBoard(id string) *Card {
 func (g *GameServer) handleEndTurn(msg *Message) {
 	if g.game.CurrentPlayer.Id == msg.PlayerId {
 		log.Println("Client", msg.PlayerId, " asks for blockers or end turn")
-		g.CurrentState().Transition("blockers")
+		g.game.CurrentState().Transition("blockers")
 	} else {
 		log.Println("Client", msg.PlayerId, " asks for combat")
-		g.CurrentState().Transition("combat")
+		g.game.CurrentState().Transition("combat")
 	}
 }
 
 func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
-	msg := NewResponseMessage(g.CurrentState().String(), g.Priority().Id, g.game.Players, g.game.Stack, options, g.game.Engagements)
+	msg := NewResponseMessage(g.game.CurrentState().String(), g.Priority().Id, g.game.Players, g.game.Stack, options, g.game.Engagements)
 	msg.Players[OtherPlayerId(client.PlayerId())].Hand = make(map[string]*Card)
 	client.SendResponse(msg)
 }
@@ -345,7 +336,7 @@ func OtherPlayerId(playerId string) string {
 }
 
 func (g *GameServer) Priority() *Player {
-	switch g.CurrentState().String() {
+	switch g.game.CurrentState().String() {
 	case "blockers":
 		fallthrough
 	case "blockTarget":

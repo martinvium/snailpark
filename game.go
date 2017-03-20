@@ -19,3 +19,11 @@ func NewGame(players map[string]*Player) *Game {
 		nil,
 	}
 }
+
+func (g *game) CurrentState() *StateMachine {
+	if g.state == nil {
+		g.state = NewStateMachine(g)
+	}
+
+	return g.state
+}
