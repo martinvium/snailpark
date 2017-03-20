@@ -7,6 +7,11 @@ import (
 
 const channelBufSize = 100
 
+type MessageSender interface {
+	SendStateResponseAll()
+	SendOptionsResponse()
+}
+
 type GameServer struct {
 	clients   map[string]Client
 	doneCh    chan bool
@@ -75,18 +80,6 @@ func (g *GameServer) ListenAndConsumeClientRequests() {
 	}
 }
 
-func (g *GameServer) AnyEngagements() bool {
-	return len(g.game.Engagements) > 0
-}
-
-func (g *GameServer) NextPlayer() {
-	if g.game.CurrentPlayer.Id == "player" {
-		g.game.CurrentPlayer = g.game.Players["ai"]
-	} else {
-		g.game.CurrentPlayer = g.game.Players["player"]
-	}
-}
-
 func (g *GameServer) DefendingPlayer() *Player {
 	if g.game.CurrentPlayer.Id == "player" {
 		return g.game.Players["ai"]
@@ -111,20 +104,10 @@ func (g *GameServer) processClientRequest(msg *Message) {
 	}
 }
 
-func (g *GameServer) AddCardsToAllPlayerHands(num int) {
-	for _, player := range g.game.Players {
-		player.AddToHand(num)
-	}
-}
-
 func (g *GameServer) SendStateResponseAll() {
 	for _, client := range g.clients {
 		g.sendBoardStateToClient(client, []string{})
 	}
-}
-
-func (g *GameServer) ClearAttackers() {
-	g.game.Engagements = []*Engagement{}
 }
 
 func (g *GameServer) SendOptionsResponse() {
@@ -135,12 +118,6 @@ func (g *GameServer) SendOptionsResponse() {
 	options := MapCardIds(cards)
 	log.Println("Options:", options)
 	g.sendBoardStateToClient(g.clients[g.game.CurrentPlayer.Id], options)
-}
-
-func (g *GameServer) AnyPlayerDead() bool {
-	return AnyPlayer(g.game.Players, func(p *Player) bool {
-		return p.Avatar.CurrentToughness <= 0
-	})
 }
 
 // private
@@ -286,19 +263,9 @@ func (g *GameServer) ResolveStack() {
 		g.game.CurrentPlayer.AddToBoard(g.game.Stack)
 	}
 
-	g.CleanUpDeadCreatures()
+	g.game.CleanUpDeadCreatures()
 
 	g.game.Stack = nil
-}
-
-func (g *GameServer) CleanUpDeadCreatures() {
-	for _, player := range g.game.Players {
-		for key, card := range player.Board {
-			if card.CurrentToughness <= 0 {
-				delete(player.Board, key)
-			}
-		}
-	}
 }
 
 func (g *GameServer) getCardOnBoard(id string) *Card {

@@ -3,8 +3,9 @@ package main
 import "log"
 
 type StateMachine struct {
-	gameServer *GameServer
-	state      string
+	game      *Game
+	msgSender *MessageSender
+	state     string
 }
 
 var transitions = map[string][]string{
@@ -22,8 +23,8 @@ var transitions = map[string][]string{
 	"finished":    []string{},
 }
 
-func NewStateMachine(gameServer *GameServer) *StateMachine {
-	return &StateMachine{gameServer, "unstarted"}
+func NewStateMachine(game *Game, msgSender *MessageSender) *StateMachine {
+	return &StateMachine{game, msgSender, "unstarted"}
 }
 
 func (s *StateMachine) Transition(newState string) {
@@ -67,49 +68,49 @@ func (s *StateMachine) transitionCallback() {
 	case "end":
 		s.toEnd()
 	default:
-		s.gameServer.SendStateResponseAll()
+		s.msgSender.SendStateResponseAll()
 	}
 }
 
 func (s *StateMachine) toMulligan() {
-	s.gameServer.AddCardsToAllPlayerHands(4)
+	s.game.AddCardsToAllPlayerHands(4)
 	s.Transition("upkeep")
 }
 
 func (s *StateMachine) toUpkeep() {
-	s.gameServer.game.CurrentPlayer.AddToHand(1)
-	s.gameServer.game.CurrentPlayer.AddMaxMana(1)
-	s.gameServer.game.CurrentPlayer.ResetCurrentMana()
-	s.gameServer.ClearAttackers()
+	s.game.CurrentPlayer.AddToHand(1)
+	s.game.CurrentPlayer.AddMaxMana(1)
+	s.game.CurrentPlayer.ResetCurrentMana()
+	s.game.ClearAttackers()
 	s.Transition("main")
 }
 
 func (s *StateMachine) toMain() {
-	s.gameServer.SendStateResponseAll()
+	s.msgSender.SendStateResponseAll()
 }
 
 func (s *StateMachine) toTargeting() {
-	s.gameServer.SendOptionsResponse()
+	s.msgSender.SendOptionsResponse()
 }
 
 func (s *StateMachine) toBlockers() {
-	if s.gameServer.AnyEngagements() == false {
+	if s.game.AnyEngagements() == false {
 		s.Transition("combat")
 	} else {
-		s.gameServer.SendStateResponseAll()
+		s.msgSender.SendStateResponseAll()
 	}
 }
 
 func (s *StateMachine) toAttackers() {
-	s.gameServer.SendOptionsResponse()
+	s.msgSender.SendOptionsResponse()
 }
 
 func (s *StateMachine) toCombat() {
-	ResolveEngagement(s.gameServer.game.Engagements)
+	ResolveEngagement(s.game.Engagements)
 
-	s.gameServer.CleanUpDeadCreatures()
+	s.game.CleanUpDeadCreatures()
 
-	if s.gameServer.AnyPlayerDead() {
+	if s.game.AnyPlayerDead() {
 		s.Transition("finished")
 	} else {
 		s.Transition("end")
@@ -117,10 +118,10 @@ func (s *StateMachine) toCombat() {
 }
 
 func (s *StateMachine) toEnd() {
-	s.gameServer.NextPlayer()
+	s.game.NextPlayer()
 	s.Transition("upkeep")
 }
 
 func (s *StateMachine) toFinished() {
-	s.gameServer.SendStateResponseAll()
+	s.msgSender.SendStateResponseAll()
 }

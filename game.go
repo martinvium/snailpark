@@ -20,10 +20,44 @@ func NewGame(players map[string]*Player) *Game {
 	}
 }
 
-func (g *game) CurrentState() *StateMachine {
-	if g.state == nil {
-		g.state = NewStateMachine(g)
-	}
-
+func (g *Game) CurrentState() *StateMachine {
 	return g.state
+}
+
+func (g *Game) NextPlayer() {
+	if g.CurrentPlayer.Id == "player" {
+		g.CurrentPlayer = g.Players["ai"]
+	} else {
+		g.CurrentPlayer = g.Players["player"]
+	}
+}
+
+func (g *Game) AnyPlayerDead() bool {
+	return AnyPlayer(g.Players, func(p *Player) bool {
+		return p.Avatar.CurrentToughness <= 0
+	})
+}
+
+func (g *Game) CleanUpDeadCreatures() {
+	for _, player := range g.Players {
+		for key, card := range player.Board {
+			if card.CurrentToughness <= 0 {
+				delete(player.Board, key)
+			}
+		}
+	}
+}
+
+func (g *Game) AnyEngagements() bool {
+	return len(g.Engagements) > 0
+}
+
+func (g *Game) ClearAttackers() {
+	g.Engagements = []*Engagement{}
+}
+
+func (g *Game) AddCardsToAllPlayerHands(num int) {
+	for _, player := range g.Players {
+		player.AddToHand(num)
+	}
 }
