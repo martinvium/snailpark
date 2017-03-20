@@ -8,26 +8,12 @@ import (
 const channelBufSize = 100
 
 type GameServer struct {
-	clients        map[string]Client
-	doneCh         chan bool
-	Players        map[string]*Player
-	CurrentPlayer  *Player
-	state          *StateMachine
-	requestCh      chan *Message
-	StartTime      time.Time
-	Stack          *Card
-	Engagements    []*Engagement
-	CurrentBlocker *Card
-}
-
-type Game struct {
-	Players        map[string]*Player
-	CurrentPlayer  *Player
-	state          *StateMachine
-	StartTime      time.Time
-	Stack          *Card
-	Engagements    []*Engagement
-	CurrentBlocker *Card
+	clients   map[string]Client
+	doneCh    chan bool
+	state     *StateMachine
+	requestCh chan *Message
+	StartTime time.Time
+	game      *Game
 }
 
 func NewGameServer() *GameServer {
@@ -42,14 +28,17 @@ func NewGameServer() *GameServer {
 	return &GameServer{
 		clients,
 		make(chan bool, channelBufSize),
-		players,
-		players["player"], // currently always the player that starts
 		nil,
 		make(chan *Message, channelBufSize),
 		time.Now(),
-		nil,
-		[]*Engagement{},
-		nil,
+		&Game{
+			players,
+			players["player"], // currently always the player that starts
+			nil,
+			nil,
+			[]*Engagement{},
+			nil,
+		},
 	}
 }
 
@@ -95,7 +84,7 @@ func (g *GameServer) ListenAndConsumeClientRequests() {
 }
 
 func (g *GameServer) AnyEngagements() bool {
-	return len(g.Engagements) > 0
+	return len(g.game.Engagements) > 0
 }
 
 func (g *GameServer) CurrentState() *StateMachine {
@@ -107,18 +96,18 @@ func (g *GameServer) CurrentState() *StateMachine {
 }
 
 func (g *GameServer) NextPlayer() {
-	if g.CurrentPlayer.Id == "player" {
-		g.CurrentPlayer = g.Players["ai"]
+	if g.game.CurrentPlayer.Id == "player" {
+		g.game.CurrentPlayer = g.game.Players["ai"]
 	} else {
-		g.CurrentPlayer = g.Players["player"]
+		g.game.CurrentPlayer = g.game.Players["player"]
 	}
 }
 
 func (g *GameServer) DefendingPlayer() *Player {
-	if g.CurrentPlayer.Id == "player" {
-		return g.Players["ai"]
+	if g.game.CurrentPlayer.Id == "player" {
+		return g.game.Players["ai"]
 	} else {
-		return g.Players["player"]
+		return g.game.Players["player"]
 	}
 }
 
@@ -139,7 +128,7 @@ func (g *GameServer) processClientRequest(msg *Message) {
 }
 
 func (g *GameServer) AddCardsToAllPlayerHands(num int) {
-	for _, player := range g.Players {
+	for _, player := range g.game.Players {
 		player.AddToHand(num)
 	}
 }
@@ -151,21 +140,21 @@ func (g *GameServer) SendStateResponseAll() {
 }
 
 func (g *GameServer) ClearAttackers() {
-	g.Engagements = []*Engagement{}
+	g.game.Engagements = []*Engagement{}
 }
 
 func (g *GameServer) SendOptionsResponse() {
 	cards := FilterCards(g.allBoardCards(), func(c *Card) bool {
-		return c.CardType == g.Stack.Ability.Condition
+		return c.CardType == g.game.Stack.Ability.Condition
 	})
 
 	options := MapCardIds(cards)
 	log.Println("Options:", options)
-	g.sendBoardStateToClient(g.clients[g.CurrentPlayer.Id], options)
+	g.sendBoardStateToClient(g.clients[g.game.CurrentPlayer.Id], options)
 }
 
 func (g *GameServer) AnyPlayerDead() bool {
-	return AnyPlayer(g.Players, func(p *Player) bool {
+	return AnyPlayer(g.game.Players, func(p *Player) bool {
 		return p.Avatar.CurrentToughness <= 0
 	})
 }
@@ -174,7 +163,7 @@ func (g *GameServer) AnyPlayerDead() bool {
 
 func (g *GameServer) allBoardCards() []*Card {
 	cards := []*Card{}
-	for _, player := range g.Players {
+	for _, player := range g.game.Players {
 		for _, card := range player.Board {
 			cards = append(cards, card)
 		}
@@ -189,9 +178,9 @@ func (g *GameServer) handleStartAction(msg *Message) {
 		return
 	}
 
-	g.Players[msg.PlayerId].Ready = true
+	g.game.Players[msg.PlayerId].Ready = true
 
-	allReady := AllPlayers(g.Players, func(player *Player) bool {
+	allReady := AllPlayers(g.game.Players, func(player *Player) bool {
 		return player.Ready == true
 	})
 
@@ -206,20 +195,20 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 		return
 	}
 
-	if g.CurrentPlayer.Id != msg.PlayerId {
+	if g.game.CurrentPlayer.Id != msg.PlayerId {
 		log.Println("ERROR: Client calling action", msg.Action, "out of turn:", msg.PlayerId)
 		return
 	}
 
-	if g.CurrentPlayer.CanPlayCard(msg.Card) == false {
+	if g.game.CurrentPlayer.CanPlayCard(msg.Card) == false {
 		log.Println("ERROR: Cannot play card:", msg.Card)
 		return
 	}
 
-	g.Stack = g.CurrentPlayer.PlayCardFromHand(msg.Card)
+	g.game.Stack = g.game.CurrentPlayer.PlayCardFromHand(msg.Card)
 	g.CurrentState().Transition("stack")
 
-	if g.Stack.Ability != nil && g.Stack.Ability.RequiresTarget() {
+	if g.game.Stack.Ability != nil && g.game.Stack.Ability.RequiresTarget() {
 		g.CurrentState().Transition("targeting")
 	} else {
 		g.ResolveStack()
@@ -251,34 +240,34 @@ func (g *GameServer) assignBlocker(msg *Message) {
 	card, ok := g.DefendingPlayer().Board[msg.Card]
 	if ok {
 		log.Println("Current blocker:", msg.Card)
-		g.CurrentBlocker = card
+		g.game.CurrentBlocker = card
 	}
 
 	g.CurrentState().Transition("blockTarget")
 }
 
 func (g *GameServer) assignBlockTarget(msg *Message) {
-	card, ok := g.CurrentPlayer.Board[msg.Card]
+	card, ok := g.game.CurrentPlayer.Board[msg.Card]
 	if ok {
 		log.Println("Assigned blocker target:", card)
-		for _, engagement := range g.Engagements {
+		for _, engagement := range g.game.Engagements {
 			if engagement.Attacker == card {
-				engagement.Blocker = g.CurrentBlocker
+				engagement.Blocker = g.game.CurrentBlocker
 			}
 		}
 	} else {
 		log.Println("ERROR: assigning invalid blocker:", msg.Card)
 	}
 
-	g.CurrentBlocker = nil
+	g.game.CurrentBlocker = nil
 	g.CurrentState().Transition("blockers")
 }
 
 func (g *GameServer) assignAttacker(msg *Message) {
-	card, ok := g.CurrentPlayer.Board[msg.Card]
+	card, ok := g.game.CurrentPlayer.Board[msg.Card]
 	if ok {
 		log.Println("Assigned attacker:", msg.Card)
-		g.Engagements = append(g.Engagements, NewEngagement(card, g.DefendingPlayer().Avatar))
+		g.game.Engagements = append(g.game.Engagements, NewEngagement(card, g.DefendingPlayer().Avatar))
 	} else {
 		log.Println("ERROR: assigning invalid attacker:", msg.Card)
 	}
@@ -296,7 +285,7 @@ func (g *GameServer) targetAbility(msg *Message) {
 	// TODO: we should instead assign the target to the effect, and let this resolve
 	// in ResolveStack, because that would allow abilities without a target to use
 	// the same code?
-	ability := g.Stack.Ability
+	ability := g.game.Stack.Ability
 	switch ability.Effect {
 	case "damage":
 		target.Damage(ability.Modifier)
@@ -309,17 +298,17 @@ func (g *GameServer) targetAbility(msg *Message) {
 }
 
 func (g *GameServer) ResolveStack() {
-	if g.Stack.CardType == "creature" {
-		g.CurrentPlayer.AddToBoard(g.Stack)
+	if g.game.Stack.CardType == "creature" {
+		g.game.CurrentPlayer.AddToBoard(g.game.Stack)
 	}
 
 	g.CleanUpDeadCreatures()
 
-	g.Stack = nil
+	g.game.Stack = nil
 }
 
 func (g *GameServer) CleanUpDeadCreatures() {
-	for _, player := range g.Players {
+	for _, player := range g.game.Players {
 		for key, card := range player.Board {
 			if card.CurrentToughness <= 0 {
 				delete(player.Board, key)
@@ -339,7 +328,7 @@ func (g *GameServer) getCardOnBoard(id string) *Card {
 }
 
 func (g *GameServer) handleEndTurn(msg *Message) {
-	if g.CurrentPlayer.Id == msg.PlayerId {
+	if g.game.CurrentPlayer.Id == msg.PlayerId {
 		log.Println("Client", msg.PlayerId, " asks for blockers or end turn")
 		g.CurrentState().Transition("blockers")
 	} else {
@@ -349,7 +338,7 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 }
 
 func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
-	msg := NewResponseMessage(g.CurrentState().String(), g.Priority().Id, g.Players, g.Stack, options, g.Engagements)
+	msg := NewResponseMessage(g.CurrentState().String(), g.Priority().Id, g.game.Players, g.game.Stack, options, g.game.Engagements)
 	msg.Players[OtherPlayerId(client.PlayerId())].Hand = make(map[string]*Card)
 	client.SendResponse(msg)
 }
@@ -370,5 +359,5 @@ func (g *GameServer) Priority() *Player {
 		return g.DefendingPlayer()
 	}
 
-	return g.CurrentPlayer
+	return g.game.CurrentPlayer
 }
