@@ -31,14 +31,7 @@ func NewGameServer() *GameServer {
 		nil,
 		make(chan *Message, channelBufSize),
 		time.Now(),
-		&Game{
-			players,
-			players["player"], // currently always the player that starts
-			nil,
-			nil,
-			[]*Engagement{},
-			nil,
-		},
+		NewGame(players),
 	}
 }
 
