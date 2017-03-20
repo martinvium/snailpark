@@ -60,9 +60,3 @@ func (g *Game) AnyEngagements() bool {
 func (g *Game) ClearAttackers() {
 	g.Engagements = []*Engagement{}
 }
-
-func (g *Game) AddCardsToAllPlayerHands(num int) {
-	for _, player := range g.Players {
-		player.AddToHand(num)
-	}
-}

@@ -81,7 +81,10 @@ func (s *StateMachine) transitionCallback() {
 }
 
 func (s *StateMachine) toMulligan() {
-	s.game.AddCardsToAllPlayerHands(4)
+	for _, player := range s.game.Players {
+		player.AddToHand(4)
+	}
+
 	s.Transition("upkeep")
 }
 
