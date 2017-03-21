@@ -135,7 +135,7 @@ func (g *GameServer) allBoardCards() []*Card {
 }
 
 func (g *GameServer) handleStartAction(msg *Message) {
-	if g.game.CurrentState().String() != "unstarted" {
+	if g.game.State.String() != "unstarted" {
 		g.SendStateResponseAll()
 		return
 	}
@@ -147,12 +147,12 @@ func (g *GameServer) handleStartAction(msg *Message) {
 	})
 
 	if allReady {
-		g.game.CurrentState().Transition("mulligan")
+		g.game.State.Transition("mulligan")
 	}
 }
 
 func (g *GameServer) handlePlayCardAction(msg *Message) {
-	if g.game.CurrentState().String() != "main" {
+	if g.game.State.String() != "main" {
 		log.Println("ERROR: Playing card out of main phase:", msg.PlayerId)
 		return
 	}
@@ -168,13 +168,13 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 	}
 
 	g.game.Stack = g.game.CurrentPlayer.PlayCardFromHand(msg.Card)
-	g.game.CurrentState().Transition("stack")
+	g.game.State.Transition("stack")
 
 	if g.game.Stack.Ability != nil && g.game.Stack.Ability.RequiresTarget() {
-		g.game.CurrentState().Transition("targeting")
+		g.game.State.Transition("targeting")
 	} else {
 		g.ResolveStack()
-		g.game.CurrentState().Transition("main")
+		g.game.State.Transition("main")
 	}
 }
 
@@ -184,7 +184,7 @@ func (g *GameServer) handleTarget(msg *Message) {
 		return
 	}
 
-	switch g.game.CurrentState().String() {
+	switch g.game.State.String() {
 	case "main":
 		fallthrough
 	case "attackers":
@@ -205,7 +205,7 @@ func (g *GameServer) assignBlocker(msg *Message) {
 		g.game.CurrentBlocker = card
 	}
 
-	g.game.CurrentState().Transition("blockTarget")
+	g.game.State.Transition("blockTarget")
 }
 
 func (g *GameServer) assignBlockTarget(msg *Message) {
@@ -222,7 +222,7 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 	}
 
 	g.game.CurrentBlocker = nil
-	g.game.CurrentState().Transition("blockers")
+	g.game.State.Transition("blockers")
 }
 
 func (g *GameServer) assignAttacker(msg *Message) {
@@ -234,7 +234,7 @@ func (g *GameServer) assignAttacker(msg *Message) {
 		log.Println("ERROR: assigning invalid attacker:", msg.Card)
 	}
 
-	g.game.CurrentState().Transition("attackers")
+	g.game.State.Transition("attackers")
 }
 
 func (g *GameServer) targetAbility(msg *Message) {
@@ -256,7 +256,7 @@ func (g *GameServer) targetAbility(msg *Message) {
 	}
 
 	g.ResolveStack()
-	g.game.CurrentState().Transition("main")
+	g.game.State.Transition("main")
 }
 
 func (g *GameServer) ResolveStack() {
@@ -282,16 +282,16 @@ func (g *GameServer) getCardOnBoard(id string) *Card {
 func (g *GameServer) handleEndTurn(msg *Message) {
 	if g.game.CurrentPlayer.Id == msg.PlayerId {
 		log.Println("Client", msg.PlayerId, " asks for blockers or end turn")
-		g.game.CurrentState().Transition("blockers")
+		g.game.State.Transition("blockers")
 	} else {
 		log.Println("Client", msg.PlayerId, " asks for combat")
-		g.game.CurrentState().Transition("combat")
+		g.game.State.Transition("combat")
 	}
 }
 
 func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
 	msg := NewResponseMessage(
-		g.game.CurrentState().String(),
+		g.game.State.String(),
 		g.game.Priority().Id,
 		g.game.Players,
 		g.game.Stack,

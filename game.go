@@ -3,7 +3,7 @@ package main
 type Game struct {
 	Players        map[string]*Player
 	CurrentPlayer  *Player
-	state          *StateMachine
+	State          *StateMachine
 	Stack          *Card
 	Engagements    []*Engagement
 	CurrentBlocker *Card
@@ -20,13 +20,9 @@ func NewGame(players map[string]*Player) *Game {
 	}
 }
 
-func (g *Game) CurrentState() *StateMachine {
-	return g.state
-}
-
 func (g *Game) SetStateMachineDeps(msgSender MessageSender) {
-	g.state.SetGame(g)
-	g.state.SetMessageSender(msgSender)
+	g.State.SetGame(g)
+	g.State.SetMessageSender(msgSender)
 }
 
 func (g *Game) NextPlayer() {
@@ -70,7 +66,7 @@ func (g *Game) DefendingPlayer() *Player {
 }
 
 func (g *Game) Priority() *Player {
-	switch g.CurrentState().String() {
+	switch g.State.String() {
 	case "blockers":
 		fallthrough
 	case "blockTarget":
