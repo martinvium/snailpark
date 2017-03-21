@@ -102,9 +102,9 @@ func (g *GameServer) processClientRequest(msg *Message) {
 		g.handleStartAction(msg)
 	} else if msg.Action == "ping" {
 		// do nothing
-	} else if msg.Action == "play_card" {
+	} else if msg.Action == "playCard" {
 		g.handlePlayCardAction(msg)
-	} else if msg.Action == "end_turn" {
+	} else if msg.Action == "endTurn" {
 		g.handleEndTurn(msg)
 	} else if msg.Action == "target" {
 		g.handleTarget(msg)

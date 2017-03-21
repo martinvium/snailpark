@@ -29,10 +29,10 @@ func (a *AI) Send(msg *ResponseMessage) {
 			a.PlayCard(card)
 		} else {
 			a.AttackWithAll(msg)
-			a.RespondDelayed(NewSimpleMessage(a.playerId, "end_turn"))
+			a.RespondDelayed(NewSimpleMessage(a.playerId, "endTurn"))
 		}
 	} else if msg.State == "blockers" {
-		a.RespondDelayed(NewSimpleMessage(a.playerId, "end_turn"))
+		a.RespondDelayed(NewSimpleMessage(a.playerId, "endTurn"))
 	}
 }
 
@@ -48,7 +48,7 @@ func (a *AI) FirstPlayableCard(msg *ResponseMessage) *Card {
 }
 
 func (a *AI) PlayCard(card *Card) {
-	a.RespondDelayed(NewPlayCardMessage(a.playerId, "play_card", card.Id))
+	a.RespondDelayed(NewPlayCardMessage(a.playerId, "playCard", card.Id))
 }
 
 func (a *AI) RespondDelayed(msg *Message) {

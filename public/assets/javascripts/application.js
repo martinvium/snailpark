@@ -18,7 +18,7 @@ $(document).ready(function() {
   openWebsocket();
 
   $('#end-turn').click(function() {
-    ws.send(JSON.stringify({ "playerId": playerId, "action": "end_turn" }));
+    ws.send(JSON.stringify({ "playerId": playerId, "action": "endTurn" }));
   });
 
   function openWebsocket() {
@@ -164,7 +164,7 @@ $(document).ready(function() {
         $.each(player["hand"], function(index, card) {
           handEl(player["id"]).append(
             renderCard(card, function() {
-              clickCard($(this).attr('data-id'), 'play_card');
+              clickCard($(this).attr('data-id'), 'playCard');
             })
           );
         });
