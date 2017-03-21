@@ -72,11 +72,7 @@ $(document).ready(function() {
         }
       });
 
-      if(msg.currentPlayerId == playerId) {
-        $('#end-turn').removeClass('btn-disabled');
-      } else {
-        $('#end-turn').addClass('btn-disabled');
-      }
+      updateNextButton(msg);
 
       clearTimeout(ping);
       ping = setTimeout(pingSocket, pingTime);
@@ -89,6 +85,14 @@ $(document).ready(function() {
     ws.onclose = function(event) {
       $('#messages').text('Disconnected! Reconnecting...').addClass('yellow').show();
       setTimeout(openWebsocket, 5000);
+    }
+  }
+
+  function updateNextButton(msg) {
+    if(msg.currentPlayerId == playerId) {
+      $('#end-turn').removeClass('btn-disabled');
+    } else {
+      $('#end-turn').addClass('btn-disabled');
     }
   }
 
