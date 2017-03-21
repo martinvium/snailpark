@@ -89,14 +89,6 @@ func (g *GameServer) ListenAndConsumeClientRequests() {
 	}
 }
 
-func (g *GameServer) DefendingPlayer() *Player {
-	if g.game.CurrentPlayer.Id == "player" {
-		return g.game.Players["ai"]
-	} else {
-		return g.game.Players["player"]
-	}
-}
-
 func (g *GameServer) processClientRequest(msg *Message) {
 	if msg.Action == "start" {
 		g.handleStartAction(msg)
@@ -187,7 +179,7 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 }
 
 func (g *GameServer) handleTarget(msg *Message) {
-	if g.Priority().Id != msg.PlayerId {
+	if g.game.Priority().Id != msg.PlayerId {
 		log.Println("ERROR: Client calling action", msg.Action, "out of priority:", msg.PlayerId)
 		return
 	}
@@ -207,7 +199,7 @@ func (g *GameServer) handleTarget(msg *Message) {
 }
 
 func (g *GameServer) assignBlocker(msg *Message) {
-	card, ok := g.DefendingPlayer().Board[msg.Card]
+	card, ok := g.game.DefendingPlayer().Board[msg.Card]
 	if ok {
 		log.Println("Current blocker:", msg.Card)
 		g.game.CurrentBlocker = card
@@ -237,7 +229,7 @@ func (g *GameServer) assignAttacker(msg *Message) {
 	card, ok := g.game.CurrentPlayer.Board[msg.Card]
 	if ok {
 		log.Println("Assigned attacker:", msg.Card)
-		g.game.Engagements = append(g.game.Engagements, NewEngagement(card, g.DefendingPlayer().Avatar))
+		g.game.Engagements = append(g.game.Engagements, NewEngagement(card, g.game.DefendingPlayer().Avatar))
 	} else {
 		log.Println("ERROR: assigning invalid attacker:", msg.Card)
 	}
@@ -298,8 +290,18 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 }
 
 func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
-	msg := NewResponseMessage(g.game.CurrentState().String(), g.Priority().Id, g.game.Players, g.game.Stack, options, g.game.Engagements)
+	msg := NewResponseMessage(
+		g.game.CurrentState().String(),
+		g.game.Priority().Id,
+		g.game.Players,
+		g.game.Stack,
+		options,
+		g.game.Engagements,
+	)
+
+	// hide opponent cards
 	msg.Players[OtherPlayerId(client.PlayerId())].Hand = make(map[string]*Card)
+
 	client.SendResponse(msg)
 }
 
@@ -309,15 +311,4 @@ func OtherPlayerId(playerId string) string {
 	} else {
 		return "player"
 	}
-}
-
-func (g *GameServer) Priority() *Player {
-	switch g.game.CurrentState().String() {
-	case "blockers":
-		fallthrough
-	case "blockTarget":
-		return g.DefendingPlayer()
-	}
-
-	return g.game.CurrentPlayer
 }

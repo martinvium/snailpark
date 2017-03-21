@@ -60,3 +60,22 @@ func (g *Game) AnyEngagements() bool {
 func (g *Game) ClearAttackers() {
 	g.Engagements = []*Engagement{}
 }
+
+func (g *Game) DefendingPlayer() *Player {
+	if g.CurrentPlayer.Id == "player" {
+		return g.Players["ai"]
+	} else {
+		return g.Players["player"]
+	}
+}
+
+func (g *Game) Priority() *Player {
+	switch g.CurrentState().String() {
+	case "blockers":
+		fallthrough
+	case "blockTarget":
+		return g.DefendingPlayer()
+	}
+
+	return g.CurrentPlayer
+}
