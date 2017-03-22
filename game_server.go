@@ -297,6 +297,7 @@ func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
 		g.game.Stack,
 		options,
 		g.game.Engagements,
+		g.game.CurrentBlocker,
 	)
 
 	// hide opponent cards
