@@ -118,12 +118,14 @@ $(document).ready(function() {
 
     for(var i in msg.engagements) {
       var eng = msg.engagements[i];
-      if(!eng['blocker'] || !eng['attacker']) {
-        continue;
-      }
 
-      var startPos = getCardPosition(eng['blocker']['id']);
-      var targetPos = getCardPosition(eng['attacker']['id']);
+      if(eng['blocker']) {
+        var startPos = getCardPosition(eng['blocker']['id']);
+        var targetPos = getCardPosition(eng['attacker']['id']);
+      } else {
+        var startPos = getCardPosition(eng['attacker']['id']);
+        var targetPos = getCardPosition(eng['target']['id']);
+      }
 
       path = clonePathPrototype().addClass('engagement');
 
