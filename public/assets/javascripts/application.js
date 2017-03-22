@@ -92,12 +92,14 @@ $(document).ready(function() {
 
   $(window).mousemove(function(e) {
     if(state == 'blockTarget') {
-      renderPointerArrow(e);
+      renderPointerArrow(e, msg.currentBlocker['id']);
+    } else if(state == 'targeting') {
+      renderPointerArrow(e, msg.stack['id']);
     }
   });
 
-  function renderPointerArrow(e) {
-    var pos = getCardPosition(msg.currentBlocker['id']);
+  function renderPointerArrow(e, startCardId) {
+    var pos = getCardPosition(startCardId);
 
     var path = $('.arrow svg path.pointer');
     if(path.length === 0) {
