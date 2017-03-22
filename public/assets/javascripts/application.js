@@ -96,9 +96,6 @@ $(document).ready(function() {
     }
   });
 
-  // TODO: Curve
-  // var p1 = 'C326,212';
-  // var p2 = '900,900';
   function renderPointerArrow(e) {
     var pos = getCardPosition(msg.currentBlocker['id']);
 
@@ -117,9 +114,7 @@ $(document).ready(function() {
   }
 
   function renderEngagementArrows() {
-    return;
-
-    $('.arrow svg path.engagement').remove();
+    $('.arrow svg path.engagement, .arrow svg path.pointer').remove();
 
     for(var i in msg.engagements) {
       var eng = msg.engagements[i];
@@ -155,6 +150,9 @@ $(document).ready(function() {
     return { 'x': x, 'y': y };
   }
 
+  // TODO: Curve
+  // var p1 = 'C326,212';
+  // var p2 = '900,900';
   function getArrowPathD(sx, sy, tx, ty) {
     var start = 'M' + sx + ',' + sy;
     var target = tx + ',' + ty;
