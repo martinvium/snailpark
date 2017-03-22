@@ -102,7 +102,13 @@ $(document).ready(function() {
   function renderPointerArrow(e) {
     var pos = getCardPosition(msg.currentBlocker['id']);
 
-    $('.arrow svg path').attr('d', getArrowPathD(
+    var path = $('.arrow svg path.pointer');
+    if(path.length === 0) {
+      path = clonePathPrototype().addClass('pointer');
+      $('.arrow svg').append(path);
+    }
+
+    path.attr('d', getArrowPathD(
       pos['x'],
       pos['y'],
       e.clientX,
@@ -113,13 +119,32 @@ $(document).ready(function() {
   function renderEngagementArrows() {
     return;
 
-    $('.arrow svg path').remove();
+    $('.arrow svg path.engagement').remove();
 
     for(var i in msg.engagements) {
-      var path = $('<path d="" class="engagement"/>');
-      path.attr('d', value);
+      var eng = msg.engagements[i];
+      if(!eng['blocker'] || !eng['attacker']) {
+        continue;
+      }
+
+      var startPos = getCardPosition(eng['blocker']['id']);
+      var targetPos = getCardPosition(eng['attacker']['id']);
+
+      path = clonePathPrototype().addClass('engagement');
+
+      path.attr('d', getArrowPathD(
+        startPos['x'],
+        startPos['y'],
+        targetPos['x'],
+        targetPos['y']
+      ));
+
       $('.arrow svg').append(path);
     }
+  }
+
+  function clonePathPrototype() {
+    return $('.arrow svg path.prototype').clone().removeClass('prototype');
   }
 
   function getCardPosition(id) {
