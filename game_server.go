@@ -264,6 +264,7 @@ func (g *GameServer) ResolveStack() {
 		g.game.CurrentPlayer.AddToBoard(g.game.Stack)
 	}
 
+	g.game.CurrentPlayer.RemoveCardFromHand(g.game.Stack)
 	g.game.CleanUpDeadCreatures()
 
 	g.game.Stack = nil
