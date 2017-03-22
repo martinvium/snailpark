@@ -101,13 +101,25 @@ $(document).ready(function() {
   // var p2 = '900,900';
   function renderPointerArrow(e) {
     var pos = getCardPosition(msg.currentBlocker['id']);
-    var start = 'M' + pos['x'] + ',' + pos['y'];
-    var target = e.clientX + ',' + e.clientY;
 
-    var points = [start, target];
-    var value = points.join(' ');
+    $('.arrow svg path').attr('d', getArrowPathD(
+      pos['x'],
+      pos['y'],
+      e.clientX,
+      e.clientY
+    ));
+  }
 
-    $('.arrow svg path').attr('d', value);
+  function renderEngagementArrows() {
+    return;
+
+    $('.arrow svg path').remove();
+
+    for(var i in msg.engagements) {
+      var path = $('<path d="" class="engagement"/>');
+      path.attr('d', value);
+      $('.arrow svg').append(path);
+    }
   }
 
   function getCardPosition(id) {
@@ -118,14 +130,11 @@ $(document).ready(function() {
     return { 'x': x, 'y': y };
   }
 
-  function renderEngagementArrows() {
-    return;
-
-    $('.arrow svg path.engagement').remove();
-    for(var i in msg.engagements) {
-      var path = $('<path d="" class="engagement"/>');
-      $('.arrow svg').append(path);
-    }
+  function getArrowPathD(sx, sy, tx, ty) {
+    var start = 'M' + sx + ',' + sy;
+    var target = tx + ',' + ty;
+    var points = [start, target];
+    return points.join(' ');
   }
 
   function updateNextButton(msg) {
