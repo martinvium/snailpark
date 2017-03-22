@@ -3,7 +3,8 @@ $(document).ready(function() {
     playerId = 'player',
     players = {},
     oldPlayers = null,
-    state;
+    state,
+    msg;
 
   var gameId = urlParam('guid');
   if(!gameId) {
@@ -36,7 +37,7 @@ $(document).ready(function() {
     }
 
     ws.onmessage = function(event) {
-      var msg = JSON.parse(event.data);
+      msg = JSON.parse(event.data);
 
       state = msg.state;
 
@@ -52,6 +53,7 @@ $(document).ready(function() {
       renderBoard();
       renderHand();
       renderPlayers();
+      renderEngagementArrows();
 
       if(msg.state == "finished") {
         if(getAvatar(players["player"])["currentToughness"] <= 0) {
@@ -85,6 +87,44 @@ $(document).ready(function() {
     ws.onclose = function(event) {
       $('#messages').text('Disconnected! Reconnecting...').addClass('yellow').show();
       setTimeout(openWebsocket, 5000);
+    }
+  }
+
+  $(window).mousemove(function(e) {
+    if(state == 'blockTarget') {
+      renderPointerArrow(e);
+    }
+  });
+
+  // TODO: Curve
+  // var p1 = 'C326,212';
+  // var p2 = '900,900';
+  function renderPointerArrow(e) {
+    var pos = getCardPosition(msg.currentBlocker['id']);
+    var start = 'M' + pos['x'] + ',' + pos['y'];
+    var target = e.clientX + ',' + e.clientY;
+
+    var points = [start, target];
+    var value = points.join(' ');
+
+    $('.arrow svg path').attr('d', value);
+  }
+
+  function getCardPosition(id) {
+    var card = $('[data-id="' + id + '"]');
+    var offset = card.offset();
+    var x = offset.left + card.width() / 2;
+    var y = offset.top + (card.height() / 4 * 1);
+    return { 'x': x, 'y': y };
+  }
+
+  function renderEngagementArrows() {
+    return;
+
+    $('.arrow svg path.engagement').remove();
+    for(var i in msg.engagements) {
+      var path = $('<path d="" class="engagement"/>');
+      $('.arrow svg').append(path);
     }
   }
 
