@@ -129,6 +129,11 @@ $(document).ready(function() {
         var targetPos = getCardPosition(eng['target']['id']);
       }
 
+      if(startPos === null || targetPos === null) {
+        console.log('Skipping arrow because position is null');
+        continue;
+      }
+
       path = clonePathPrototype().addClass('engagement');
 
       path.attr('d', getArrowPathD(
@@ -148,6 +153,10 @@ $(document).ready(function() {
 
   function getCardPosition(id) {
     var card = $('[data-id="' + id + '"]');
+    if(card.length == 0) {
+      return null;
+    }
+
     var offset = card.offset();
     var x = offset.left + card.width() / 2;
     var y = offset.top + (card.height() / 4 * 1);
