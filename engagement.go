@@ -3,9 +3,9 @@ package main
 import "log"
 
 type Engagement struct {
-	Attacker *Card
-	Blocker  *Card
-	Target   *Card
+	Attacker *Card `json:"attacker"`
+	Blocker  *Card `json:"blocker"`
+	Target   *Card `json:"target"`
 }
 
 func NewEngagement(attacker *Card, target *Card) *Engagement {

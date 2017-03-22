@@ -264,6 +264,7 @@ func (g *GameServer) ResolveStack() {
 		g.game.CurrentPlayer.AddToBoard(g.game.Stack)
 	}
 
+	g.game.CurrentPlayer.RemoveCardFromHand(g.game.Stack)
 	g.game.CleanUpDeadCreatures()
 
 	g.game.Stack = nil
@@ -297,6 +298,7 @@ func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
 		g.game.Stack,
 		options,
 		g.game.Engagements,
+		g.game.CurrentBlocker,
 	)
 
 	// hide opponent cards

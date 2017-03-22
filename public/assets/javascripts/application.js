@@ -3,7 +3,8 @@ $(document).ready(function() {
     playerId = 'player',
     players = {},
     oldPlayers = null,
-    state;
+    state,
+    msg;
 
   var gameId = urlParam('guid');
   if(!gameId) {
@@ -36,7 +37,7 @@ $(document).ready(function() {
     }
 
     ws.onmessage = function(event) {
-      var msg = JSON.parse(event.data);
+      msg = JSON.parse(event.data);
 
       state = msg.state;
 
@@ -52,6 +53,7 @@ $(document).ready(function() {
       renderBoard();
       renderHand();
       renderPlayers();
+      renderEngagementArrows();
 
       if(msg.state == "finished") {
         if(getAvatar(players["player"])["currentToughness"] <= 0) {
@@ -86,6 +88,80 @@ $(document).ready(function() {
       $('#messages').text('Disconnected! Reconnecting...').addClass('yellow').show();
       setTimeout(openWebsocket, 5000);
     }
+  }
+
+  $(window).mousemove(function(e) {
+    if(state == 'blockTarget') {
+      renderPointerArrow(e, msg.currentBlocker['id']);
+    } else if(state == 'targeting') {
+      renderPointerArrow(e, msg.stack['id']);
+    }
+  });
+
+  function renderPointerArrow(e, startCardId) {
+    var pos = getCardPosition(startCardId);
+
+    var path = $('.arrow svg path.pointer');
+    if(path.length === 0) {
+      path = clonePathPrototype().addClass('pointer');
+      $('.arrow svg').append(path);
+    }
+
+    path.attr('d', getArrowPathD(
+      pos['x'],
+      pos['y'],
+      e.clientX,
+      e.clientY
+    ));
+  }
+
+  function renderEngagementArrows() {
+    $('.arrow svg path.engagement, .arrow svg path.pointer').remove();
+
+    for(var i in msg.engagements) {
+      var eng = msg.engagements[i];
+
+      if(eng['blocker']) {
+        var startPos = getCardPosition(eng['blocker']['id']);
+        var targetPos = getCardPosition(eng['attacker']['id']);
+      } else {
+        var startPos = getCardPosition(eng['attacker']['id']);
+        var targetPos = getCardPosition(eng['target']['id']);
+      }
+
+      path = clonePathPrototype().addClass('engagement');
+
+      path.attr('d', getArrowPathD(
+        startPos['x'],
+        startPos['y'],
+        targetPos['x'],
+        targetPos['y']
+      ));
+
+      $('.arrow svg').append(path);
+    }
+  }
+
+  function clonePathPrototype() {
+    return $('.arrow svg path.prototype').clone().removeClass('prototype');
+  }
+
+  function getCardPosition(id) {
+    var card = $('[data-id="' + id + '"]');
+    var offset = card.offset();
+    var x = offset.left + card.width() / 2;
+    var y = offset.top + (card.height() / 4 * 1);
+    return { 'x': x, 'y': y };
+  }
+
+  // TODO: Curve
+  // var p1 = 'C326,212';
+  // var p2 = '900,900';
+  function getArrowPathD(sx, sy, tx, ty) {
+    var start = 'M' + sx + ',' + sy;
+    var target = tx + ',' + ty;
+    var points = [start, target];
+    return points.join(' ');
   }
 
   function updateNextButton(msg) {

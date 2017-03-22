@@ -85,10 +85,13 @@ func (p *Player) AddToBoard(card *Card) {
 }
 
 func (p *Player) PlayCardFromHand(id string) *Card {
-	delete(p.Hand, id)
 	card := p.collection[id]
 	p.CurrentMana -= card.Cost
 	return card
+}
+
+func (p *Player) RemoveCardFromHand(c *Card) {
+	delete(p.Hand, c.Id)
 }
 
 func (p *Player) CanPlayCard(cardId string) bool {
