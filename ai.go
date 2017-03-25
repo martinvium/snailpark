@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"sort"
 	"time"
 )
 
@@ -10,45 +12,75 @@ type AI struct {
 	playerId string
 }
 
-func NewAI() *AI {
+func NewAI(playerId string) *AI {
 	outCh := make(chan *Message, channelBufSize)
-	outCh <- NewSimpleMessage("ai", "start")
-	return &AI{outCh, "ai"}
+	outCh <- NewSimpleMessage(playerId, "start")
+	return &AI{outCh, playerId}
 }
 
 func (a *AI) Send(msg *ResponseMessage) {
-	log.Println("AI ack it received: ", msg)
-
-	if msg.CurrentPlayerId != a.playerId {
-		return
-	}
-
-	if msg.State == "main" {
-		card := a.FirstPlayableCard(msg)
-		if card != nil {
-			a.PlayCard(card)
-		} else {
-			a.AttackWithAll(msg)
-			a.RespondDelayed(NewSimpleMessage(a.playerId, "endTurn"))
-		}
-	} else if msg.State == "blockers" {
-		a.RespondDelayed(NewSimpleMessage(a.playerId, "endTurn"))
+	action := a.RespondWithAction(msg)
+	if action != nil {
+		a.RespondDelayed(action)
 	}
 }
 
-func (a *AI) FirstPlayableCard(msg *ResponseMessage) *Card {
-	me := msg.Players[a.playerId]
-	for _, card := range me.Hand {
-		if card.CardType == "creature" && card.Cost <= me.CurrentMana {
-			return card
+func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
+	log.Println("AI ack it received: ", msg)
+
+	if msg.CurrentPlayerId != a.playerId {
+		return nil
+	}
+
+	if msg.State == "main" {
+		card := bestPlayableCard(msg.Players[a.playerId])
+		if card != nil {
+			return a.PlayCard(card)
+		} else {
+			return a.attackOrEndTurn(msg)
 		}
+	} else if msg.State == "attackers" {
+		return a.attackOrEndTurn(msg)
+	} else if msg.State == "blockers" {
+		return NewSimpleMessage(a.playerId, "endTurn")
 	}
 
 	return nil
 }
 
-func (a *AI) PlayCard(card *Card) {
-	a.RespondDelayed(NewPlayCardMessage(a.playerId, "playCard", card.Id))
+func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
+	me := msg.Players[a.playerId]
+	card := a.firstAvailableAttacker(me.Board, msg.Engagements)
+	if card != nil {
+		return NewPlayCardMessage(a.playerId, "target", card.Id)
+	} else {
+		return NewSimpleMessage(a.playerId, "endTurn")
+	}
+}
+
+func bestPlayableCard(me *ResponsePlayer) *Card {
+	ordered := []*Card{}
+	for _, card := range me.Hand {
+		if card.CardType == "creature" && card.Cost <= me.CurrentMana {
+			ordered = append(ordered, card)
+		}
+	}
+
+	sort.Slice(ordered[:], func(i, j int) bool {
+		return ordered[i].Cost > ordered[j].Cost
+	})
+
+	fmt.Printf("ordered: %v", ordered)
+
+	if len(ordered) > 0 {
+		return ordered[0]
+	} else {
+		return nil
+	}
+}
+
+func (a *AI) PlayCard(card *Card) *Message {
+	return NewPlayCardMessage(a.playerId, "playCard", card.Id)
 }
 
 func (a *AI) RespondDelayed(msg *Message) {
@@ -57,11 +89,22 @@ func (a *AI) RespondDelayed(msg *Message) {
 	a.outCh <- msg
 }
 
-func (a *AI) AttackWithAll(msg *ResponseMessage) {
-	me := msg.Players[a.playerId]
-	for id, card := range me.Board {
-		if card.CanAttack() {
-			a.outCh <- NewPlayCardMessage(a.playerId, "target", id)
+func (a *AI) firstAvailableAttacker(board map[string]*Card, engagements []*Engagement) *Card {
+	for _, card := range board {
+		if !a.isAttacking(engagements, card) && card.CanAttack() {
+			return card
 		}
 	}
+
+	return nil
+}
+
+func (a *AI) isAttacking(engagements []*Engagement, card *Card) bool {
+	for _, e := range engagements {
+		if card.Id == e.Attacker.Id {
+			return true
+		}
+	}
+
+	return false
 }
