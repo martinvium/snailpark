@@ -26,35 +26,18 @@ func TestAI_RespondWithAction_IgnoreWhenEnemyTurn(t *testing.T) {
 }
 
 func TestAI_RespondWithAction_PlaysCard(t *testing.T) {
-	players := newPlayers(map[string]*Card{
+	hand := map[string]*Card{
 		"p1_creature":           testCollection["p1_creature"],
 		"p1_expensive_creature": testCollection["p1_expensive_creature"],
 		"p1_creature_again":     testCollection["p1_creature"],
-	})
+	}
 
-	players["ai"].AddMaxMana(3)
-	players["ai"].ResetCurrentMana()
-
-	msg := newTestResponseMessage(
-		"main",
-		players,
-		[]*Engagement{},
-	)
+	players := newPlayers(hand, 3)
+	msg := newTestMainResponseMessage(players)
 
 	ai := NewAI("ai")
 	action := ai.RespondWithAction(msg)
-	if action == nil {
-		t.Errorf("action is nil")
-		return
-	}
-
-	if action.Action != "playCard" {
-		t.Errorf("action.Action %v expected playCard", action.Action)
-	}
-
-	if action.Card != "p1_expensive_creature" {
-		t.Errorf("action.Card: %v", action.Card)
-	}
+	assertResponse(t, action, "playCard", "p1_expensive_creature")
 }
 
 func TestAI_RespondWithAction_AssignsAttacker(t *testing.T) {
@@ -68,9 +51,7 @@ func TestAI_RespondWithAction_AssignsAttacker(t *testing.T) {
 
 	ai := NewAI("ai")
 	action := ai.RespondWithAction(msg)
-	if action.Card != "p1_creature" {
-		t.Errorf("action.Card: %v", action.Card)
-	}
+	assertResponse(t, action, "target", "p1_creature")
 }
 
 func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
@@ -109,7 +90,7 @@ func TestAI_RespondWithAction_EndsTurnWithoutBlocking(t *testing.T) {
 
 // utils
 
-func newPlayers(hand map[string]*Card) map[string]*Player {
+func newPlayers(hand map[string]*Card, mana int) map[string]*Player {
 	players := map[string]*Player{
 		"ai": NewPlayerWithState(
 			"ai",
@@ -125,13 +106,35 @@ func newPlayers(hand map[string]*Card) map[string]*Player {
 		),
 	}
 
+	players["ai"].AddMaxMana(mana)
+	players["ai"].ResetCurrentMana()
+
 	return players
 }
 
 func newPlayersEmptyHand() map[string]*Player {
-	return newPlayers(NewEmptyHand())
+	return newPlayers(NewEmptyHand(), 0)
 }
 
 func newTestResponseMessage(state string, players map[string]*Player, engagements []*Engagement) *ResponseMessage {
 	return NewResponseMessage(state, "ai", players, nil, []string{}, engagements, nil)
+}
+
+func newTestMainResponseMessage(players map[string]*Player) *ResponseMessage {
+	return newTestResponseMessage("main", players, []*Engagement{})
+}
+
+func assertResponse(t *testing.T, action *Message, expectedAction string, expectedCardId string) {
+	if action == nil {
+		t.Errorf("action is nil")
+		return
+	}
+
+	if action.Action != expectedAction {
+		t.Errorf("action.Action was %v expected %v", action.Action, expectedAction)
+	}
+
+	if action.Card != expectedCardId {
+		t.Errorf("action.Card was %v, expected %v", action.Card, expectedCardId)
+	}
 }
