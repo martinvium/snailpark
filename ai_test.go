@@ -3,8 +3,9 @@ package main
 import "testing"
 
 var testCollection = map[string]*Card{
-	"p1_creature": &Card{*NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2), "p1_creature", 2},
-	"p1_avatar":   &Card{*NewAvatarProto("The Bald One", 30), "p1_avatar", 30},
+	"p1_creature":           &Card{*NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2), "p1_creature", 2},
+	"p1_expensive_creature": &Card{*NewCreatureProto("Expensive Fella", 3, "Something stinks.", 1, 2), "p1_expensive_creature", 2},
+	"p1_avatar":             &Card{*NewAvatarProto("The Bald One", 30), "p1_avatar", 30},
 }
 
 var testCollection2 = map[string]*Card{
@@ -26,8 +27,13 @@ func TestAI_RespondWithAction_IgnoreWhenEnemyTurn(t *testing.T) {
 
 func TestAI_RespondWithAction_PlaysCard(t *testing.T) {
 	players := newPlayers(map[string]*Card{
-		"p1_creature": testCollection["p1_creature"],
+		"p1_creature":           testCollection["p1_creature"],
+		"p1_expensive_creature": testCollection["p1_expensive_creature"],
+		"p1_creature_again":     testCollection["p1_creature"],
 	})
+
+	players["ai"].AddMaxMana(3)
+	players["ai"].ResetCurrentMana()
 
 	msg := newTestResponseMessage(
 		"main",
@@ -37,11 +43,16 @@ func TestAI_RespondWithAction_PlaysCard(t *testing.T) {
 
 	ai := NewAI("ai")
 	action := ai.RespondWithAction(msg)
+	if action == nil {
+		t.Errorf("action is nil")
+		return
+	}
+
 	if action.Action != "playCard" {
 		t.Errorf("action.Action %v expected playCard", action.Action)
 	}
 
-	if action.Card != "p1_creature" {
+	if action.Card != "p1_expensive_creature" {
 		t.Errorf("action.Card: %v", action.Card)
 	}
 }

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"sort"
 	"time"
 )
 
@@ -31,7 +33,7 @@ func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
 	}
 
 	if msg.State == "main" {
-		card := a.FirstPlayableCard(msg)
+		card := bestPlayableCard(msg.Players[a.playerId])
 		if card != nil {
 			return a.PlayCard(card)
 		} else {
@@ -56,15 +58,25 @@ func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
 	}
 }
 
-func (a *AI) FirstPlayableCard(msg *ResponseMessage) *Card {
-	me := msg.Players[a.playerId]
+func bestPlayableCard(me *ResponsePlayer) *Card {
+	ordered := []*Card{}
 	for _, card := range me.Hand {
 		if card.CardType == "creature" && card.Cost <= me.CurrentMana {
-			return card
+			ordered = append(ordered, card)
 		}
 	}
 
-	return nil
+	sort.Slice(ordered[:], func(i, j int) bool {
+		return ordered[i].Cost > ordered[j].Cost
+	})
+
+	fmt.Printf("ordered: %v", ordered)
+
+	if len(ordered) > 0 {
+		return ordered[0]
+	} else {
+		return nil
+	}
 }
 
 func (a *AI) PlayCard(card *Card) *Message {

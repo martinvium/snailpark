@@ -30,7 +30,7 @@ func NewPlayerWithState(id string, collection map[string]*Card, hand map[string]
 	return &Player{
 		false,
 		id,
-		30,
+		0,
 		0,
 		collection,
 		NewDeck(collection),
