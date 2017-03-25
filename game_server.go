@@ -21,12 +21,13 @@ type GameServer struct {
 }
 
 func NewGameServer() *GameServer {
-	aiClient := NewAIClient(NewAI())
+	aiPlayerId := "ai"
+	aiClient := NewAIClient(NewAI(aiPlayerId))
 	clients := make(map[string]Client)
 	clients[aiClient.PlayerId()] = aiClient
 
 	players := make(map[string]*Player)
-	players["ai"] = NewPlayer("ai")
+	players["ai"] = NewPlayer(aiPlayerId)
 	players["player"] = NewPlayer("player")
 
 	game := NewGame(players)

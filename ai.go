@@ -10,10 +10,10 @@ type AI struct {
 	playerId string
 }
 
-func NewAI() *AI {
+func NewAI(playerId string) *AI {
 	outCh := make(chan *Message, channelBufSize)
-	outCh <- NewSimpleMessage("ai", "start")
-	return &AI{outCh, "ai"}
+	outCh <- NewSimpleMessage(playerId, "start")
+	return &AI{outCh, playerId}
 }
 
 func (a *AI) Send(msg *ResponseMessage) {
