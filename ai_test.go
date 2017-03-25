@@ -26,6 +26,7 @@ func TestAI_RespondWithAction_IgnoreWhenEnemyTurn(t *testing.T) {
 }
 
 func TestAI_RespondWithAction_PlaysCard(t *testing.T) {
+	ai := NewAI("ai")
 	hand := map[string]*Card{
 		"p1_creature":           testCollection["p1_creature"],
 		"p1_expensive_creature": testCollection["p1_expensive_creature"],
@@ -35,26 +36,22 @@ func TestAI_RespondWithAction_PlaysCard(t *testing.T) {
 	players := newPlayers(hand, 3)
 	msg := newTestMainResponseMessage(players)
 
-	ai := NewAI("ai")
 	action := ai.RespondWithAction(msg)
 	assertResponse(t, action, "playCard", "p1_expensive_creature")
 }
 
 func TestAI_RespondWithAction_AssignsAttacker(t *testing.T) {
+	ai := NewAI("ai")
 	players := newPlayersEmptyHand()
 
-	msg := newTestResponseMessage(
-		"main",
-		players,
-		[]*Engagement{},
-	)
+	msg := newTestMainResponseMessage(players)
 
-	ai := NewAI("ai")
 	action := ai.RespondWithAction(msg)
 	assertResponse(t, action, "target", "p1_creature")
 }
 
 func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
+	ai := NewAI("ai")
 	players := newPlayersEmptyHand()
 
 	msg := newTestResponseMessage(
@@ -63,7 +60,6 @@ func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
 		[]*Engagement{NewEngagement(testCollection["p1_creature"], players["ai"].Avatar)},
 	)
 
-	ai := NewAI("ai")
 	action := ai.RespondWithAction(msg)
 	if action == nil {
 		t.Errorf("action is nil")
