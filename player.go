@@ -15,9 +15,17 @@ type Player struct {
 }
 
 func NewPlayer(id string) *Player {
-	collection := NewCardCollection()
+	return NewPlayerWithState(
+		id,
+		NewCardCollection(),
+		map[string]*Card{},
+		map[string]*Card{},
+	)
+}
 
+func NewPlayerWithState(id string, collection map[string]*Card, hand map[string]*Card, board map[string]*Card) *Player {
 	avatar := FirstAvatar(collection)
+	board[avatar.Id] = avatar
 
 	return &Player{
 		false,
@@ -26,10 +34,14 @@ func NewPlayer(id string) *Player {
 		0,
 		collection,
 		NewDeck(collection),
-		map[string]*Card{},
-		map[string]*Card{avatar.Id: avatar},
+		hand,
+		board,
 		avatar,
 	}
+}
+
+func NewEmptyHand() map[string]*Card {
+	return make(map[string]*Card)
 }
 
 func FirstAvatar(collection map[string]*Card) *Card {
