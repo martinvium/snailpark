@@ -33,8 +33,10 @@ func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
 	}
 
 	if msg.State == "main" {
-		card := bestPlayableCard(msg.Players[a.playerId])
-		if card != nil {
+		me := msg.Players[a.playerId]
+		if card := bestPlayableCard("creature", me); card != nil {
+			return a.PlayCard(card)
+		} else if card := bestPlayableCard("spell", me); card != nil {
 			return a.PlayCard(card)
 		} else {
 			return a.attackOrEndTurn(msg)
@@ -58,14 +60,18 @@ func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
 	}
 }
 
-func bestPlayableCard(me *ResponsePlayer) *Card {
+func bestPlayableCard(cardType string, me *ResponsePlayer) *Card {
 	ordered := []*Card{}
 	for _, card := range me.Hand {
-		if card.CardType == "creature" && card.Cost <= me.CurrentMana {
+		if card.CardType == cardType && card.Cost <= me.CurrentMana {
 			ordered = append(ordered, card)
 		}
 	}
 
+	return mostExpensiveCard(ordered)
+}
+
+func mostExpensiveCard(ordered []*Card) *Card {
 	sort.Slice(ordered[:], func(i, j int) bool {
 		return ordered[i].Cost > ordered[j].Cost
 	})
