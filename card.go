@@ -99,3 +99,14 @@ func (c *Card) Heal(amount int) {
 func (c *Card) CanAttack() bool {
 	return c.Power > 0
 }
+
+func (c *Card) ModifyAttribute(attribute string, modifier int) {
+	switch attribute {
+	case "power":
+		c.Power += modifier
+	case "toughness":
+		c.CurrentToughness += modifier
+	case "cost":
+		c.Cost += modifier
+	}
+}

@@ -249,12 +249,7 @@ func (g *GameServer) targetAbility(msg *Message) {
 	// in ResolveStack, because that would allow abilities without a target to use
 	// the same code?
 	ability := g.game.Stack.Ability
-	switch ability.Effect {
-	case "damage":
-		target.Damage(ability.Modifier)
-	case "heal":
-		target.Heal(ability.Modifier)
-	}
+	target.ModifyAttribute(ability.Attribute, ability.Modifier)
 
 	g.ResolveStack()
 	g.game.State.Transition("main")
