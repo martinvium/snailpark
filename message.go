@@ -24,6 +24,7 @@ type ResponsePlayer struct {
 	Hand        map[string]*Card `json:"hand"`
 	HandSize    int              `json:"handSize"`
 	Board       map[string]*Card `json:"board"`
+	Avatar      *Card            `json:"avatar"`
 }
 
 func NewResponseMessage(state string, playerId string, players map[string]*Player, stack *Card, options []string, engagements []*Engagement, currentBlocker *Card) *ResponseMessage {
@@ -50,6 +51,7 @@ func newResponsePlayers(players map[string]*Player) map[string]*ResponsePlayer {
 			player.Hand,
 			len(player.Hand),
 			player.Board,
+			player.Avatar,
 		}
 	}
 

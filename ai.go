@@ -45,6 +45,8 @@ func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
 		return a.attackOrEndTurn(msg)
 	} else if msg.State == "blockers" {
 		return NewSimpleMessage(a.playerId, "endTurn")
+	} else if msg.State == "targeting" {
+		return a.targetSpell(msg)
 	}
 
 	return nil
@@ -58,6 +60,14 @@ func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
 	} else {
 		return NewSimpleMessage(a.playerId, "endTurn")
 	}
+}
+
+// TODO: cast good stuff on self
+// TODO: respect spell conditions
+func (a *AI) targetSpell(msg *ResponseMessage) *Message {
+	fmt.Println("spell", msg.CurrentBlocker)
+	target := a.enemyPlayer(msg.Players).Avatar
+	return NewPlayCardMessage(a.playerId, "target", target.Id)
 }
 
 func bestPlayableCard(cardType string, me *ResponsePlayer) *Card {
@@ -76,7 +86,7 @@ func mostExpensiveCard(ordered []*Card) *Card {
 		return ordered[i].Cost > ordered[j].Cost
 	})
 
-	fmt.Printf("ordered: %v", ordered)
+	fmt.Println("ordered", ordered)
 
 	if len(ordered) > 0 {
 		return ordered[0]
@@ -113,4 +123,16 @@ func (a *AI) isAttacking(engagements []*Engagement, card *Card) bool {
 	}
 
 	return false
+}
+
+func (a *AI) enemyPlayer(players map[string]*ResponsePlayer) *ResponsePlayer {
+	for id, player := range players {
+		fmt.Println("id", id, "playerId", a.playerId)
+		if id != a.playerId {
+			return player
+		}
+	}
+
+	fmt.Println("ERROR: failed to find enemy player id")
+	return nil
 }
