@@ -73,14 +73,6 @@ func AnyPlayer(vs map[string]*Player, f func(*Player) bool) bool {
 	return false
 }
 
-func (p *Player) Damage(power int) {
-	p.Avatar.Damage(power)
-}
-
-func (p *Player) Heal(num int) {
-	p.Avatar.Heal(num)
-}
-
 func (p *Player) AddToHand(num int) []*Card {
 	cards := p.Deck[len(p.Deck)-num:] // Pick num cards from deck
 	p.Deck = p.Deck[:len(p.Deck)-num] // Remove them
