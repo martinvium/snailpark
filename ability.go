@@ -35,12 +35,6 @@ func NewAttackAbility() *Ability {
 	}
 }
 
-func (a *Ability) Apply(c, target *Card) {
-	for _, m := range a.resolver(c, target) {
-		m.Card.ModifyAttribute(m.Attribute, m.Modifier)
-	}
-}
-
 func NewAbility(conditions []string, attribute string, modifier int) *Ability {
 	return &Ability{
 		"enterPlay",
@@ -77,6 +71,30 @@ func ModifyBothByPower(c, target *Card) []*Modification {
 	}
 
 	return modifications
+}
+
+func (a *Ability) Apply(c, target *Card) {
+	for _, m := range a.resolver(c, target) {
+		m.Card.ModifyAttribute(m.Attribute, m.Modifier)
+	}
+}
+
+func (a *Ability) TestApplyRemovesCard(c, target *Card) bool {
+	for _, m := range a.resolver(c, target) {
+		if m.Card.Id != target.Id {
+			continue
+		}
+
+		if m.Attribute != "toughness" {
+			continue
+		}
+
+		if m.Modifier >= c.CurrentToughness {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Also needs to distinguish between targeted spells and those that just hit all
