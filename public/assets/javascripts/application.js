@@ -94,7 +94,7 @@ $(document).ready(function() {
     if(state == 'blockTarget') {
       renderPointerArrow(e, msg.currentCard['id']);
     } else if(state == 'targeting') {
-      renderPointerArrow(e, msg.stack['id']);
+      renderPointerArrow(e, msg.currentCard['id']);
     }
   });
 

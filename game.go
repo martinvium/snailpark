@@ -4,7 +4,6 @@ type Game struct {
 	Players       map[string]*Player
 	CurrentPlayer *Player
 	State         *StateMachine
-	Stack         *Card
 	Engagements   []*Engagement
 	CurrentCard   *Card
 }
@@ -14,7 +13,6 @@ func NewGame(players map[string]*Player) *Game {
 		players,
 		players["player"], // currently always the player that starts
 		NewStateMachine(),
-		nil,
 		[]*Engagement{},
 		nil,
 	}

@@ -10,7 +10,6 @@ type ResponseMessage struct {
 	State           string                     `json:"state"`
 	CurrentPlayerId string                     `json:"currentPlayerId"`
 	Players         map[string]*ResponsePlayer `json:"players"`
-	Stack           *Card                      `json:"stack"`
 	Options         []string                   `json:"options"`
 	Engagements     []*Engagement              `json:"engagements"`
 	CurrentCard     *Card                      `json:"currentCard"`
@@ -27,9 +26,9 @@ type ResponsePlayer struct {
 	Avatar      *Card            `json:"avatar"`
 }
 
-func NewResponseMessage(state string, playerId string, players map[string]*Player, stack *Card, options []string, engagements []*Engagement, currentCard *Card) *ResponseMessage {
+func NewResponseMessage(state string, playerId string, players map[string]*Player, options []string, engagements []*Engagement, currentCard *Card) *ResponseMessage {
 	responsePlayers := newResponsePlayers(players)
-	return &ResponseMessage{state, playerId, responsePlayers, stack, options, engagements, currentCard}
+	return &ResponseMessage{state, playerId, responsePlayers, options, engagements, currentCard}
 }
 
 func NewSimpleMessage(playerId string, action string) *Message {

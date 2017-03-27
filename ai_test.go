@@ -18,7 +18,7 @@ func TestAI_RespondWithAction_IgnoreWhenEnemyTurn(t *testing.T) {
 	ai := NewAI("ai")
 	players := newPlayersEmptyHand()
 
-	msg := NewResponseMessage("main", "ai2", players, nil, []string{}, []*Engagement{}, nil)
+	msg := NewResponseMessage("main", "ai2", players, []string{}, []*Engagement{}, nil)
 
 	action := ai.RespondWithAction(msg)
 	if action != nil {
@@ -57,7 +57,7 @@ func TestAI_RespondWithAction_PlaysSpell(t *testing.T) {
 func TestAI_RespondWithAction_TargetsSpell(t *testing.T) {
 	ai := NewAI("ai")
 	players := newPlayersEmptyHand()
-	msg := NewResponseMessage("targeting", "ai", players, nil, []string{}, []*Engagement{}, testCollection["p1_spell"])
+	msg := NewResponseMessage("targeting", "ai", players, []string{}, []*Engagement{}, testCollection["p1_spell"])
 	action := ai.RespondWithAction(msg)
 	assertResponse(t, action, "target", "p2_avatar")
 }
@@ -135,7 +135,7 @@ func newPlayersEmptyHand() map[string]*Player {
 }
 
 func newTestResponseMessage(state string, players map[string]*Player, engagements []*Engagement) *ResponseMessage {
-	return NewResponseMessage(state, "ai", players, nil, []string{}, engagements, nil)
+	return NewResponseMessage(state, "ai", players, []string{}, engagements, nil)
 }
 
 func newTestMainResponseMessage(players map[string]*Player) *ResponseMessage {
