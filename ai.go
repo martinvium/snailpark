@@ -65,7 +65,7 @@ func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
 // TODO: cast good stuff on self
 // TODO: respect spell conditions
 func (a *AI) targetSpell(msg *ResponseMessage) *Message {
-	fmt.Println("spell", msg.CurrentBlocker)
+	fmt.Println("spell", msg.CurrentCard)
 	target := a.enemyPlayer(msg.Players).Avatar
 	return NewPlayCardMessage(a.playerId, "target", target.Id)
 }

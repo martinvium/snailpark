@@ -203,7 +203,7 @@ func (g *GameServer) assignBlocker(msg *Message) {
 	card, ok := g.game.DefendingPlayer().Board[msg.Card]
 	if ok {
 		log.Println("Current blocker:", msg.Card)
-		g.game.CurrentBlocker = card
+		g.game.CurrentCard = card
 	}
 
 	g.game.State.Transition("blockTarget")
@@ -215,14 +215,14 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 		log.Println("Assigned blocker target:", card)
 		for _, engagement := range g.game.Engagements {
 			if engagement.Attacker == card {
-				engagement.Blocker = g.game.CurrentBlocker
+				engagement.Blocker = g.game.CurrentCard
 			}
 		}
 	} else {
 		log.Println("ERROR: assigning invalid blocker:", msg.Card)
 	}
 
-	g.game.CurrentBlocker = nil
+	g.game.CurrentCard = nil
 	g.game.State.Transition("blockers")
 }
 
@@ -298,7 +298,7 @@ func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
 		g.game.Stack,
 		options,
 		g.game.Engagements,
-		g.game.CurrentBlocker,
+		g.game.CurrentCard,
 	)
 
 	// hide opponent cards

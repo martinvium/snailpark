@@ -1,12 +1,12 @@
 package main
 
 type Game struct {
-	Players        map[string]*Player
-	CurrentPlayer  *Player
-	State          *StateMachine
-	Stack          *Card
-	Engagements    []*Engagement
-	CurrentBlocker *Card
+	Players       map[string]*Player
+	CurrentPlayer *Player
+	State         *StateMachine
+	Stack         *Card
+	Engagements   []*Engagement
+	CurrentCard   *Card
 }
 
 func NewGame(players map[string]*Player) *Game {
