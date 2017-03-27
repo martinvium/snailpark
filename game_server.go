@@ -245,6 +245,11 @@ func (g *GameServer) targetAbility(msg *Message) {
 		return
 	}
 
+	if !g.game.Stack.Ability.AnyValidCondition(target.CardType) {
+		log.Println("ERROR: Invalid ability target:", target.CardType)
+		return
+	}
+
 	// TODO: we should instead assign the target to the effect, and let this resolve
 	// in ResolveStack, because that would allow abilities without a target to use
 	// the same code?
