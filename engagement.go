@@ -14,22 +14,12 @@ func NewEngagement(attacker *Card, target *Card) *Engagement {
 
 func ResolveEngagement(engagements []*Engagement) {
 	for _, e := range engagements {
+		target := e.Target
 		if e.Blocker != nil {
-			log.Println("Attacker and blocker battle it out")
-			ResolveCardVsCard(e.Attacker, e.Blocker)
-		} else {
-			log.Println("Attacker dmg applied to avatar")
-			ResolveCardVsCard(e.Attacker, e.Target)
+			log.Println("Blocker intercepted attacker before its target")
+			target = e.Blocker
 		}
-	}
-}
 
-func ResolveCardVsCard(card, target *Card) {
-	if card.Ability != nil {
-		target.ModifyAttribute(card.Ability.Attribute, card.Ability.Modifier(card))
-	} else {
-		// TODO: Hack until creatures have an activated ability "attack"
-		target.ModifyAttribute("toughness", -card.Power)
-		card.ModifyAttribute("toughness", -target.Power)
+		e.Attacker.Ability.Apply(e.Attacker, target)
 	}
 }

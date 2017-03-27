@@ -23,7 +23,7 @@ func NewSpellProto(title string, cost int, desc string, ability *Ability) *CardP
 }
 
 func NewCreatureProto(title string, cost int, desc string, power int, toughness int) *CardProto {
-	return &CardProto{"white", title, cost, "creature", desc, power, toughness, nil}
+	return &CardProto{"white", title, cost, "creature", desc, power, toughness, NewAttackAbility()}
 }
 
 func NewAvatarProto(title string, toughness int) *CardProto {

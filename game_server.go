@@ -253,7 +253,7 @@ func (g *GameServer) targetAbility(msg *Message) {
 	// TODO: we should instead assign the target to the effect, and let this resolve
 	// in ResolveStack, because that would allow abilities without a target to use
 	// the same code?
-	ResolveCardVsCard(g.game.Stack, target)
+	g.game.Stack.Ability.Apply(g.game.Stack, target)
 
 	g.ResolveStack()
 	g.game.State.Transition("main")
