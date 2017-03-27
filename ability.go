@@ -17,8 +17,8 @@ func NewPlayerHealAbility(modifier int) *Ability {
 	return NewAbility("players", "avatar", "toughness", modifier)
 }
 
-func NewAbility(context string, target string, attribute string, modifier int) *Ability {
-	return &Ability{"enterPlay", context, target, attribute, modifier, "transient"}
+func NewAbility(target string, condition string, attribute string, modifier int) *Ability {
+	return &Ability{"enterPlay", target, condition, attribute, modifier, "transient"}
 }
 
 func (a *Ability) RequiresTarget() bool {
