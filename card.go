@@ -92,6 +92,10 @@ func (c *Card) CanAttack() bool {
 	return c.Power > 0
 }
 
+func (c *Card) Removed() bool {
+	return c.CurrentToughness <= 0
+}
+
 func (c *Card) ModifyAttribute(attribute string, modifier int) {
 	switch attribute {
 	case "power":

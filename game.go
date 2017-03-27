@@ -42,7 +42,7 @@ func (g *Game) AnyPlayerDead() bool {
 func (g *Game) CleanUpDeadCreatures() {
 	for _, player := range g.Players {
 		for key, card := range player.Board {
-			if card.CurrentToughness <= 0 {
+			if card.Removed() {
 				delete(player.Board, key)
 			}
 		}
