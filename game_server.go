@@ -114,7 +114,7 @@ func (g *GameServer) SendStateResponseAll() {
 
 func (g *GameServer) SendOptionsResponse() {
 	cards := FilterCards(g.allBoardCards(), func(c *Card) bool {
-		return c.CardType == g.game.Stack.Ability.Condition
+		return g.game.Stack.Ability.AnyValidCondition(c.CardType)
 	})
 
 	options := MapCardIds(cards)
