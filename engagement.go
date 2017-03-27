@@ -26,7 +26,7 @@ func ResolveEngagement(engagements []*Engagement) {
 
 func ResolveCardVsCard(card, target *Card) {
 	if card.Ability != nil {
-		target.ModifyAttribute(card.Ability.Attribute, card.Ability.Modifier)
+		target.ModifyAttribute(card.Ability.Attribute, card.Ability.Modifier(card))
 	} else {
 		// TODO: Hack until creatures have an activated ability "attack"
 		target.ModifyAttribute("toughness", -card.Power)

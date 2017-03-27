@@ -1,10 +1,11 @@
 package main
 
 type Ability struct {
-	Trigger    string   `json:"trigger"`    // enterPlay
-	Conditions []string `json:"conditions"` // creature, avatar
-	Attribute  string   `json:"attribute"`  // power, toughness, cost
-	Modifier   int      `json:"modifier"`   // 1, 2, 3, 4
+	Trigger      string   `json:"trigger"`    // enterPlay
+	Conditions   []string `json:"conditions"` // creature, avatar
+	Attribute    string   `json:"attribute"`  // power, toughness, cost
+	modifier     int      `json:"modifier"`   // 1, 2, 3, 4
+	ModifierFunc func(*Card) int
 }
 
 func NewPlayerDamageAbility(modifier int) *Ability {
@@ -16,7 +17,15 @@ func NewPlayerHealAbility(modifier int) *Ability {
 }
 
 func NewAbility(conditions []string, attribute string, modifier int) *Ability {
-	return &Ability{"enterPlay", conditions, attribute, modifier}
+	return &Ability{"enterPlay", conditions, attribute, modifier, nil}
+}
+
+func (a *Ability) Modifier(parent *Card) int {
+	if a.ModifierFunc != nil {
+		return a.ModifierFunc(parent)
+	} else {
+		return a.modifier
+	}
 }
 
 func (a *Ability) RequiresTarget() bool {
