@@ -30,7 +30,7 @@ func NewAI(playerId string) *AI {
 func (a *AI) Send(msg *ResponseMessage) {
 	action := a.RespondWithAction(msg)
 	if action != nil {
-		a.RespondDelayed(action)
+		a.respondDelayed(action)
 	}
 }
 
@@ -44,9 +44,9 @@ func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
 	if msg.State == "main" {
 		me := msg.Players[a.playerId]
 		if card := bestPlayableCard("creature", me); card != nil {
-			return a.PlayCard(card)
+			return a.playCard(card)
 		} else if card := bestPlayableCard("spell", me); card != nil {
-			return a.PlayCard(card)
+			return a.playCard(card)
 		} else {
 			return a.attackOrEndTurn(msg)
 		}
@@ -102,11 +102,11 @@ func mostExpensiveCard(ordered []*Card) *Card {
 	}
 }
 
-func (a *AI) PlayCard(card *Card) *Message {
+func (a *AI) playCard(card *Card) *Message {
 	return NewPlayCardMessage(a.playerId, "playCard", card.Id)
 }
 
-func (a *AI) RespondDelayed(msg *Message) {
+func (a *AI) respondDelayed(msg *Message) {
 	log.Println("AI responding delayed: ", msg)
 	time.Sleep(1000 * time.Millisecond)
 	a.outCh <- msg
