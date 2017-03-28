@@ -82,8 +82,6 @@ func (a *Ability) Apply(c, target *Card) {
 }
 
 func (a *Ability) TestApplyRemovesCard(c, target *Card) bool {
-	fmt.Println("Testing if apply removes:", c, target)
-
 	for _, m := range a.resolver(c, target) {
 		if m.Card.Id != target.Id {
 			continue
@@ -93,7 +91,8 @@ func (a *Ability) TestApplyRemovesCard(c, target *Card) bool {
 			continue
 		}
 
-		if m.Modifier >= c.CurrentToughness {
+		fmt.Println("- Checking if", m.Modifier, " >=", c.CurrentToughness)
+		if c.CurrentToughness-m.Modifier > 0 {
 			return true
 		}
 	}

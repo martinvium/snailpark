@@ -4,7 +4,7 @@ import "testing"
 
 var testCollection = map[string]*Card{
 	"p1_creature":           &Card{*NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2), "p1_creature", 2},
-	"p1_expensive_creature": &Card{*NewCreatureProto("Expensive Fella", 3, "Something stinks.", 1, 2), "p1_expensive_creature", 2},
+	"p1_expensive_creature": &Card{*NewCreatureProto("Expensive Fella", 3, "Something stinks.", 3, 2), "p1_expensive_creature", 2},
 	"p1_spell":              &Card{*NewSpellProto("Goo-to-the-face", 1, "Deal 5 damage to enemy player -- That's not nice.", NewPlayerDamageAbility(5)), "p1_spell", 0},
 	"p1_avatar":             &Card{*NewAvatarProto("The Bald One", 30), "p1_avatar", 30},
 }
@@ -68,7 +68,7 @@ func TestAI_RespondWithAction_TargetsSpell(t *testing.T) {
 	)
 
 	action := ai.RespondWithAction(msg)
-	assertResponse(t, action, "target", "p2_avatar")
+	assertResponse(t, action, "target", "p2_creature")
 }
 
 func TestAI_RespondWithAction_AssignsAttacker(t *testing.T) {

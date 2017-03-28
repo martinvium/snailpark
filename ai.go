@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"time"
 )
@@ -53,6 +54,8 @@ func (a *AI) bestPlayableCard(msg *ResponseMessage) *Card {
 }
 
 func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
+	fmt.Println("Nothing more to play, lets attack or end turn")
+
 	me := msg.Players[a.playerId]
 	card := a.firstAvailableAttacker(me.Board, msg.Engagements)
 	if card != nil {

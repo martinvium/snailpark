@@ -11,10 +11,13 @@ var attributeFactors = map[string]int{
 	"power":     1,
 }
 
+var powerFactor = 2
+
 type AIScorer struct {
-	hand       map[string]*Card
-	players    map[string]*ResponsePlayer // board state
-	playerMods map[string]int             // e.g. player 1, ai -1
+	hand        map[string]*Card
+	players     map[string]*ResponsePlayer // board state
+	playerMods  map[string]int             // e.g. player 1, ai -1
+	currentMana int
 }
 
 type Score struct {
@@ -38,8 +41,9 @@ func NewAIScorer(playerId string, msg *ResponseMessage) *AIScorer {
 	}
 
 	hand := msg.Players[playerId].Hand
+	currentMana := msg.Players[playerId].CurrentMana
 
-	return &AIScorer{hand, msg.Players, playerMods}
+	return &AIScorer{hand, msg.Players, playerMods, currentMana}
 }
 
 func (s *AIScorer) BestPlayableCard() *Card {
@@ -53,22 +57,28 @@ func (s *AIScorer) BestPlayableCard() *Card {
 }
 
 func (s *AIScorer) scoreCardForPlay(card *Card) *Score {
+	score := 0
+
+	if card.Cost > s.currentMana {
+		score -= 100
+	}
+
 	switch card.Ability.Trigger {
 	case "activated":
-		return &Score{card.Power, card}
+		score += card.Power * powerFactor
 	case "enterPlay":
+		fmt.Println("Scoring enterPlay ability of:", card)
 		if target := s.BestTargetByPowerRemoved(card); target != nil {
-			return &Score{target.Power, card}
-		} else {
-			return &Score{0, card}
+			score += target.Power * powerFactor
 		}
-	default:
-		return &Score{0, card}
 	}
+
+	return &Score{score, card}
 }
 
 func (s *AIScorer) BestTargetByPowerRemoved(card *Card) *Card {
 	scores := s.scoreAllCardsOnBoard(card)
+	fmt.Println("Scored targets", scores)
 	return highestScoringCard(scores)
 }
 
@@ -94,20 +104,31 @@ func (s *AIScorer) scoreAllCardsOnBoard(card *Card) []*Score {
 		fmt.Println("Player", player.Id, "board:", player.Board)
 
 		for _, target := range player.Board {
-			power := s.calcPowerChanged(card, target) * s.playerMods[player.Id]
-			scores = append(scores, &Score{power, target})
+			score := 0
+
+			if target.CardType == "avatar" {
+				score += 1
+			}
+
+			score += s.calcPowerRemoved(card, target) * powerFactor
+
+			score *= s.playerMods[player.Id]
+
+			scores = append(scores, &Score{score, target})
 		}
 	}
 
 	return scores
 }
 
-func (s *AIScorer) calcPowerChanged(card, target *Card) int {
-	fmt.Println("Calc power changed for", card, target)
+func (s *AIScorer) calcPowerRemoved(card, target *Card) int {
+	fmt.Println("- Calc power changed for", card, target)
 
 	if card.Ability.TestApplyRemovesCard(card, target) {
+		fmt.Println("- Removes target", target, "worth", target.Power)
 		return -target.Power
 	} else {
+		fmt.Println("- Doesn't remove target:", target)
 		return 0
 	}
 }
