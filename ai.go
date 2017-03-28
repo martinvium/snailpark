@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"sort"
 	"time"
 )
 
@@ -33,10 +31,7 @@ func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
 	}
 
 	if msg.State == "main" {
-		me := msg.Players[a.playerId]
-		if card := bestPlayableCard("creature", me); card != nil {
-			return a.playCard(card)
-		} else if card := bestPlayableCard("spell", me); card != nil {
+		if card := a.bestPlayableCard(msg); card != nil {
 			return a.playCard(card)
 		} else {
 			return a.attackOrEndTurn(msg)
@@ -52,6 +47,11 @@ func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
 	return nil
 }
 
+func (a *AI) bestPlayableCard(msg *ResponseMessage) *Card {
+	scorer := NewAIScorer(a.playerId, msg)
+	return scorer.BestPlayableCard()
+}
+
 func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
 	me := msg.Players[a.playerId]
 	card := a.firstAvailableAttacker(me.Board, msg.Engagements)
@@ -64,33 +64,8 @@ func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
 
 func (a *AI) targetSpell(msg *ResponseMessage) *Message {
 	scorer := NewAIScorer(a.playerId, msg)
-	target, _ := scorer.bestTargetByPowerRemoved(msg.CurrentCard, msg)
+	target := scorer.BestTargetByPowerRemoved(msg.CurrentCard)
 	return NewPlayCardMessage(a.playerId, "target", target.Id)
-}
-
-func bestPlayableCard(cardType string, me *ResponsePlayer) *Card {
-	ordered := []*Card{}
-	for _, card := range me.Hand {
-		if card.CardType == cardType && card.Cost <= me.CurrentMana {
-			ordered = append(ordered, card)
-		}
-	}
-
-	return mostExpensiveCard(ordered)
-}
-
-func mostExpensiveCard(ordered []*Card) *Card {
-	sort.Slice(ordered[:], func(i, j int) bool {
-		return ordered[i].Cost > ordered[j].Cost
-	})
-
-	fmt.Println("ordered", ordered)
-
-	if len(ordered) > 0 {
-		return ordered[0]
-	} else {
-		return nil
-	}
 }
 
 func (a *AI) playCard(card *Card) *Message {

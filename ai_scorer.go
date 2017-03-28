@@ -18,12 +18,12 @@ type AIScorer struct {
 }
 
 type Score struct {
-	Score  int
-	Target *Card
+	Score int
+	Card  *Card
 }
 
 func (s *Score) String() string {
-	return fmt.Sprintf("Score(%v, %v)", s.Score, s.Target)
+	return fmt.Sprintf("Score(%v, %v)", s.Score, s.Card)
 }
 
 func NewAIScorer(playerId string, msg *ResponseMessage) *AIScorer {
@@ -37,39 +37,52 @@ func NewAIScorer(playerId string, msg *ResponseMessage) *AIScorer {
 		playerMods[player.Id] = mod
 	}
 
-	hand := msg.Players[playerId]
+	hand := msg.Players[playerId].Hand
 
 	return &AIScorer{hand, msg.Players, playerMods}
 }
 
-func (s *AIScorer) bestPlayableCard() *Card {
+func (s *AIScorer) BestPlayableCard() *Card {
 	scores := []*Score{}
 	for _, card := range s.hand {
-		score := a.scoreCardForPlay(card)
-		scores = append(scores, card)
+		score := s.scoreCardForPlay(card)
+		scores = append(scores, score)
 	}
 
-	return mostExpensiveCard(scores)
+	return highestScoringCard(scores)
 }
 
 func (s *AIScorer) scoreCardForPlay(card *Card) *Score {
-
+	switch card.Ability.Trigger {
+	case "activated":
+		return &Score{card.Power, card}
+	case "enterPlay":
+		if target := s.BestTargetByPowerRemoved(card); target != nil {
+			return &Score{target.Power, card}
+		} else {
+			return &Score{0, card}
+		}
+	default:
+		return &Score{0, card}
+	}
 }
 
-func (s *AIScorer) bestTargetByPowerRemoved(card *Card) (*Card, int) {
+func (s *AIScorer) BestTargetByPowerRemoved(card *Card) *Card {
 	scores := s.scoreAllCardsOnBoard(card)
+	return highestScoringCard(scores)
+}
 
+func highestScoringCard(scores []*Score) *Card {
 	sort.Slice(scores[:], func(i, j int) bool {
 		return scores[i].Score > scores[j].Score
 	})
 
-	fmt.Println("Spell", card)
-	fmt.Println("Scores", scores)
+	fmt.Println("Sorted scores:", scores)
 
 	if len(scores) > 0 && scores[0].Score > 0 {
-		return scores[0].Target, scores[0].Score
+		return scores[0].Card
 	} else {
-		return nil, 0
+		return nil
 	}
 }
 
@@ -96,5 +109,20 @@ func (s *AIScorer) calcPowerChanged(card, target *Card) int {
 		return -target.Power
 	} else {
 		return 0
+	}
+}
+
+// DEPRECATED
+func (s *AIScorer) mostExpensiveCard(ordered []*Card) *Card {
+	sort.Slice(ordered[:], func(i, j int) bool {
+		return ordered[i].Cost > ordered[j].Cost
+	})
+
+	fmt.Println("ordered", ordered)
+
+	if len(ordered) > 0 {
+		return ordered[0]
+	} else {
+		return nil
 	}
 }
