@@ -23,6 +23,10 @@ func NewPlayerDamageAbility(modifier int) *Ability {
 	return NewAbility([]string{"avatar"}, "toughness", -modifier)
 }
 
+func NewDamageAbility(modifier int) *Ability {
+	return NewAbility([]string{"creature", "avatar"}, "toughness", -modifier)
+}
+
 func NewPlayerHealAbility(modifier int) *Ability {
 	return NewAbility([]string{"avatar"}, "toughness", modifier)
 }

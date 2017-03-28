@@ -114,6 +114,10 @@ func (s *AIScorer) scoreAllCardsOnBoard(card *Card) []*Score {
 
 			score *= s.playerMods[player.Id]
 
+			if !card.Ability.AnyValidCondition(target.CardType) {
+				score -= 100
+			}
+
 			scores = append(scores, &Score{score, target})
 		}
 	}
