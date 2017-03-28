@@ -12,15 +12,6 @@ type AI struct {
 	playerId string
 }
 
-type Score struct {
-	Score  int
-	Target *Card
-}
-
-func (s *Score) String() string {
-	return fmt.Sprintf("Score(%v, %v)", s.Score, s.Target)
-}
-
 func NewAI(playerId string) *AI {
 	outCh := make(chan *Message, channelBufSize)
 	outCh <- NewSimpleMessage(playerId, "start")

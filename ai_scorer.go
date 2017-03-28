@@ -17,6 +17,15 @@ type AIScorer struct {
 	playerMods map[string]int             // e.g. player 1, ai -1
 }
 
+type Score struct {
+	Score  int
+	Target *Card
+}
+
+func (s *Score) String() string {
+	return fmt.Sprintf("Score(%v, %v)", s.Score, s.Target)
+}
+
 func NewAIScorer(playerId string, msg *ResponseMessage) *AIScorer {
 	playerMods := map[string]int{}
 	for _, player := range msg.Players {
