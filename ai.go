@@ -131,15 +131,3 @@ func (a *AI) isAttacking(engagements []*Engagement, card *Card) bool {
 
 	return false
 }
-
-func (a *AI) enemyPlayer(players map[string]*ResponsePlayer) *ResponsePlayer {
-	for id, player := range players {
-		fmt.Println("id", id, "playerId", a.playerId)
-		if id != a.playerId {
-			return player
-		}
-	}
-
-	fmt.Println("ERROR: failed to find enemy player id")
-	return nil
-}
