@@ -72,58 +72,9 @@ func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
 }
 
 func (a *AI) targetSpell(msg *ResponseMessage) *Message {
-	target, _ := a.bestTargetByPowerRemoved(msg)
+	scorer := NewAIScorer(msg)
+	target, _ := scorer.bestTargetByPowerRemoved(msg.CurrentCard, msg)
 	return NewPlayCardMessage(a.playerId, "target", target.Id)
-}
-
-func (a *AI) bestTargetByPowerRemoved(msg *ResponseMessage) (*Card, int) {
-	fmt.Println("Find best target:", msg.CurrentPlayerId)
-
-	scores := a.scoreAllCardsOnBoard(msg.CurrentCard, msg.Players)
-
-	sort.Slice(scores[:], func(i, j int) bool {
-		return scores[i].Score > scores[j].Score
-	})
-
-	fmt.Println("Spell", msg.CurrentCard)
-	fmt.Println("Scores", scores)
-
-	if len(scores) > 0 && scores[0].Score > 0 {
-		return scores[0].Target, scores[0].Score
-	} else {
-		return nil, 0
-	}
-}
-
-func (a *AI) scoreAllCardsOnBoard(card *Card, players map[string]*ResponsePlayer) []*Score {
-	fmt.Println("Scoring card:", card)
-
-	scores := []*Score{}
-	for _, player := range players {
-		mod := -1
-		if player.Id == a.playerId {
-			mod = 1
-		}
-
-		fmt.Println("Player", player.Id, "board:", player.Board)
-
-		for _, target := range player.Board {
-			power := calcPowerChanged(card, target) * mod
-			scores = append(scores, &Score{power, target})
-		}
-	}
-
-	return scores
-}
-
-func calcPowerChanged(card, target *Card) int {
-	fmt.Println("Calc power changed for", card, target)
-
-	if card.Ability.TestApplyRemovesCard(card, target) {
-		return -target.Power
-	} else {
-		return 0
-	}
 }
 
 func bestPlayableCard(cardType string, me *ResponsePlayer) *Card {
