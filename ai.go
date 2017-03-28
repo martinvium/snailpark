@@ -72,7 +72,7 @@ func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
 }
 
 func (a *AI) targetSpell(msg *ResponseMessage) *Message {
-	scorer := NewAIScorer(msg)
+	scorer := NewAIScorer(a.playerId, msg)
 	target, _ := scorer.bestTargetByPowerRemoved(msg.CurrentCard, msg)
 	return NewPlayCardMessage(a.playerId, "target", target.Id)
 }

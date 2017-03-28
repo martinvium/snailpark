@@ -12,28 +12,43 @@ var attributeFactors = map[string]int{
 }
 
 type AIScorer struct {
+	hand       map[string]*Card
 	players    map[string]*ResponsePlayer // board state
 	playerMods map[string]int             // e.g. player 1, ai -1
 }
 
-func NewAIScorer(msg *ResponseMessage) *AIScorer {
+func NewAIScorer(playerId string, msg *ResponseMessage) *AIScorer {
 	playerMods := map[string]int{}
 	for _, player := range msg.Players {
 		mod := -1
-		if player.Id == msg.CurrentPlayerId {
+		if player.Id == playerId {
 			mod = 1
 		}
 
 		playerMods[player.Id] = mod
 	}
 
-	return &AIScorer{msg.Players, playerMods}
+	hand := msg.Players[playerId]
+
+	return &AIScorer{hand, msg.Players, playerMods}
 }
 
-func (s *AIScorer) bestTargetByPowerRemoved(card *Card, msg *ResponseMessage) (*Card, int) {
-	fmt.Println("Find best target:", msg.CurrentPlayerId)
+func (s *AIScorer) bestPlayableCard() *Card {
+	scores := []*Score{}
+	for _, card := range s.hand {
+		score := a.scoreCardForPlay(card)
+		scores = append(scores, card)
+	}
 
-	scores := s.scoreAllCardsOnBoard(card, msg.Players)
+	return mostExpensiveCard(scores)
+}
+
+func (s *AIScorer) scoreCardForPlay(card *Card) *Score {
+
+}
+
+func (s *AIScorer) bestTargetByPowerRemoved(card *Card) (*Card, int) {
+	scores := s.scoreAllCardsOnBoard(card)
 
 	sort.Slice(scores[:], func(i, j int) bool {
 		return scores[i].Score > scores[j].Score
@@ -49,11 +64,11 @@ func (s *AIScorer) bestTargetByPowerRemoved(card *Card, msg *ResponseMessage) (*
 	}
 }
 
-func (s *AIScorer) scoreAllCardsOnBoard(card *Card, players map[string]*ResponsePlayer) []*Score {
+func (s *AIScorer) scoreAllCardsOnBoard(card *Card) []*Score {
 	fmt.Println("Scoring card:", card)
 
 	scores := []*Score{}
-	for _, player := range players {
+	for _, player := range s.players {
 		fmt.Println("Player", player.Id, "board:", player.Board)
 
 		for _, target := range player.Board {
