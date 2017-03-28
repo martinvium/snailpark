@@ -23,7 +23,7 @@ func NewSpellProto(title string, cost int, desc string, ability *Ability) *CardP
 }
 
 func NewCreatureProto(title string, cost int, desc string, power int, toughness int) *CardProto {
-	return &CardProto{"white", title, cost, "creature", desc, power, toughness, nil}
+	return &CardProto{"white", title, cost, "creature", desc, power, toughness, NewAttackAbility()}
 }
 
 func NewAvatarProto(title string, toughness int) *CardProto {
@@ -88,14 +88,21 @@ func (c *Card) String() string {
 	return "Card(" + c.Id + ", " + c.Title + ")"
 }
 
-func (c *Card) Damage(amount int) {
-	c.CurrentToughness -= amount
-}
-
-func (c *Card) Heal(amount int) {
-	c.CurrentToughness += amount
-}
-
 func (c *Card) CanAttack() bool {
 	return c.Power > 0
+}
+
+func (c *Card) Removed() bool {
+	return c.CurrentToughness <= 0
+}
+
+func (c *Card) ModifyAttribute(attribute string, modifier int) {
+	switch attribute {
+	case "power":
+		c.Power += modifier
+	case "toughness":
+		c.CurrentToughness += modifier
+	case "cost":
+		c.Cost += modifier
+	}
 }

@@ -4,7 +4,8 @@ import "testing"
 
 var testCollection = map[string]*Card{
 	"p1_creature":           &Card{*NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2), "p1_creature", 2},
-	"p1_expensive_creature": &Card{*NewCreatureProto("Expensive Fella", 3, "Something stinks.", 1, 2), "p1_expensive_creature", 2},
+	"p1_expensive_creature": &Card{*NewCreatureProto("Expensive Fella", 3, "Something stinks.", 3, 2), "p1_expensive_creature", 2},
+	"p1_spell":              &Card{*NewSpellProto("Goo-to-the-face", 1, "Deal 5 damage to enemy player -- That's not nice.", NewPlayerDamageAbility(5)), "p1_spell", 0},
 	"p1_avatar":             &Card{*NewAvatarProto("The Bald One", 30), "p1_avatar", 30},
 }
 
@@ -17,7 +18,7 @@ func TestAI_RespondWithAction_IgnoreWhenEnemyTurn(t *testing.T) {
 	ai := NewAI("ai")
 	players := newPlayersEmptyHand()
 
-	msg := NewResponseMessage("main", "ai2", players, nil, []string{}, []*Engagement{}, nil)
+	msg := NewResponseMessage("main", "ai2", players, []string{}, []*Engagement{}, nil)
 
 	action := ai.RespondWithAction(msg)
 	if action != nil {
@@ -26,6 +27,7 @@ func TestAI_RespondWithAction_IgnoreWhenEnemyTurn(t *testing.T) {
 }
 
 func TestAI_RespondWithAction_PlaysCard(t *testing.T) {
+	ai := NewAI("ai")
 	hand := map[string]*Card{
 		"p1_creature":           testCollection["p1_creature"],
 		"p1_expensive_creature": testCollection["p1_expensive_creature"],
@@ -35,26 +37,52 @@ func TestAI_RespondWithAction_PlaysCard(t *testing.T) {
 	players := newPlayers(hand, 3)
 	msg := newTestMainResponseMessage(players)
 
-	ai := NewAI("ai")
 	action := ai.RespondWithAction(msg)
 	assertResponse(t, action, "playCard", "p1_expensive_creature")
 }
 
-func TestAI_RespondWithAction_AssignsAttacker(t *testing.T) {
+func TestAI_RespondWithAction_PlaysSpell(t *testing.T) {
+	ai := NewAI("ai")
+	hand := map[string]*Card{
+		"p1_spell": testCollection["p1_spell"],
+	}
+
+	players := newPlayers(hand, 3)
+	msg := newTestMainResponseMessage(players)
+
+	action := ai.RespondWithAction(msg)
+	assertResponse(t, action, "playCard", "p1_spell")
+}
+
+func TestAI_RespondWithAction_TargetsSpell(t *testing.T) {
+	ai := NewAI("ai")
 	players := newPlayersEmptyHand()
 
-	msg := newTestResponseMessage(
-		"main",
+	msg := NewResponseMessage(
+		"targeting",
+		"ai",
 		players,
+		[]string{},
 		[]*Engagement{},
+		testCollection["p1_spell"],
 	)
 
+	action := ai.RespondWithAction(msg)
+	assertResponse(t, action, "target", "p2_creature")
+}
+
+func TestAI_RespondWithAction_AssignsAttacker(t *testing.T) {
 	ai := NewAI("ai")
+	players := newPlayersEmptyHand()
+
+	msg := newTestMainResponseMessage(players)
+
 	action := ai.RespondWithAction(msg)
 	assertResponse(t, action, "target", "p1_creature")
 }
 
 func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
+	ai := NewAI("ai")
 	players := newPlayersEmptyHand()
 
 	msg := newTestResponseMessage(
@@ -63,7 +91,6 @@ func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
 		[]*Engagement{NewEngagement(testCollection["p1_creature"], players["ai"].Avatar)},
 	)
 
-	ai := NewAI("ai")
 	action := ai.RespondWithAction(msg)
 	if action == nil {
 		t.Errorf("action is nil")
@@ -100,9 +127,9 @@ func newPlayers(hand map[string]*Card, mana int) map[string]*Player {
 		),
 		"ai2": NewPlayerWithState(
 			"ai2",
-			testCollection,
+			testCollection2,
 			NewEmptyHand(),
-			map[string]*Card{"p2_creature": testCollection["p2_creature"]},
+			map[string]*Card{"p2_creature": testCollection2["p2_creature"]},
 		),
 	}
 
@@ -117,7 +144,7 @@ func newPlayersEmptyHand() map[string]*Player {
 }
 
 func newTestResponseMessage(state string, players map[string]*Player, engagements []*Engagement) *ResponseMessage {
-	return NewResponseMessage(state, "ai", players, nil, []string{}, engagements, nil)
+	return NewResponseMessage(state, "ai", players, []string{}, engagements, nil)
 }
 
 func newTestMainResponseMessage(players map[string]*Player) *ResponseMessage {

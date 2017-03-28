@@ -1,12 +1,11 @@
 package main
 
 type Game struct {
-	Players        map[string]*Player
-	CurrentPlayer  *Player
-	State          *StateMachine
-	Stack          *Card
-	Engagements    []*Engagement
-	CurrentBlocker *Card
+	Players       map[string]*Player
+	CurrentPlayer *Player
+	State         *StateMachine
+	Engagements   []*Engagement
+	CurrentCard   *Card
 }
 
 func NewGame(players map[string]*Player) *Game {
@@ -14,7 +13,6 @@ func NewGame(players map[string]*Player) *Game {
 		players,
 		players["player"], // currently always the player that starts
 		NewStateMachine(),
-		nil,
 		[]*Engagement{},
 		nil,
 	}
@@ -42,7 +40,7 @@ func (g *Game) AnyPlayerDead() bool {
 func (g *Game) CleanUpDeadCreatures() {
 	for _, player := range g.Players {
 		for key, card := range player.Board {
-			if card.CurrentToughness <= 0 {
+			if card.Removed() {
 				delete(player.Board, key)
 			}
 		}

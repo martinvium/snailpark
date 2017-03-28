@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"sort"
 	"time"
 )
 
@@ -21,7 +20,7 @@ func NewAI(playerId string) *AI {
 func (a *AI) Send(msg *ResponseMessage) {
 	action := a.RespondWithAction(msg)
 	if action != nil {
-		a.RespondDelayed(action)
+		a.respondDelayed(action)
 	}
 }
 
@@ -33,9 +32,8 @@ func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
 	}
 
 	if msg.State == "main" {
-		card := bestPlayableCard(msg.Players[a.playerId])
-		if card != nil {
-			return a.PlayCard(card)
+		if card := a.bestPlayableCard(msg); card != nil {
+			return a.playCard(card)
 		} else {
 			return a.attackOrEndTurn(msg)
 		}
@@ -43,12 +41,21 @@ func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
 		return a.attackOrEndTurn(msg)
 	} else if msg.State == "blockers" {
 		return NewSimpleMessage(a.playerId, "endTurn")
+	} else if msg.State == "targeting" {
+		return a.targetSpell(msg)
 	}
 
 	return nil
 }
 
+func (a *AI) bestPlayableCard(msg *ResponseMessage) *Card {
+	scorer := NewAIScorer(a.playerId, msg)
+	return scorer.BestPlayableCard()
+}
+
 func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
+	fmt.Println("Nothing more to play, lets attack or end turn")
+
 	me := msg.Players[a.playerId]
 	card := a.firstAvailableAttacker(me.Board, msg.Engagements)
 	if card != nil {
@@ -58,32 +65,17 @@ func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
 	}
 }
 
-func bestPlayableCard(me *ResponsePlayer) *Card {
-	ordered := []*Card{}
-	for _, card := range me.Hand {
-		if card.CardType == "creature" && card.Cost <= me.CurrentMana {
-			ordered = append(ordered, card)
-		}
-	}
-
-	sort.Slice(ordered[:], func(i, j int) bool {
-		return ordered[i].Cost > ordered[j].Cost
-	})
-
-	fmt.Printf("ordered: %v", ordered)
-
-	if len(ordered) > 0 {
-		return ordered[0]
-	} else {
-		return nil
-	}
+func (a *AI) targetSpell(msg *ResponseMessage) *Message {
+	scorer := NewAIScorer(a.playerId, msg)
+	target := scorer.BestTargetByPowerRemoved(msg.CurrentCard)
+	return NewPlayCardMessage(a.playerId, "target", target.Id)
 }
 
-func (a *AI) PlayCard(card *Card) *Message {
+func (a *AI) playCard(card *Card) *Message {
 	return NewPlayCardMessage(a.playerId, "playCard", card.Id)
 }
 
-func (a *AI) RespondDelayed(msg *Message) {
+func (a *AI) respondDelayed(msg *Message) {
 	log.Println("AI responding delayed: ", msg)
 	time.Sleep(1000 * time.Millisecond)
 	a.outCh <- msg

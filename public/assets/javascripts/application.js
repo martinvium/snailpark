@@ -92,9 +92,9 @@ $(document).ready(function() {
 
   $(window).mousemove(function(e) {
     if(state == 'blockTarget') {
-      renderPointerArrow(e, msg.currentBlocker['id']);
+      renderPointerArrow(e, msg.currentCard['id']);
     } else if(state == 'targeting') {
-      renderPointerArrow(e, msg.stack['id']);
+      renderPointerArrow(e, msg.currentCard['id']);
     }
   });
 

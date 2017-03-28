@@ -12,14 +12,14 @@ func TestEngagement_ResolveEngagement(t *testing.T) {
 	ResolveEngagement([]*Engagement{engagement})
 
 	if engagement.Attacker.CurrentToughness != 1 {
-		t.Fail()
+		t.Errorf("Attack.CurrentToughness: %v", engagement.Attacker.CurrentToughness)
 	}
 
 	if engagement.Blocker.CurrentToughness != 1 {
-		t.Fail()
+		t.Errorf("engagement.Blocker.CurrentToughness: %v", engagement.Blocker.CurrentToughness)
 	}
 
 	if engagement.Target.CurrentToughness != 2 {
-		t.Fail()
+		t.Errorf("engagement.Target.CurrentToughness: %v", engagement.Target.CurrentToughness)
 	}
 }

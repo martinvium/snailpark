@@ -114,7 +114,7 @@ func (g *GameServer) SendStateResponseAll() {
 
 func (g *GameServer) SendOptionsResponse() {
 	cards := FilterCards(g.allBoardCards(), func(c *Card) bool {
-		return c.CardType == g.game.Stack.Ability.Condition
+		return g.game.CurrentCard.Ability.AnyValidCondition(c.CardType)
 	})
 
 	options := MapCardIds(cards)
@@ -168,13 +168,13 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 		return
 	}
 
-	g.game.Stack = g.game.CurrentPlayer.PlayCardFromHand(msg.Card)
-	g.game.State.Transition("stack")
+	g.game.CurrentCard = g.game.CurrentPlayer.PlayCardFromHand(msg.Card)
+	g.game.State.Transition("playingCard")
 
-	if g.game.Stack.Ability != nil && g.game.Stack.Ability.RequiresTarget() {
+	if g.game.CurrentCard.Ability != nil && g.game.CurrentCard.Ability.RequiresTarget() {
 		g.game.State.Transition("targeting")
 	} else {
-		g.ResolveStack()
+		g.ResolveCurrentCard()
 		g.game.State.Transition("main")
 	}
 }
@@ -203,7 +203,7 @@ func (g *GameServer) assignBlocker(msg *Message) {
 	card, ok := g.game.DefendingPlayer().Board[msg.Card]
 	if ok {
 		log.Println("Current blocker:", msg.Card)
-		g.game.CurrentBlocker = card
+		g.game.CurrentCard = card
 	}
 
 	g.game.State.Transition("blockTarget")
@@ -215,14 +215,14 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 		log.Println("Assigned blocker target:", card)
 		for _, engagement := range g.game.Engagements {
 			if engagement.Attacker == card {
-				engagement.Blocker = g.game.CurrentBlocker
+				engagement.Blocker = g.game.CurrentCard
 			}
 		}
 	} else {
 		log.Println("ERROR: assigning invalid blocker:", msg.Card)
 	}
 
-	g.game.CurrentBlocker = nil
+	g.game.CurrentCard = nil
 	g.game.State.Transition("blockers")
 }
 
@@ -245,30 +245,29 @@ func (g *GameServer) targetAbility(msg *Message) {
 		return
 	}
 
-	// TODO: we should instead assign the target to the effect, and let this resolve
-	// in ResolveStack, because that would allow abilities without a target to use
-	// the same code?
-	ability := g.game.Stack.Ability
-	switch ability.Effect {
-	case "damage":
-		target.Damage(ability.Modifier)
-	case "heal":
-		target.Heal(ability.Modifier)
+	if !g.game.CurrentCard.Ability.AnyValidCondition(target.CardType) {
+		log.Println("ERROR: Invalid ability target:", target.CardType)
+		return
 	}
 
-	g.ResolveStack()
+	// TODO: we should instead assign the target to the effect, and let this resolve
+	// in ResolveCurrentCard, because that would allow abilities without a target to use
+	// the same code?
+	g.game.CurrentCard.Ability.Apply(g.game.CurrentCard, target)
+
+	g.ResolveCurrentCard()
 	g.game.State.Transition("main")
 }
 
-func (g *GameServer) ResolveStack() {
-	if g.game.Stack.CardType == "creature" {
-		g.game.CurrentPlayer.AddToBoard(g.game.Stack)
+func (g *GameServer) ResolveCurrentCard() {
+	if g.game.CurrentCard.CardType == "creature" {
+		g.game.CurrentPlayer.AddToBoard(g.game.CurrentCard)
 	}
 
-	g.game.CurrentPlayer.RemoveCardFromHand(g.game.Stack)
+	g.game.CurrentPlayer.RemoveCardFromHand(g.game.CurrentCard)
 	g.game.CleanUpDeadCreatures()
 
-	g.game.Stack = nil
+	g.game.CurrentCard = nil
 }
 
 func (g *GameServer) getCardOnBoard(id string) *Card {
@@ -296,10 +295,9 @@ func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
 		g.game.State.String(),
 		g.game.Priority().Id,
 		g.game.Players,
-		g.game.Stack,
 		options,
 		g.game.Engagements,
-		g.game.CurrentBlocker,
+		g.game.CurrentCard,
 	)
 
 	// hide opponent cards
