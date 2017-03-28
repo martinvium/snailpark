@@ -57,7 +57,16 @@ func TestAI_RespondWithAction_PlaysSpell(t *testing.T) {
 func TestAI_RespondWithAction_TargetsSpell(t *testing.T) {
 	ai := NewAI("ai")
 	players := newPlayersEmptyHand()
-	msg := NewResponseMessage("targeting", "ai", players, []string{}, []*Engagement{}, testCollection["p1_spell"])
+
+	msg := NewResponseMessage(
+		"targeting",
+		"ai",
+		players,
+		[]string{},
+		[]*Engagement{},
+		testCollection["p1_spell"],
+	)
+
 	action := ai.RespondWithAction(msg)
 	assertResponse(t, action, "target", "p2_avatar")
 }
@@ -120,7 +129,7 @@ func newPlayers(hand map[string]*Card, mana int) map[string]*Player {
 			"ai2",
 			testCollection2,
 			NewEmptyHand(),
-			map[string]*Card{"p2_creature": testCollection["p2_creature"]},
+			map[string]*Card{"p2_creature": testCollection2["p2_creature"]},
 		),
 	}
 

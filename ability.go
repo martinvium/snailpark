@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type Ability struct {
 	Trigger    string                             `json:"trigger"`    // enterPlay, activated
 	Conditions []string                           `json:"conditions"` // creature, avatar
@@ -80,6 +82,8 @@ func (a *Ability) Apply(c, target *Card) {
 }
 
 func (a *Ability) TestApplyRemovesCard(c, target *Card) bool {
+	fmt.Println("Testing if apply removes:", c, target)
+
 	for _, m := range a.resolver(c, target) {
 		if m.Card.Id != target.Id {
 			continue
