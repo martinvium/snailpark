@@ -55,7 +55,7 @@ func (s *AIScorer) BestPlayableCard() *Card {
 		scores = append(scores, score)
 	}
 
-	return highestScoringCard(scores)
+	return HighestScore(scores)
 }
 
 func (s *AIScorer) BestBlocker(engagements []*Engagement) *Card {
@@ -69,7 +69,7 @@ func (s *AIScorer) BestBlocker(engagements []*Engagement) *Card {
 		}
 	}
 
-	return highestScoringCard(scores)
+	return HighestScore(scores)
 }
 
 func (s *AIScorer) BestBlockTarget(currentCard *Card, engagements []*Engagement) *Card {
@@ -82,7 +82,7 @@ func (s *AIScorer) BestBlockTarget(currentCard *Card, engagements []*Engagement)
 
 	scores := s.scoreTargets(currentCard, attackers)
 
-	return highestScoringCard(scores)
+	return HighestScore(scores)
 }
 
 func (s *AIScorer) bestBlockerForEngagement(engagement *Engagement) *Score {
@@ -129,10 +129,10 @@ func (s *AIScorer) scoreCardForPlay(card *Card) *Score {
 func (s *AIScorer) BestTargetByPowerRemoved(card *Card) *Card {
 	scores := s.scoreAllCardsOnBoard(card)
 	fmt.Println("Scored targets", scores)
-	return highestScoringCard(scores)
+	return HighestScore(scores)
 }
 
-func highestScoringCard(scores []*Score) *Card {
+func HighestScore(scores []*Score) *Card {
 	sort.Slice(scores[:], func(i, j int) bool {
 		return scores[i].Score > scores[j].Score
 	})
