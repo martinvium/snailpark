@@ -117,9 +117,11 @@ func (s *AIScorer) scoreCardForPlay(card *Card) *Score {
 	case "activated":
 		score += card.Power * powerFactor
 	case "enterPlay":
-		fmt.Println("Scoring enterPlay ability of:", card)
-		if target := s.BestTargetByPowerRemoved(card); target != nil {
-			score += target.Power * powerFactor
+		targets := s.allCardsOnBoard()
+		scores := s.scoreTargets(card, targets)
+		top := highestScoreWithScore(scores)
+		if top != nil {
+			score += top.Score
 		}
 	}
 
@@ -127,12 +129,31 @@ func (s *AIScorer) scoreCardForPlay(card *Card) *Score {
 }
 
 func (s *AIScorer) BestTargetByPowerRemoved(card *Card) *Card {
-	scores := s.scoreAllCardsOnBoard(card)
-	fmt.Println("Scored targets", scores)
+	targets := s.allCardsOnBoard()
+	scores := s.scoreTargets(card, targets)
 	return HighestScore(scores)
 }
 
+func (s *AIScorer) allCardsOnBoard() []*Card {
+	targets := []*Card{}
+	for _, player := range s.players {
+		for _, target := range player.Board {
+			targets = append(targets, target)
+		}
+	}
+
+	return targets
+}
+
 func HighestScore(scores []*Score) *Card {
+	if score := highestScoreWithScore(scores); score != nil {
+		return score.Card
+	} else {
+		return nil
+	}
+}
+
+func highestScoreWithScore(scores []*Score) *Score {
 	sort.Slice(scores[:], func(i, j int) bool {
 		return scores[i].Score > scores[j].Score
 	})
@@ -140,25 +161,10 @@ func HighestScore(scores []*Score) *Card {
 	fmt.Println("Sorted scores:", scores)
 
 	if len(scores) > 0 && scores[0].Score > 0 {
-		return scores[0].Card
+		return scores[0]
 	} else {
 		return nil
 	}
-}
-
-func (s *AIScorer) scoreAllCardsOnBoard(card *Card) []*Score {
-	fmt.Println("Scoring card:", card)
-
-	targets := []*Card{}
-	for _, player := range s.players {
-		fmt.Println("Player", player.Id, "board:", player.Board)
-
-		for _, target := range player.Board {
-			targets = append(targets, target)
-		}
-	}
-
-	return s.scoreTargets(card, targets)
 }
 
 func (s *AIScorer) scoreTargets(card *Card, targets []*Card) []*Score {
