@@ -72,7 +72,11 @@ func (s *AIScorer) BestBlocker(engagements []*Engagement) *Card {
 		if blocker.CardType == "creature" {
 			att_scores := s.scoreTargets(blocker, attackers)
 			att_score := highestScoreWithScore(att_scores)
-			scores = append(scores, &Score{att_score.Score, blocker})
+			if att_score != nil {
+				scores = append(scores, &Score{att_score.Score, blocker})
+			} else {
+				fmt.Println("Blocker", blocker, "skipped, no attractive target")
+			}
 		}
 	}
 
@@ -161,6 +165,7 @@ func highestScoreWithScore(scores []*Score) *Score {
 func (s *AIScorer) scoreTargets(card *Card, targets []*Card) []*Score {
 	scores := []*Score{}
 	for _, target := range targets {
+		fmt.Println("Scoring", card, "vs", target)
 		score := s.scoreTarget(card, target)
 		scores = append(scores, score)
 	}
@@ -173,6 +178,7 @@ func (s *AIScorer) scoreTarget(card, target *Card) *Score {
 
 	// make sure avatars are considered, but low priority
 	if target.CardType == "avatar" {
+		fmt.Println("- Avatar gets basedline score")
 		score += 1
 	}
 
@@ -183,6 +189,7 @@ func (s *AIScorer) scoreTarget(card, target *Card) *Score {
 
 	// downplay invalid targets
 	if !card.Ability.AnyValidCondition(target.CardType) {
+		fmt.Println("- Condition check failed")
 		score -= 100
 	}
 
@@ -190,13 +197,11 @@ func (s *AIScorer) scoreTarget(card, target *Card) *Score {
 }
 
 func (s *AIScorer) calcPowerRemoved(card, target *Card) int {
-	fmt.Println("- Calc power changed for", card, target)
-
 	if card.Ability.TestApplyRemovesCard(card, target) {
-		fmt.Println("- Removes target", target, "worth", target.Power)
+		fmt.Println("- Removes target", target, "with power of", target.Power)
 		return -target.Power
 	} else {
-		fmt.Println("- Doesn't remove target:", target)
+		fmt.Println("- Doesn't remove target")
 		return 0
 	}
 }

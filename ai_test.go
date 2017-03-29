@@ -135,20 +135,20 @@ func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
 }
 
 func TestAI_RespondWithAction_AssignsBlocker(t *testing.T) {
-	players := newPlayersEmptyHand()
+	players := newPlayersExpensiveCreatureEmptyHand()
 	attacker := testCollection2["p2_creature"]
 	engagements := []*Engagement{NewEngagement(attacker, players["ai"].Avatar)}
 	msg := newTestResponseMessage("blockers", players, engagements)
 
 	ai := NewAI("ai")
 	action := ai.RespondWithAction(msg)
-	if err := assertResponse(t, action, "target", "p1_creature"); err != nil {
+	if err := assertResponse(t, action, "target", "p1_expensive_creature"); err != nil {
 		t.Errorf(err.Error())
 	}
 }
 
 func TestAI_RespondWithAction_AssignsBlockTarget(t *testing.T) {
-	players := newPlayersEmptyHand()
+	players := newPlayersExpensiveCreatureEmptyHand()
 	attacker := testCollection2["p2_creature"]
 	engagements := []*Engagement{NewEngagement(attacker, players["ai"].Avatar)}
 
@@ -158,7 +158,7 @@ func TestAI_RespondWithAction_AssignsBlockTarget(t *testing.T) {
 		players,
 		[]string{},
 		engagements,
-		testCollection["p1_creature"],
+		testCollection["p1_expensive_creature"],
 	)
 
 	ai := NewAI("ai")
@@ -189,6 +189,15 @@ func TestAI_RespondWithAction_EndsTurnWhenNoBlockers(t *testing.T) {
 }
 
 // utils
+
+func newPlayersExpensiveCreatureEmptyHand() map[string]*Player {
+	return newPlayersWithBoard(
+		map[string]*Card{"p1_expensive_creature": testCollection["p1_expensive_creature"]},
+		map[string]*Card{"p2_creature": testCollection2["p2_creature"]},
+		NewEmptyHand(),
+		0,
+	)
+}
 
 func newPlayers(hand map[string]*Card, mana int) map[string]*Player {
 	return newPlayersWithBoard(

@@ -95,8 +95,10 @@ func (a *Ability) TestApplyRemovesCard(c, target *Card) bool {
 			continue
 		}
 
-		fmt.Println("- Checking if", m.Modifier, " >=", c.CurrentToughness)
-		if c.CurrentToughness-m.Modifier > 0 {
+		// The modifier is negative if e.g. dealing damage
+		result := target.CurrentToughness + m.Modifier
+		fmt.Println("- Checking if card would be removed (", target.CurrentToughness, "+", m.Modifier, "=", result, "<= 0)")
+		if result <= 0 {
 			return true
 		}
 	}
