@@ -147,6 +147,27 @@ func TestAI_RespondWithAction_AssignsBlocker(t *testing.T) {
 	}
 }
 
+func TestAI_RespondWithAction_AssignsBlockTarget(t *testing.T) {
+	players := newPlayersEmptyHand()
+	attacker := testCollection2["p2_creature"]
+	engagements := []*Engagement{NewEngagement(attacker, players["ai"].Avatar)}
+
+	msg := NewResponseMessage(
+		"blockTarget",
+		"ai",
+		players,
+		[]string{},
+		engagements,
+		testCollection["p1_creature"],
+	)
+
+	ai := NewAI("ai")
+	action := ai.RespondWithAction(msg)
+	if err := assertResponse(t, action, "target", "p2_creature"); err != nil {
+		t.Errorf(err.Error())
+	}
+}
+
 func TestAI_RespondWithAction_EndsTurnWhenNoBlockers(t *testing.T) {
 	players := newPlayersWithBoard(
 		map[string]*Card{},
