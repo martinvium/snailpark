@@ -195,18 +195,3 @@ func (s *AIScorer) calcPowerRemoved(card, target *Card) int {
 		return 0
 	}
 }
-
-// DEPRECATED
-func (s *AIScorer) mostExpensiveCard(ordered []*Card) *Card {
-	sort.Slice(ordered[:], func(i, j int) bool {
-		return ordered[i].Cost > ordered[j].Cost
-	})
-
-	fmt.Println("ordered", ordered)
-
-	if len(ordered) > 0 {
-		return ordered[0]
-	} else {
-		return nil
-	}
-}
