@@ -59,13 +59,20 @@ func (s *AIScorer) BestPlayableCard() *Card {
 }
 
 func (s *AIScorer) BestBlocker(engagements []*Engagement) *Card {
-	scores := []*Score{}
+	attackers := []*Card{}
 	for _, eng := range engagements {
 		if eng.Blocker == nil {
-			score := s.bestBlockerForEngagement(eng)
-			if score != nil {
-				scores = append(scores, score)
-			}
+			attackers = append(attackers, eng.Attacker)
+		}
+	}
+
+	scores := []*Score{}
+	for _, blocker := range s.board {
+		// only creatures can block
+		if blocker.CardType == "creature" {
+			att_scores := s.scoreTargets(blocker, attackers)
+			att_score := highestScoreWithScore(att_scores)
+			scores = append(scores, &Score{att_score.Score, blocker})
 		}
 	}
 
@@ -83,27 +90,6 @@ func (s *AIScorer) BestBlockTarget(currentCard *Card, engagements []*Engagement)
 	scores := s.scoreTargets(currentCard, attackers)
 
 	return HighestScore(scores)
-}
-
-func (s *AIScorer) bestBlockerForEngagement(engagement *Engagement) *Score {
-	targets := []*Card{}
-	for _, target := range s.board {
-		targets = append(targets, target)
-	}
-
-	scores := s.scoreTargets(engagement.Attacker, targets)
-
-	sort.Slice(scores[:], func(i, j int) bool {
-		return scores[i].Score > scores[j].Score
-	})
-
-	fmt.Println("Sorted scores:", scores)
-
-	if len(scores) > 0 && scores[0].Score > 0 {
-		return scores[0]
-	} else {
-		return nil
-	}
 }
 
 func (s *AIScorer) scoreCardForPlay(card *Card) *Score {
@@ -180,14 +166,17 @@ func (s *AIScorer) scoreTargets(card *Card, targets []*Card) []*Score {
 func (s *AIScorer) scoreTarget(card, target *Card) *Score {
 	score := 0
 
+	// make sure avatars are considered, but low priority
 	if target.CardType == "avatar" {
 		score += 1
 	}
 
 	score += s.calcPowerRemoved(card, target) * powerFactor
 
+	// force negative score for own cards
 	score *= s.playerMods[target.PlayerId]
 
+	// downplay invalid targets
 	if !card.Ability.AnyValidCondition(target.CardType) {
 		score -= 100
 	}

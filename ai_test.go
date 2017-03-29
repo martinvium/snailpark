@@ -7,10 +7,11 @@ import (
 )
 
 var testCollection = map[string]*Card{
-	"p1_creature":           &Card{*NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2), "p1_creature", 2, "ai"},
-	"p1_expensive_creature": &Card{*NewCreatureProto("Expensive Fella", 3, "Something stinks.", 3, 2), "p1_expensive_creature", 2, "ai"},
-	"p1_spell":              &Card{*NewSpellProto("Goo-to-the-face", 1, "Deal 5 damage to enemy player -- That's not nice.", NewDamageAbility(5)), "p1_spell", 0, "ai"},
-	"p1_avatar":             &Card{*NewAvatarProto("The Bald One", 30), "p1_avatar", 30, "ai"},
+	"p1_creature":           &Card{*NewCreatureProto("Small Creature", 1, "", 1, 2), "p1_creature", 2, "ai"},
+	"p1_expensive_creature": &Card{*NewCreatureProto("Big Creature", 3, "", 3, 2), "p1_expensive_creature", 2, "ai"},
+	"p1_spell":              &Card{*NewSpellProto("Creature spell", 1, "", NewDamageAbility(5)), "p1_spell", 0, "ai"},
+	"p1_avatar_spell":       &Card{*NewSpellProto("Avatar spell", 1, "", NewPlayerDamageAbility(5)), "p1_avatar_spell", 0, "ai"},
+	"p1_avatar":             &Card{*NewAvatarProto("My Avatar", 30), "p1_avatar", 30, "ai"},
 }
 
 var testCollection2 = map[string]*Card{
@@ -62,7 +63,7 @@ func TestAI_RespondWithAction_PlaysSpell(t *testing.T) {
 	}
 }
 
-func TestAI_RespondWithAction_TargetsSpell(t *testing.T) {
+func TestAI_RespondWithAction_SpellTargetsCreature(t *testing.T) {
 	ai := NewAI("ai")
 	players := newPlayersEmptyHand()
 
@@ -77,6 +78,25 @@ func TestAI_RespondWithAction_TargetsSpell(t *testing.T) {
 
 	action := ai.RespondWithAction(msg)
 	if err := assertResponse(t, action, "target", "p2_creature"); err != nil {
+		t.Errorf(err.Error())
+	}
+}
+
+func TestAI_RespondWithAction_SpellTargetsAvatar(t *testing.T) {
+	ai := NewAI("ai")
+	players := newPlayersEmptyHand()
+
+	msg := NewResponseMessage(
+		"targeting",
+		"ai",
+		players,
+		[]string{},
+		[]*Engagement{},
+		testCollection["p1_avatar_spell"],
+	)
+
+	action := ai.RespondWithAction(msg)
+	if err := assertResponse(t, action, "target", "p2_avatar"); err != nil {
 		t.Errorf(err.Error())
 	}
 }
@@ -114,7 +134,7 @@ func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
 	}
 }
 
-func TestAI_RespondWithAction_EndsTurnWithoutBlocking(t *testing.T) {
+func TestAI_RespondWithAction_AssignsBlocker(t *testing.T) {
 	players := newPlayersEmptyHand()
 	attacker := testCollection2["p2_creature"]
 	engagements := []*Engagement{NewEngagement(attacker, players["ai"].Avatar)}
@@ -122,26 +142,55 @@ func TestAI_RespondWithAction_EndsTurnWithoutBlocking(t *testing.T) {
 
 	ai := NewAI("ai")
 	action := ai.RespondWithAction(msg)
+	if err := assertResponse(t, action, "target", "p1_creature"); err != nil {
+		t.Errorf(err.Error())
+	}
+}
+
+func TestAI_RespondWithAction_EndsTurnWhenNoBlockers(t *testing.T) {
+	players := newPlayersWithBoard(
+		map[string]*Card{},
+		map[string]*Card{"p2_creature": testCollection2["p2_creature"]},
+		NewEmptyHand(),
+		0,
+	)
+
+	attacker := testCollection2["p2_creature"]
+
+	engagements := []*Engagement{NewEngagement(attacker, players["ai"].Avatar)}
+	msg := newTestResponseMessage("blockers", players, engagements)
+
+	ai := NewAI("ai")
+	action := ai.RespondWithAction(msg)
 	if action.Action != "endTurn" {
-		t.Errorf("action.Action %v expected endTurn", action.Action)
+		t.Errorf("action.Action %v expected endTurn (%v)", action.Action, action.Card)
 	}
 }
 
 // utils
 
 func newPlayers(hand map[string]*Card, mana int) map[string]*Player {
+	return newPlayersWithBoard(
+		map[string]*Card{"p1_creature": testCollection["p1_creature"]},
+		map[string]*Card{"p2_creature": testCollection2["p2_creature"]},
+		hand,
+		mana,
+	)
+}
+
+func newPlayersWithBoard(me, you, hand map[string]*Card, mana int) map[string]*Player {
 	players := map[string]*Player{
 		"ai": NewPlayerWithState(
 			"ai",
 			testCollection,
 			hand,
-			map[string]*Card{"p1_creature": testCollection["p1_creature"]},
+			me,
 		),
 		"ai2": NewPlayerWithState(
 			"ai2",
 			testCollection2,
 			NewEmptyHand(),
-			map[string]*Card{"p2_creature": testCollection2["p2_creature"]},
+			you,
 		),
 	}
 
