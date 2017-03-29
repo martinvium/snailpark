@@ -9,13 +9,13 @@ import (
 var testCollection = map[string]*Card{
 	"p1_creature":           &Card{*NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2), "p1_creature", 2, "ai"},
 	"p1_expensive_creature": &Card{*NewCreatureProto("Expensive Fella", 3, "Something stinks.", 3, 2), "p1_expensive_creature", 2, "ai"},
-	"p1_spell":              &Card{*NewSpellProto("Goo-to-the-face", 1, "Deal 5 damage to enemy player -- That's not nice.", NewPlayerDamageAbility(5)), "p1_spell", 0, "ai"},
+	"p1_spell":              &Card{*NewSpellProto("Goo-to-the-face", 1, "Deal 5 damage to enemy player -- That's not nice.", NewDamageAbility(5)), "p1_spell", 0, "ai"},
 	"p1_avatar":             &Card{*NewAvatarProto("The Bald One", 30), "p1_avatar", 30, "ai"},
 }
 
 var testCollection2 = map[string]*Card{
-	"p2_creature": &Card{*NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2), "p2_creature", 2, "ai"},
-	"p2_avatar":   &Card{*NewAvatarProto("The Bald One", 30), "p2_avatar", 30, "ai"},
+	"p2_creature": &Card{*NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2), "p2_creature", 2, "ai2"},
+	"p2_avatar":   &Card{*NewAvatarProto("The Bald One", 30), "p2_avatar", 30, "ai2"},
 }
 
 func TestAI_RespondWithAction_IgnoreWhenEnemyTurn(t *testing.T) {
