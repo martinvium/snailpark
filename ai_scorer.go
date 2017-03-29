@@ -33,9 +33,10 @@ func (s *Score) String() string {
 func NewAIScorer(playerId string, msg *ResponseMessage) *AIScorer {
 	playerMods := map[string]int{}
 	for _, player := range msg.Players {
-		mod := -1
+		mod := 1
 		if player.Id == playerId {
-			mod = 1
+			// power removed from our side of the board is generally bad (tm)
+			mod = -1
 		}
 
 		playerMods[player.Id] = mod
@@ -185,7 +186,9 @@ func (s *AIScorer) scoreTarget(card, target *Card) *Score {
 	score += s.calcPowerRemoved(card, target) * powerFactor
 
 	// force negative score for own cards
-	score *= s.playerMods[target.PlayerId]
+	mod := s.playerMods[target.PlayerId]
+	fmt.Println("- Applying player mod(", mod, ") was", score)
+	score *= mod
 
 	// downplay invalid targets
 	if !card.Ability.AnyValidCondition(target.CardType) {
@@ -199,7 +202,7 @@ func (s *AIScorer) scoreTarget(card, target *Card) *Score {
 func (s *AIScorer) calcPowerRemoved(card, target *Card) int {
 	if card.Ability.TestApplyRemovesCard(card, target) {
 		fmt.Println("- Removes target", target, "with power of", target.Power)
-		return -target.Power
+		return target.Power
 	} else {
 		fmt.Println("- Doesn't remove target")
 		return 0

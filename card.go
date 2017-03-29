@@ -86,7 +86,7 @@ func MapCardIds(vs []*Card) []string {
 }
 
 func (c *Card) String() string {
-	return "Card(" + c.Id + ", " + c.Title + ")"
+	return "Card(" + c.Id + ")"
 }
 
 func (c *Card) CanAttack() bool {
