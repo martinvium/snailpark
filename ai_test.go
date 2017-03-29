@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"errors"
+	"fmt"
+	"testing"
+)
 
 var testCollection = map[string]*Card{
 	"p1_creature":           &Card{*NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2), "p1_creature", 2, "ai"},
@@ -38,7 +42,9 @@ func TestAI_RespondWithAction_PlaysCard(t *testing.T) {
 	msg := newTestMainResponseMessage(players)
 
 	action := ai.RespondWithAction(msg)
-	assertResponse(t, action, "playCard", "p1_expensive_creature")
+	if err := assertResponse(t, action, "playCard", "p1_expensive_creature"); err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestAI_RespondWithAction_PlaysSpell(t *testing.T) {
@@ -51,7 +57,9 @@ func TestAI_RespondWithAction_PlaysSpell(t *testing.T) {
 	msg := newTestMainResponseMessage(players)
 
 	action := ai.RespondWithAction(msg)
-	assertResponse(t, action, "playCard", "p1_spell")
+	if err := assertResponse(t, action, "playCard", "p1_spell"); err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestAI_RespondWithAction_TargetsSpell(t *testing.T) {
@@ -68,7 +76,9 @@ func TestAI_RespondWithAction_TargetsSpell(t *testing.T) {
 	)
 
 	action := ai.RespondWithAction(msg)
-	assertResponse(t, action, "target", "p2_creature")
+	if err := assertResponse(t, action, "target", "p2_creature"); err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestAI_RespondWithAction_AssignsAttacker(t *testing.T) {
@@ -78,7 +88,9 @@ func TestAI_RespondWithAction_AssignsAttacker(t *testing.T) {
 	msg := newTestMainResponseMessage(players)
 
 	action := ai.RespondWithAction(msg)
-	assertResponse(t, action, "target", "p1_creature")
+	if err := assertResponse(t, action, "target", "p1_creature"); err != nil {
+		t.Errorf(err.Error())
+	}
 }
 
 func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
@@ -151,17 +163,18 @@ func newTestMainResponseMessage(players map[string]*Player) *ResponseMessage {
 	return newTestResponseMessage("main", players, []*Engagement{})
 }
 
-func assertResponse(t *testing.T, action *Message, expectedAction string, expectedCardId string) {
+func assertResponse(t *testing.T, action *Message, expectedAction string, expectedCardId string) error {
 	if action == nil {
-		t.Errorf("action is nil")
-		return
+		return errors.New("action is nil")
 	}
 
 	if action.Action != expectedAction {
-		t.Errorf("action.Action was %v expected %v", action.Action, expectedAction)
+		return fmt.Errorf("action.Action was %v expected %v", action.Action, expectedAction)
 	}
 
 	if action.Card != expectedCardId {
-		t.Errorf("action.Card was %v, expected %v", action.Card, expectedCardId)
+		return fmt.Errorf("action.Card was %v, expected %v", action.Card, expectedCardId)
 	}
+
+	return nil
 }
