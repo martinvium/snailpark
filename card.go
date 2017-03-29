@@ -15,6 +15,7 @@ type Card struct {
 	CardProto
 	Id               string `json:"id"`
 	CurrentToughness int    `json:"currentToughness"`
+	PlayerId         string
 	// Enchantments, effects, combat health state?
 }
 
@@ -31,14 +32,14 @@ func NewAvatarProto(title string, toughness int) *CardProto {
 }
 
 func NewRandomCreatureCard(power int, toughness int) *Card {
-	return NewCard(NewCreatureProto("random", 0, "", power, toughness))
+	return NewCard(NewCreatureProto("random", 0, "", power, toughness), "random")
 }
 
-func NewCard(proto *CardProto) *Card {
-	return &Card{*proto, NewUUID(), proto.Toughness}
+func NewCard(proto *CardProto, playerId string) *Card {
+	return &Card{*proto, NewUUID(), proto.Toughness, playerId}
 }
 
-func NewDeck(collection map[string]*Card) []*Card {
+func NewDeck(id string, collection map[string]*Card) []*Card {
 	deck := []*Card{}
 	for _, card := range collection {
 		if card.CardType != "avatar" {
@@ -49,7 +50,7 @@ func NewDeck(collection map[string]*Card) []*Card {
 	return deck
 }
 
-func NewCardCollection() map[string]*Card {
+func NewCardCollection(playerId string) map[string]*Card {
 	collection := make(map[string]*Card)
 	for _, proto := range CardRepo {
 		amount := 4
@@ -58,7 +59,7 @@ func NewCardCollection() map[string]*Card {
 		}
 
 		for i := 0; i < amount; i++ {
-			card := NewCard(proto)
+			card := NewCard(proto, playerId)
 			collection[card.Id] = card
 		}
 	}
@@ -85,7 +86,7 @@ func MapCardIds(vs []*Card) []string {
 }
 
 func (c *Card) String() string {
-	return "Card(" + c.Id + ", " + c.Title + ")"
+	return "Card(" + c.Id + ")"
 }
 
 func (c *Card) CanAttack() bool {

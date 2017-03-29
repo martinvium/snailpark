@@ -3,8 +3,8 @@ package main
 import "testing"
 
 func TestAbility_Apply_Attack(t *testing.T) {
-	creature1 := NewCard(NewCreatureProto("Creature 1", 1, "", 1, 2))
-	creature2 := NewCard(NewCreatureProto("Creature 2", 1, "", 1, 2))
+	creature1 := NewRandomCreatureCard(1, 2)
+	creature2 := NewRandomCreatureCard(1, 2)
 
 	creature1.Ability.Apply(creature1, creature2)
 	if creature1.CurrentToughness != 1 {
@@ -17,8 +17,8 @@ func TestAbility_Apply_Attack(t *testing.T) {
 }
 
 func TestAbility_Apply_AttackVsZeroPower(t *testing.T) {
-	creature1 := NewCard(NewCreatureProto("Creature 1", 1, "", 1, 2))
-	creature2 := NewCard(NewCreatureProto("Creature 2", 1, "", 0, 2))
+	creature1 := NewRandomCreatureCard(1, 2)
+	creature2 := NewRandomCreatureCard(0, 2)
 
 	creature1.Ability.Apply(creature1, creature2)
 	if creature1.CurrentToughness != 2 {
@@ -31,8 +31,8 @@ func TestAbility_Apply_AttackVsZeroPower(t *testing.T) {
 }
 
 func TestAbility_Apply_AttackAvatar(t *testing.T) {
-	creature1 := NewCard(NewCreatureProto("Creature 1", 1, "", 1, 2))
-	avatar := NewCard(NewAvatarProto("The Bald One", 30))
+	creature1 := NewRandomCreatureCard(1, 2)
+	avatar := NewCard(NewAvatarProto("The Bald One", 30), "test")
 
 	creature1.Ability.Apply(creature1, avatar)
 	if creature1.CurrentToughness != 2 {

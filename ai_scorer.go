@@ -15,6 +15,7 @@ var powerFactor = 2
 
 type AIScorer struct {
 	hand        map[string]*Card
+	board       map[string]*Card
 	players     map[string]*ResponsePlayer // board state
 	playerMods  map[string]int             // e.g. player 1, ai -1
 	currentMana int
@@ -32,18 +33,20 @@ func (s *Score) String() string {
 func NewAIScorer(playerId string, msg *ResponseMessage) *AIScorer {
 	playerMods := map[string]int{}
 	for _, player := range msg.Players {
-		mod := -1
+		mod := 1
 		if player.Id == playerId {
-			mod = 1
+			// power removed from our side of the board is generally bad (tm)
+			mod = -1
 		}
 
 		playerMods[player.Id] = mod
 	}
 
 	hand := msg.Players[playerId].Hand
+	board := msg.Players[playerId].Board
 	currentMana := msg.Players[playerId].CurrentMana
 
-	return &AIScorer{hand, msg.Players, playerMods, currentMana}
+	return &AIScorer{hand, board, msg.Players, playerMods, currentMana}
 }
 
 func (s *AIScorer) BestPlayableCard() *Card {
@@ -53,7 +56,50 @@ func (s *AIScorer) BestPlayableCard() *Card {
 		scores = append(scores, score)
 	}
 
-	return highestScoringCard(scores)
+	return HighestScore(scores)
+}
+
+func (s *AIScorer) BestBlocker(engagements []*Engagement) *Card {
+	attackers := []*Card{}
+	for _, eng := range engagements {
+		if eng.Blocker == nil {
+			attackers = append(attackers, eng.Attacker)
+		}
+	}
+
+	scores := []*Score{}
+	for _, blocker := range s.board {
+		// only creatures can block
+		if blocker.CardType == "creature" {
+			att_scores := s.scoreTargets(blocker, attackers)
+			att_score := highestScoreWithScore(att_scores)
+			if att_score != nil {
+				scores = append(scores, &Score{att_score.Score, blocker})
+			} else {
+				fmt.Println("Blocker", blocker, "skipped, no attractive target")
+			}
+		}
+	}
+
+	return HighestScore(scores)
+}
+
+func (s *AIScorer) BestBlockTarget(currentCard *Card, engagements []*Engagement) *Card {
+	if currentCard == nil {
+		fmt.Println("ERROR: Cannot find blockTarget without a currentCard")
+		return nil
+	}
+
+	attackers := []*Card{}
+	for _, eng := range engagements {
+		if eng.Blocker == nil {
+			attackers = append(attackers, eng.Attacker)
+		}
+	}
+
+	scores := s.scoreTargets(currentCard, attackers)
+
+	return HighestScore(scores)
 }
 
 func (s *AIScorer) scoreCardForPlay(card *Card) *Score {
@@ -67,9 +113,11 @@ func (s *AIScorer) scoreCardForPlay(card *Card) *Score {
 	case "activated":
 		score += card.Power * powerFactor
 	case "enterPlay":
-		fmt.Println("Scoring enterPlay ability of:", card)
-		if target := s.BestTargetByPowerRemoved(card); target != nil {
-			score += target.Power * powerFactor
+		targets := s.allCardsOnBoard()
+		scores := s.scoreTargets(card, targets)
+		top := highestScoreWithScore(scores)
+		if top != nil {
+			score += top.Score
 		}
 	}
 
@@ -77,12 +125,31 @@ func (s *AIScorer) scoreCardForPlay(card *Card) *Score {
 }
 
 func (s *AIScorer) BestTargetByPowerRemoved(card *Card) *Card {
-	scores := s.scoreAllCardsOnBoard(card)
-	fmt.Println("Scored targets", scores)
-	return highestScoringCard(scores)
+	targets := s.allCardsOnBoard()
+	scores := s.scoreTargets(card, targets)
+	return HighestScore(scores)
 }
 
-func highestScoringCard(scores []*Score) *Card {
+func (s *AIScorer) allCardsOnBoard() []*Card {
+	targets := []*Card{}
+	for _, player := range s.players {
+		for _, target := range player.Board {
+			targets = append(targets, target)
+		}
+	}
+
+	return targets
+}
+
+func HighestScore(scores []*Score) *Card {
+	if score := highestScoreWithScore(scores); score != nil {
+		return score.Card
+	} else {
+		return nil
+	}
+}
+
+func highestScoreWithScore(scores []*Score) *Score {
 	sort.Slice(scores[:], func(i, j int) bool {
 		return scores[i].Score > scores[j].Score
 	})
@@ -90,64 +157,54 @@ func highestScoringCard(scores []*Score) *Card {
 	fmt.Println("Sorted scores:", scores)
 
 	if len(scores) > 0 && scores[0].Score > 0 {
-		return scores[0].Card
+		return scores[0]
 	} else {
 		return nil
 	}
 }
 
-func (s *AIScorer) scoreAllCardsOnBoard(card *Card) []*Score {
-	fmt.Println("Scoring card:", card)
-
+func (s *AIScorer) scoreTargets(card *Card, targets []*Card) []*Score {
 	scores := []*Score{}
-	for _, player := range s.players {
-		fmt.Println("Player", player.Id, "board:", player.Board)
-
-		for _, target := range player.Board {
-			score := 0
-
-			if target.CardType == "avatar" {
-				score += 1
-			}
-
-			score += s.calcPowerRemoved(card, target) * powerFactor
-
-			score *= s.playerMods[player.Id]
-
-			if !card.Ability.AnyValidCondition(target.CardType) {
-				score -= 100
-			}
-
-			scores = append(scores, &Score{score, target})
-		}
+	for _, target := range targets {
+		fmt.Println("Scoring", card, "vs", target)
+		score := s.scoreTarget(card, target)
+		scores = append(scores, score)
 	}
 
 	return scores
 }
 
-func (s *AIScorer) calcPowerRemoved(card, target *Card) int {
-	fmt.Println("- Calc power changed for", card, target)
+func (s *AIScorer) scoreTarget(card, target *Card) *Score {
+	score := 0
 
-	if card.Ability.TestApplyRemovesCard(card, target) {
-		fmt.Println("- Removes target", target, "worth", target.Power)
-		return -target.Power
-	} else {
-		fmt.Println("- Doesn't remove target:", target)
-		return 0
+	// make sure avatars are considered, but low priority
+	if target.CardType == "avatar" {
+		fmt.Println("- Avatar gets basedline score")
+		score += 1
 	}
+
+	score += s.calcPowerRemoved(card, target) * powerFactor
+
+	// force negative score for own cards
+	mod := s.playerMods[target.PlayerId]
+	fmt.Println("- Applying player mod(", mod, ") was", score)
+	score *= mod
+
+	// downplay invalid targets
+	if !card.Ability.AnyValidCondition(target.CardType) {
+		fmt.Println("- Condition check failed")
+		score -= 100
+	}
+
+	return &Score{score, target}
 }
 
-// DEPRECATED
-func (s *AIScorer) mostExpensiveCard(ordered []*Card) *Card {
-	sort.Slice(ordered[:], func(i, j int) bool {
-		return ordered[i].Cost > ordered[j].Cost
-	})
-
-	fmt.Println("ordered", ordered)
-
-	if len(ordered) > 0 {
-		return ordered[0]
+func (s *AIScorer) calcPowerRemoved(card, target *Card) int {
+	if card.Ability.TestApplyRemovesCard(card, target) {
+		fmt.Println("- Removes target", target, "with power of", target.Power)
+		return target.Power
 	} else {
-		return nil
+		fmt.Println("- Doesn't remove target")
+		return 0
 	}
 }
