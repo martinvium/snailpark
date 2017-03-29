@@ -80,6 +80,11 @@ func (s *AIScorer) BestBlocker(engagements []*Engagement) *Card {
 }
 
 func (s *AIScorer) BestBlockTarget(currentCard *Card, engagements []*Engagement) *Card {
+	if currentCard == nil {
+		fmt.Println("ERROR: Cannot find blockTarget without a currentCard")
+		return nil
+	}
+
 	attackers := []*Card{}
 	for _, eng := range engagements {
 		if eng.Blocker == nil {
