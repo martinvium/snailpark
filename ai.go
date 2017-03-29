@@ -31,26 +31,34 @@ func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
 		return nil
 	}
 
-	if msg.State == "main" {
-		if card := a.bestPlayableCard(msg); card != nil {
+	scorer := NewAIScorer(a.playerId, msg)
+
+	switch msg.State {
+	case "main":
+		if card := scorer.BestPlayableCard(); card != nil {
 			return a.playCard(card)
 		} else {
 			return a.attackOrEndTurn(msg)
 		}
-	} else if msg.State == "attackers" {
+	case "attackers":
 		return a.attackOrEndTurn(msg)
-	} else if msg.State == "blockers" {
-		return NewSimpleMessage(a.playerId, "endTurn")
-	} else if msg.State == "targeting" {
+	case "blockers":
+		if card := scorer.BestBlocker(msg.Engagements); card != nil {
+			return NewPlayCardMessage(a.playerId, "target", card.Id)
+		} else {
+			return NewSimpleMessage(a.playerId, "endTurn")
+		}
+	case "blockTarget":
+		if card := scorer.BestBlockTarget(msg.CurrentCard, msg.Engagements); card != nil {
+			return NewPlayCardMessage(a.playerId, "target", card.Id)
+		} else {
+			fmt.Println("ERROR: There should always be a block target")
+		}
+	case "targeting":
 		return a.targetSpell(msg)
 	}
 
 	return nil
-}
-
-func (a *AI) bestPlayableCard(msg *ResponseMessage) *Card {
-	scorer := NewAIScorer(a.playerId, msg)
-	return scorer.BestPlayableCard()
 }
 
 func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {

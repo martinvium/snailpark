@@ -17,7 +17,7 @@ type Player struct {
 func NewPlayer(id string) *Player {
 	return NewPlayerWithState(
 		id,
-		NewCardCollection(),
+		NewCardCollection(id),
 		map[string]*Card{},
 		map[string]*Card{},
 	)
@@ -33,7 +33,7 @@ func NewPlayerWithState(id string, collection map[string]*Card, hand map[string]
 		0,
 		0,
 		collection,
-		NewDeck(collection),
+		NewDeck(id, collection),
 		hand,
 		board,
 		avatar,
