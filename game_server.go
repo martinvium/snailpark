@@ -201,12 +201,18 @@ func (g *GameServer) handleTarget(msg *Message) {
 
 func (g *GameServer) assignBlocker(msg *Message) {
 	card, ok := g.game.DefendingPlayer().Board[msg.Card]
-	if ok {
-		log.Println("Current blocker:", msg.Card)
-		g.game.CurrentCard = card
+	if ok == false {
+		log.Println("ERROR: Invalid blocker:", msg.Card)
+		return
 	}
 
-	g.game.State.Transition("blockTarget")
+	if AnyAssignedBlockerWithId(g.game.Engagements, card.Id) == false {
+		log.Println("Current blocker:", msg.Card)
+		g.game.CurrentCard = card
+		g.game.State.Transition("blockTarget")
+	} else {
+		log.Println("ERROR: Blocker already assigned another target:", card)
+	}
 }
 
 func (g *GameServer) assignBlockTarget(msg *Message) {

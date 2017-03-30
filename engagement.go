@@ -12,6 +12,16 @@ func NewEngagement(attacker *Card, target *Card) *Engagement {
 	return &Engagement{attacker, nil, target}
 }
 
+func AnyAssignedBlockerWithId(e []*Engagement, id string) bool {
+	for _, v := range e {
+		if v.Blocker != nil && v.Blocker.Id == id {
+			return true
+		}
+	}
+
+	return false
+}
+
 func ResolveEngagement(engagements []*Engagement) {
 	for _, e := range engagements {
 		target := e.Target

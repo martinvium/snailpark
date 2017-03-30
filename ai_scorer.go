@@ -70,7 +70,7 @@ func (s *AIScorer) BestBlocker(engagements []*Engagement) *Card {
 	scores := []*Score{}
 	for _, blocker := range s.board {
 		// only creatures can block
-		if blocker.CardType == "creature" && s.alreadyBlocking(blocker, engagements) == false {
+		if blocker.CardType == "creature" && AnyAssignedBlockerWithId(engagements, blocker.Id) == false {
 			att_scores := s.scoreTargets(blocker, attackers)
 			att_score := highestScoreWithScore(att_scores)
 			if att_score != nil {
@@ -82,16 +82,6 @@ func (s *AIScorer) BestBlocker(engagements []*Engagement) *Card {
 	}
 
 	return HighestScore(scores)
-}
-
-func (s *AIScorer) alreadyBlocking(c *Card, engagements []*Engagement) bool {
-	for _, eng := range engagements {
-		if eng.Blocker != nil && eng.Blocker.Id == c.Id {
-			return true
-		}
-	}
-
-	return false
 }
 
 func (s *AIScorer) BestBlockTarget(currentCard *Card, engagements []*Engagement) *Card {
