@@ -31,11 +31,11 @@ func NewResponseMessage(state string, playerId string, players map[string]*Playe
 	return &ResponseMessage{state, playerId, responsePlayers, options, engagements, currentCard}
 }
 
-func NewSimpleMessage(playerId string, action string) *Message {
+func NewActionMessage(playerId string, action string) *Message {
 	return &Message{playerId, action, ""}
 }
 
-func NewPlayCardMessage(playerId string, action string, cardId string) *Message {
+func NewCardActionMessage(playerId string, action string, cardId string) *Message {
 	return &Message{playerId, action, cardId}
 }
 

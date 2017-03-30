@@ -13,7 +13,7 @@ type AI struct {
 
 func NewAI(playerId string) *AI {
 	outCh := make(chan *Message, channelBufSize)
-	outCh <- NewSimpleMessage(playerId, "start")
+	outCh <- NewActionMessage(playerId, "start")
 	return &AI{outCh, playerId}
 }
 
@@ -44,13 +44,13 @@ func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
 		return a.attackOrEndTurn(msg)
 	case "blockers":
 		if card := scorer.BestBlocker(msg.Engagements); card != nil {
-			return NewPlayCardMessage(a.playerId, "target", card.Id)
+			return NewCardActionMessage(a.playerId, "target", card.Id)
 		} else {
-			return NewSimpleMessage(a.playerId, "endTurn")
+			return NewActionMessage(a.playerId, "endTurn")
 		}
 	case "blockTarget":
 		if card := scorer.BestBlockTarget(msg.CurrentCard, msg.Engagements); card != nil {
-			return NewPlayCardMessage(a.playerId, "target", card.Id)
+			return NewCardActionMessage(a.playerId, "target", card.Id)
 		} else {
 			fmt.Println("ERROR: There should always be a block target")
 		}
@@ -67,20 +67,20 @@ func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
 	me := msg.Players[a.playerId]
 	card := a.firstAvailableAttacker(me.Board, msg.Engagements)
 	if card != nil {
-		return NewPlayCardMessage(a.playerId, "target", card.Id)
+		return NewCardActionMessage(a.playerId, "target", card.Id)
 	} else {
-		return NewSimpleMessage(a.playerId, "endTurn")
+		return NewActionMessage(a.playerId, "endTurn")
 	}
 }
 
 func (a *AI) targetSpell(msg *ResponseMessage) *Message {
 	scorer := NewAIScorer(a.playerId, msg)
 	target := scorer.BestTargetByPowerRemoved(msg.CurrentCard)
-	return NewPlayCardMessage(a.playerId, "target", target.Id)
+	return NewCardActionMessage(a.playerId, "target", target.Id)
 }
 
 func (a *AI) playCard(card *Card) *Message {
-	return NewPlayCardMessage(a.playerId, "playCard", card.Id)
+	return NewCardActionMessage(a.playerId, "playCard", card.Id)
 }
 
 func (a *AI) respondDelayed(msg *Message) {
