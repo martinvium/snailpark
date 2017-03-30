@@ -228,14 +228,13 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 
 func (g *GameServer) assignAttacker(msg *Message) {
 	card, ok := g.game.CurrentPlayer.Board[msg.Card]
-	if ok {
+	if ok && card.CardType == "creature" {
 		log.Println("Assigned attacker:", msg.Card)
 		g.game.Engagements = append(g.game.Engagements, NewEngagement(card, g.game.DefendingPlayer().Avatar))
+		g.game.State.Transition("attackers")
 	} else {
 		log.Println("ERROR: assigning invalid attacker:", msg.Card)
 	}
-
-	g.game.State.Transition("attackers")
 }
 
 func (g *GameServer) targetAbility(msg *Message) {
