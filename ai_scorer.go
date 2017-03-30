@@ -14,8 +14,8 @@ var attributeFactors = map[string]int{
 var powerFactor = 2
 
 type AIScorer struct {
-	hand        map[string]*Card
-	board       map[string]*Card
+	hand        []*Card
+	board       []*Card
 	players     map[string]*ResponsePlayer // board state
 	playerMods  map[string]int             // e.g. player 1, ai -1
 	currentMana int

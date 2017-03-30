@@ -16,14 +16,14 @@ type ResponseMessage struct {
 }
 
 type ResponsePlayer struct {
-	Id          string           `json:"id"`
-	CurrentMana int              `json:"currentMana"`
-	MaxMana     int              `json:"maxMana"`
-	Deck        []*Card          `json:"deck"`
-	Hand        map[string]*Card `json:"hand"`
-	HandSize    int              `json:"handSize"`
-	Board       map[string]*Card `json:"board"`
-	Avatar      *Card            `json:"avatar"`
+	Id          string  `json:"id"`
+	CurrentMana int     `json:"currentMana"`
+	MaxMana     int     `json:"maxMana"`
+	Deck        []*Card `json:"deck"`
+	Hand        []*Card `json:"hand"`
+	HandSize    int     `json:"handSize"`
+	Board       []*Card `json:"board"`
+	Avatar      *Card   `json:"avatar"`
 }
 
 func NewResponseMessage(state string, playerId string, players map[string]*Player, options []string, engagements []*Engagement, currentCard *Card) *ResponseMessage {

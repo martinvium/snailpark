@@ -200,8 +200,8 @@ func (g *GameServer) handleTarget(msg *Message) {
 }
 
 func (g *GameServer) assignBlocker(msg *Message) {
-	card, ok := g.game.DefendingPlayer().Board[msg.Card]
-	if ok == false {
+	card := FirstCardWithId(g.game.DefendingPlayer().Board, msg.Card)
+	if card == nil {
 		log.Println("ERROR: Invalid blocker:", msg.Card)
 		return
 	}
@@ -216,16 +216,18 @@ func (g *GameServer) assignBlocker(msg *Message) {
 }
 
 func (g *GameServer) assignBlockTarget(msg *Message) {
-	card, ok := g.game.CurrentPlayer.Board[msg.Card]
-	if ok {
-		log.Println("Assigned blocker target:", card)
-		for _, engagement := range g.game.Engagements {
-			if engagement.Attacker == card {
-				engagement.Blocker = g.game.CurrentCard
-			}
+	card := FirstCardWithId(g.game.CurrentPlayer.Board, msg.Card)
+	if card == nil {
+		log.Println("ERROR: Invalid blocker target:", msg.Card)
+		return
+	}
+
+	log.Println("Assigned blocker target:", card)
+
+	for _, engagement := range g.game.Engagements {
+		if engagement.Attacker == card {
+			engagement.Blocker = g.game.CurrentCard
 		}
-	} else {
-		log.Println("ERROR: assigning invalid blocker:", msg.Card)
 	}
 
 	g.game.CurrentCard = nil
@@ -233,14 +235,21 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 }
 
 func (g *GameServer) assignAttacker(msg *Message) {
-	card, ok := g.game.CurrentPlayer.Board[msg.Card]
-	if ok && card.CardType == "creature" {
-		log.Println("Assigned attacker:", msg.Card)
-		g.game.Engagements = append(g.game.Engagements, NewEngagement(card, g.game.DefendingPlayer().Avatar))
-		g.game.State.Transition("attackers")
-	} else {
-		log.Println("ERROR: assigning invalid attacker:", msg.Card)
+	card := FirstCardWithId(g.game.CurrentPlayer.Board, msg.Card)
+	if card == nil {
+		log.Println("ERROR: Invalid attacker:", msg.Card)
+		return
 	}
+
+	if card.CardType != "creature" {
+		log.Println("ERROR: Attacker not a creature:", card)
+		return
+	}
+
+	log.Println("Assigned attacker:", msg.Card)
+
+	g.game.Engagements = append(g.game.Engagements, NewEngagement(card, g.game.DefendingPlayer().Avatar))
+	g.game.State.Transition("attackers")
 }
 
 func (g *GameServer) targetAbility(msg *Message) {
@@ -306,7 +315,7 @@ func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
 	)
 
 	// hide opponent cards
-	msg.Players[OtherPlayerId(client.PlayerId())].Hand = make(map[string]*Card)
+	msg.Players[OtherPlayerId(client.PlayerId())].Hand = NewEmptyHand()
 
 	client.SendResponse(msg)
 }

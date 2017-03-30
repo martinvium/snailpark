@@ -39,9 +39,9 @@ func (g *Game) AnyPlayerDead() bool {
 
 func (g *Game) CleanUpDeadCreatures() {
 	for _, player := range g.Players {
-		for key, card := range player.Board {
+		for _, card := range player.Board {
 			if card.Removed() {
-				delete(player.Board, key)
+				player.Board = DeleteCard(player.Board, card)
 			}
 		}
 	}

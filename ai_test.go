@@ -34,10 +34,10 @@ func TestAI_RespondWithAction_IgnoreWhenEnemyTurn(t *testing.T) {
 
 func TestAI_RespondWithAction_PlaysCard(t *testing.T) {
 	ai := NewAI("ai")
-	hand := map[string]*Card{
-		"p1_creature":           testCollection["p1_creature"],
-		"p1_expensive_creature": testCollection["p1_expensive_creature"],
-		"p1_creature_again":     testCollection["p1_creature"],
+	hand := []*Card{
+		testCollection["p1_creature"],
+		testCollection["p1_expensive_creature"],
+		testCollection["p1_creature"],
 	}
 
 	players := newPlayers(hand, 3)
@@ -51,9 +51,7 @@ func TestAI_RespondWithAction_PlaysCard(t *testing.T) {
 
 func TestAI_RespondWithAction_PlaysSpell(t *testing.T) {
 	ai := NewAI("ai")
-	hand := map[string]*Card{
-		"p1_spell": testCollection["p1_spell"],
-	}
+	hand := []*Card{testCollection["p1_spell"]}
 
 	players := newPlayers(hand, 3)
 	msg := newTestMainResponseMessage(players)
@@ -66,9 +64,7 @@ func TestAI_RespondWithAction_PlaysSpell(t *testing.T) {
 
 func TestAI_RespondWithAction_PlaysHeal(t *testing.T) {
 	ai := NewAI("ai")
-	hand := map[string]*Card{
-		"p1_heal": testCollection["p1_heal"],
-	}
+	hand := []*Card{testCollection["p1_heal"]}
 
 	players := newPlayers(hand, 3)
 	msg := newTestMainResponseMessage(players)
@@ -205,8 +201,8 @@ func TestAI_RespondWithAction_AssignsBlockTarget(t *testing.T) {
 
 func TestAI_RespondWithAction_EndsTurnWhenNoBlockers(t *testing.T) {
 	players := newPlayersWithBoard(
-		map[string]*Card{},
-		map[string]*Card{"p2_creature": testCollection2["p2_creature"]},
+		[]*Card{},
+		[]*Card{testCollection2["p2_creature"]},
 		NewEmptyHand(),
 		0,
 	)
@@ -227,23 +223,23 @@ func TestAI_RespondWithAction_EndsTurnWhenNoBlockers(t *testing.T) {
 
 func newPlayersExpensiveCreatureEmptyHand() map[string]*Player {
 	return newPlayersWithBoard(
-		map[string]*Card{"p1_expensive_creature": testCollection["p1_expensive_creature"]},
-		map[string]*Card{"p2_creature": testCollection2["p2_creature"]},
+		[]*Card{testCollection["p1_expensive_creature"]},
+		[]*Card{testCollection2["p2_creature"]},
 		NewEmptyHand(),
 		0,
 	)
 }
 
-func newPlayers(hand map[string]*Card, mana int) map[string]*Player {
+func newPlayers(hand []*Card, mana int) map[string]*Player {
 	return newPlayersWithBoard(
-		map[string]*Card{"p1_creature": testCollection["p1_creature"]},
-		map[string]*Card{"p2_creature": testCollection2["p2_creature"]},
+		[]*Card{testCollection["p1_creature"]},
+		[]*Card{testCollection2["p2_creature"]},
 		hand,
 		mana,
 	)
 }
 
-func newPlayersWithBoard(me, you, hand map[string]*Card, mana int) map[string]*Player {
+func newPlayersWithBoard(me, you, hand []*Card, mana int) map[string]*Player {
 	players := map[string]*Player{
 		"ai": NewPlayerWithState(
 			"ai",

@@ -9,8 +9,8 @@ type Player struct {
 	MaxMana     int
 	collection  map[string]*Card
 	Deck        []*Card
-	Hand        map[string]*Card
-	Board       map[string]*Card
+	Hand        []*Card
+	Board       []*Card
 	Avatar      *Card
 }
 
@@ -18,14 +18,14 @@ func NewPlayer(id string) *Player {
 	return NewPlayerWithState(
 		id,
 		NewCardCollection(id),
-		map[string]*Card{},
-		map[string]*Card{},
+		NewEmptyHand(),
+		NewEmptyBoard(),
 	)
 }
 
-func NewPlayerWithState(id string, collection map[string]*Card, hand map[string]*Card, board map[string]*Card) *Player {
+func NewPlayerWithState(id string, collection map[string]*Card, hand, board []*Card) *Player {
 	avatar := FirstAvatar(collection)
-	board[avatar.Id] = avatar
+	board = append(board, avatar)
 
 	return &Player{
 		false,
@@ -40,8 +40,12 @@ func NewPlayerWithState(id string, collection map[string]*Card, hand map[string]
 	}
 }
 
-func NewEmptyHand() map[string]*Card {
-	return make(map[string]*Card)
+func NewEmptyHand() []*Card {
+	return []*Card{}
+}
+
+func NewEmptyBoard() []*Card {
+	return []*Card{}
 }
 
 func FirstAvatar(collection map[string]*Card) *Card {
@@ -78,14 +82,14 @@ func (p *Player) AddToHand(num int) []*Card {
 	p.Deck = p.Deck[:len(p.Deck)-num] // Remove them
 
 	for _, card := range cards {
-		p.Hand[card.Id] = card
+		p.Hand = append(p.Hand, card)
 	}
 
 	return cards
 }
 
 func (p *Player) AddToBoard(card *Card) {
-	p.Board[card.Id] = card
+	p.Board = append(p.Board, card)
 }
 
 func (p *Player) PlayCardFromHand(id string) *Card {
@@ -95,7 +99,7 @@ func (p *Player) PlayCardFromHand(id string) *Card {
 }
 
 func (p *Player) RemoveCardFromHand(c *Card) {
-	delete(p.Hand, c.Id)
+	p.Hand = DeleteCard(p.Hand, c)
 }
 
 func (p *Player) CanPlayCard(cardId string) bool {

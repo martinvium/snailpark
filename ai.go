@@ -89,7 +89,7 @@ func (a *AI) respondDelayed(msg *Message) {
 	a.outCh <- msg
 }
 
-func (a *AI) firstAvailableAttacker(board map[string]*Card, engagements []*Engagement) *Card {
+func (a *AI) firstAvailableAttacker(board []*Card, engagements []*Engagement) *Card {
 	for _, card := range board {
 		if !a.isAttacking(engagements, card) && card.CanAttack() {
 			return card

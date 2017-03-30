@@ -41,6 +41,26 @@ func NewCard(proto *CardProto, playerId string) *Card {
 	return &Card{*proto, NewUUID(), proto.Toughness, playerId}
 }
 
+func DeleteCard(s []*Card, c *Card) []*Card {
+	for i, v := range s {
+		if v.Id == c.Id {
+			s = append(s[:i], s[i+1:]...)
+		}
+	}
+
+	return s
+}
+
+func FirstCardWithId(s []*Card, id string) *Card {
+	for _, v := range s {
+		if v.Id == id {
+			return v
+		}
+	}
+
+	return nil
+}
+
 func NewDeck(id string, collection map[string]*Card) []*Card {
 	deck := []*Card{}
 	for _, card := range collection {
