@@ -7,8 +7,8 @@ import (
 
 var attributeFactors = map[string]int{
 	"cost":      1,
-	"toughness": 1,
-	"power":     1,
+	"toughness": -1,
+	"power":     -1,
 }
 
 var powerFactor = 2
@@ -187,7 +187,7 @@ func (s *AIScorer) scoreTargets(card *Card, targets []*Card) []*Score {
 func (s *AIScorer) scoreTarget(card, target *Card) *Score {
 	score := 0
 
-	score += card.Ability.Modifier * -1
+	score += card.Ability.Modifier * attributeFactors[card.Ability.Attribute]
 
 	score += s.calcPowerRemoved(card, target) * powerFactor
 
