@@ -177,11 +177,7 @@ func (s *AIScorer) scoreTargets(card *Card, targets []*Card) []*Score {
 func (s *AIScorer) scoreTarget(card, target *Card) *Score {
 	score := 0
 
-	// make sure avatars are considered, but low priority
-	if target.CardType == "avatar" {
-		fmt.Println("- Avatar gets basedline score")
-		score += 1
-	}
+	score += card.Ability.Modifier * -1
 
 	score += s.calcPowerRemoved(card, target) * powerFactor
 

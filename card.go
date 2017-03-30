@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type CardProto struct {
 	Color       string   `json:"color"`
 	Title       string   `json:"title"`
@@ -86,7 +88,7 @@ func MapCardIds(vs []*Card) []string {
 }
 
 func (c *Card) String() string {
-	return "Card(" + c.Id + ")"
+	return fmt.Sprintf("Card(%v, %v)", c.Id, c.Title)
 }
 
 func (c *Card) CanAttack() bool {

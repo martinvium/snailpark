@@ -11,6 +11,7 @@ var testCollection = map[string]*Card{
 	"p1_expensive_creature": &Card{*NewCreatureProto("Big Creature", 3, "", 3, 2), "p1_expensive_creature", 2, "ai"},
 	"p1_spell":              &Card{*NewSpellProto("Creature spell", 1, "", NewDamageAbility(5)), "p1_spell", 0, "ai"},
 	"p1_avatar_spell":       &Card{*NewSpellProto("Avatar spell", 1, "", NewPlayerDamageAbility(5)), "p1_avatar_spell", 0, "ai"},
+	"p1_heal":               &Card{*NewSpellProto("Avatar heal", 1, "", NewPlayerHealAbility(5)), "p1_heal", 0, "ai"},
 	"p1_avatar":             &Card{*NewAvatarProto("My Avatar", 30), "p1_avatar", 30, "ai"},
 }
 
@@ -59,6 +60,40 @@ func TestAI_RespondWithAction_PlaysSpell(t *testing.T) {
 
 	action := ai.RespondWithAction(msg)
 	if err := assertResponse(t, action, "playCard", "p1_spell"); err != nil {
+		t.Errorf(err.Error())
+	}
+}
+
+func TestAI_RespondWithAction_PlaysHeal(t *testing.T) {
+	ai := NewAI("ai")
+	hand := map[string]*Card{
+		"p1_heal": testCollection["p1_heal"],
+	}
+
+	players := newPlayers(hand, 3)
+	msg := newTestMainResponseMessage(players)
+
+	action := ai.RespondWithAction(msg)
+	if err := assertResponse(t, action, "playCard", "p1_heal"); err != nil {
+		t.Errorf(err.Error())
+	}
+}
+
+func TestAI_RespondWithAction_HealTargetsOwnAvatar(t *testing.T) {
+	ai := NewAI("ai")
+	players := newPlayersEmptyHand()
+
+	msg := NewResponseMessage(
+		"targeting",
+		"ai",
+		players,
+		[]string{},
+		[]*Engagement{},
+		testCollection["p1_heal"],
+	)
+
+	action := ai.RespondWithAction(msg)
+	if err := assertResponse(t, action, "target", "p1_avatar"); err != nil {
 		t.Errorf(err.Error())
 	}
 }
