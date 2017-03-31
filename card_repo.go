@@ -11,3 +11,15 @@ var CardRepo = []*CardProto{
 	NewSpellProto("Green smelly liquid", 2, "Heal your self for 5 -- But it taste awful!", NewPlayerHealAbility(5)),
 	NewAvatarProto("The Bald One", 30),
 }
+
+// var CardRepo = []*CardProto{
+// 	NewCreatureProto("small dude", 1, "", 2, 1),
+// 	NewCreatureProto("small buff dude", 1, "", 1, 1, NewBuffTargetCreatureAbility("power", 2)),
+// 	NewCreatureProto("small card draw dude", 2, "", 1, 3, NewDrawCardAbility(1)),
+// 	NewCreatureProto("medium dude", 2, "", 3, 2),
+// 	NewCreatureProto("medium grower dude", 3, "", 2, 4, NewBuffSelfAbility("power", 1)),
+// 	NewCreatureProto("medium buff dude", 3, "", 3, 3, NewBuffTargetCreatureAbility("power", 3)),
+// 	NewCreatureProto("finisher dude", 5, "", 6, 5),
+// 	NewSpellProto("buff spell", 2, "", NewBuffOwnBoard(2)),
+// 	NewAvatarProto("zoo avatar", 30),
+// }

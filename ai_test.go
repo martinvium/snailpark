@@ -243,13 +243,13 @@ func newPlayersWithBoard(me, you, hand []*Card, mana int) map[string]*Player {
 	players := map[string]*Player{
 		"ai": NewPlayerWithState(
 			"ai",
-			testCollection,
+			[]*Card{testCollection["p1_avatar"]},
 			hand,
 			me,
 		),
 		"ai2": NewPlayerWithState(
 			"ai2",
-			testCollection2,
+			[]*Card{testCollection2["p2_avatar"]},
 			NewEmptyHand(),
 			you,
 		),

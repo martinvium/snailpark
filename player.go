@@ -1,13 +1,15 @@
 package main
 
-import "log"
+import (
+	"fmt"
+	"log"
+)
 
 type Player struct {
 	Ready       bool
 	Id          string
 	CurrentMana int
 	MaxMana     int
-	collection  map[string]*Card
 	Deck        []*Card
 	Hand        []*Card
 	Board       []*Card
@@ -17,23 +19,30 @@ type Player struct {
 func NewPlayer(id string) *Player {
 	return NewPlayerWithState(
 		id,
-		NewCardCollection(id),
+		NewTestDeck(id),
 		NewEmptyHand(),
 		NewEmptyBoard(),
 	)
 }
 
-func NewPlayerWithState(id string, collection map[string]*Card, hand, board []*Card) *Player {
-	avatar := FirstAvatar(collection)
-	board = append(board, avatar)
+func NewPlayerWithState(id string, deck []*Card, hand, board []*Card) *Player {
+	// Move avatar from deck to board
+	avatar := FirstCardWithType(deck, "avatar")
+	if avatar != nil {
+		deck = DeleteCard(deck, avatar)
+		board = append(board, avatar)
+	} else {
+		fmt.Println("ERROR: No avatar in deck")
+	}
+
+	deck = ShuffleDeck(deck)
 
 	return &Player{
 		false,
 		id,
 		0,
 		0,
-		collection,
-		NewDeck(id, collection),
+		deck,
 		hand,
 		board,
 		avatar,
@@ -46,17 +55,6 @@ func NewEmptyHand() []*Card {
 
 func NewEmptyBoard() []*Card {
 	return []*Card{}
-}
-
-func FirstAvatar(collection map[string]*Card) *Card {
-	for _, card := range collection {
-		if card.CardType == "avatar" {
-			return card
-		}
-	}
-
-	log.Println("ERROR: no avatar in collection!")
-	return nil
 }
 
 func AllPlayers(vs map[string]*Player, f func(*Player) bool) bool {
@@ -93,7 +91,7 @@ func (p *Player) AddToBoard(card *Card) {
 }
 
 func (p *Player) PlayCardFromHand(id string) *Card {
-	card := p.collection[id]
+	card := FirstCardWithId(p.Hand, id)
 	p.CurrentMana -= card.Cost
 	return card
 }
@@ -103,7 +101,7 @@ func (p *Player) RemoveCardFromHand(c *Card) {
 }
 
 func (p *Player) CanPlayCard(cardId string) bool {
-	card := p.collection[cardId]
+	card := FirstCardWithId(p.Hand, cardId)
 
 	if card == nil {
 		log.Println("ERROR: Client trying to use invalid card:", cardId)

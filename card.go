@@ -2,39 +2,12 @@ package main
 
 import "fmt"
 
-type CardProto struct {
-	Color       string   `json:"color"`
-	Title       string   `json:"title"`
-	Cost        int      `json:"cost"`
-	CardType    string   `json:"type"`
-	Description string   `json:"description"`
-	Power       int      `json:"power"`
-	Toughness   int      `json:"toughness"`
-	Ability     *Ability `json:"ability"`
-}
-
 type Card struct {
 	CardProto
 	Id               string `json:"id"`
 	CurrentToughness int    `json:"currentToughness"`
 	PlayerId         string
 	// Enchantments, effects, combat health state?
-}
-
-func NewSpellProto(title string, cost int, desc string, ability *Ability) *CardProto {
-	return &CardProto{"white", title, cost, "spell", desc, 0, 0, ability}
-}
-
-func NewCreatureProto(title string, cost int, desc string, power int, toughness int) *CardProto {
-	return &CardProto{"white", title, cost, "creature", desc, power, toughness, NewAttackAbility()}
-}
-
-func NewAvatarProto(title string, toughness int) *CardProto {
-	return &CardProto{"gold", title, 0, "avatar", "When this card dies, the opponent player wins!", 0, toughness, nil}
-}
-
-func NewRandomCreatureCard(power int, toughness int) *Card {
-	return NewCard(NewCreatureProto("random", 0, "", power, toughness), "random")
 }
 
 func NewCard(proto *CardProto, playerId string) *Card {
@@ -61,32 +34,15 @@ func FirstCardWithId(s []*Card, id string) *Card {
 	return nil
 }
 
-func NewDeck(id string, collection map[string]*Card) []*Card {
-	deck := []*Card{}
-	for _, card := range collection {
-		if card.CardType != "avatar" {
-			deck = append(deck, card)
+func FirstCardWithType(s []*Card, cardType string) *Card {
+	for _, c := range s {
+		if c.CardType == cardType {
+			return c
 		}
 	}
 
-	return deck
-}
-
-func NewCardCollection(playerId string) map[string]*Card {
-	collection := make(map[string]*Card)
-	for _, proto := range CardRepo {
-		amount := 4
-		if proto.CardType == "avatar" {
-			amount = 1
-		}
-
-		for i := 0; i < amount; i++ {
-			card := NewCard(proto, playerId)
-			collection[card.Id] = card
-		}
-	}
-
-	return collection
+	fmt.Println("ERROR: No card of type", cardType, " in deck!")
+	return nil
 }
 
 func FilterCards(vs []*Card, f func(*Card) bool) []*Card {
@@ -105,6 +61,10 @@ func MapCardIds(vs []*Card) []string {
 		vsm[i] = v.Id
 	}
 	return vsm
+}
+
+func NewRandomCreatureCard(power int, toughness int) *Card {
+	return NewCard(NewCreatureProto("random", 0, "", power, toughness), "random")
 }
 
 func (c *Card) String() string {
