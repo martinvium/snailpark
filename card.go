@@ -68,7 +68,7 @@ func NewRandomCreatureCard(power int, toughness int) *Card {
 }
 
 func (c *Card) String() string {
-	return fmt.Sprintf("Card(%v, %v)", c.Id, c.Title)
+	return fmt.Sprintf("Card(%v, %v)", c.Title, c.PlayerId)
 }
 
 func (c *Card) CanAttack() bool {
