@@ -2,18 +2,23 @@ package main
 
 import "math/rand"
 
-func NewDeckFromDef(playerId string, d []string) []*Card {
+func NewStandardDeck(playerId string, def []string) []*Card {
+	return NewCards(CardRepo, playerId, def)
+}
+
+func NewCards(repo []*CardProto, playerId string, def []string) []*Card {
 	deck := []*Card{}
 
-	for _, n := range d {
-		proto := CardProtoByTitle(CardRepo, n)
-		deck = append(deck, NewCard(proto, playerId))
+	for _, n := range def {
+		proto := CardProtoByTitle(repo, n)
+		card := NewCard(proto, NewUUID(), playerId)
+		deck = append(deck, card)
 	}
 
 	return deck
 }
 
-func ShuffleDeck(s []*Card) []*Card {
+func ShuffleCards(s []*Card) []*Card {
 	for i := range s {
 		j := rand.Intn(i + 1)
 		s[i], s[j] = s[j], s[i]
@@ -55,7 +60,7 @@ func NewTestDeck(playerId string) []*Card {
 		"Green smelly liquid",
 	}
 
-	return NewDeckFromDef(playerId, d)
+	return NewStandardDeck(playerId, d)
 }
 
 func NewZooDeck(playerId string) []*Card {
@@ -90,5 +95,5 @@ func NewZooDeck(playerId string) []*Card {
 		"buff spell",
 	}
 
-	return NewDeckFromDef(playerId, d)
+	return NewStandardDeck(playerId, d)
 }

@@ -35,7 +35,7 @@ func NewPlayerWithState(id string, deck []*Card, hand, board []*Card) *Player {
 		fmt.Println("ERROR: No avatar in deck")
 	}
 
-	deck = ShuffleDeck(deck)
+	deck = ShuffleCards(deck)
 
 	return &Player{
 		false,

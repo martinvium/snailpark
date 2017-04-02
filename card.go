@@ -10,8 +10,8 @@ type Card struct {
 	// Enchantments, effects, combat health state?
 }
 
-func NewCard(proto *CardProto, playerId string) *Card {
-	return &Card{*proto, NewUUID(), proto.Toughness, playerId}
+func NewCard(proto *CardProto, id, playerId string) *Card {
+	return &Card{*proto, id, proto.Toughness, playerId}
 }
 
 func DeleteCard(s []*Card, c *Card) []*Card {
@@ -64,7 +64,7 @@ func MapCardIds(vs []*Card) []string {
 }
 
 func NewRandomCreatureCard(power int, toughness int) *Card {
-	return NewCard(NewCreatureProto("random", 0, "", power, toughness), "random")
+	return NewCard(NewCreatureProto("random", 0, "", power, toughness), NewUUID(), "random")
 }
 
 func (c *Card) String() string {

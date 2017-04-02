@@ -32,7 +32,7 @@ func TestAbility_Apply_AttackVsZeroPower(t *testing.T) {
 
 func TestAbility_Apply_AttackAvatar(t *testing.T) {
 	creature1 := NewRandomCreatureCard(1, 2)
-	avatar := NewCard(NewAvatarProto("The Bald One", 30), "test")
+	avatar := NewCard(NewAvatarProto("test_avatar", 30), "test_avatar", "test")
 
 	creature1.Ability.Apply(creature1, avatar)
 	if creature1.CurrentToughness != 2 {

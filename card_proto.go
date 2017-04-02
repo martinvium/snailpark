@@ -25,7 +25,7 @@ func NewAvatarProto(title string, toughness int) *CardProto {
 	return &CardProto{"gold", title, 0, "avatar", "When this card dies, the opponent player wins!", 0, toughness, nil}
 }
 
-func CardProtoFromTitle(repo []*CardRepo, n string) *CardProto {
+func CardProtoByTitle(repo []*CardProto, n string) *CardProto {
 	for _, p := range repo {
 		if p.Title == n {
 			return p
