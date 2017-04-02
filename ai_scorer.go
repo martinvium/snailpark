@@ -113,15 +113,33 @@ func (s *AIScorer) scoreCardForPlay(card *Card) *Score {
 	case "activated":
 		score += card.Power * powerFactor
 	case "enterPlay":
-		targets := s.allCardsOnBoard()
-		scores := s.scoreTargets(card, targets)
+		score += s.scoreCardForPlayByTarget(card)
+	}
+
+	return &Score{score, card}
+}
+
+func (s *AIScorer) scoreCardForPlayByTarget(card *Card) int {
+	score := 0
+	targets := s.allCardsOnBoard()
+	scores := s.scoreTargets(card, targets)
+
+	switch card.Ability.Target {
+	case "random":
+		// TODO: should find the lowest valid score
+		fallthrough
+	case "target":
 		top := highestScoreWithScore(scores)
 		if top != nil {
 			score += top.Score
 		}
+	case "all":
+		for _, s := range scores {
+			score += s.Score
+		}
 	}
 
-	return &Score{score, card}
+	return score
 }
 
 func (s *AIScorer) BestTargetByPowerRemoved(card *Card) *Card {

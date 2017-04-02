@@ -3,11 +3,13 @@ package main
 import "fmt"
 
 type Ability struct {
-	Trigger    string                             `json:"trigger"`    // enterPlay, activated
+	Trigger    string                             `json:"trigger"`    // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
+	Target     string                             `json:"target"`     // target, all, first, random
 	Conditions []string                           `json:"conditions"` // creature, avatar
 	Attribute  string                             `json:"attribute"`  // power, toughness, cost
 	Modifier   int                                `json:"-"`          // 1, 2, 3, 4
 	resolver   func(*Card, *Card) []*Modification `json:"-"`
+	// Context    string                             `json:"context"`    // myBoard, yourBoard, myHand, myLibrary, myGraveyard
 }
 
 // Instead of making the modification directly, we return the intended change
@@ -34,6 +36,7 @@ func NewPlayerHealAbility(modifier int) *Ability {
 func NewAttackAbility() *Ability {
 	return &Ability{
 		"activated",
+		"target",
 		[]string{"avatar", "creature"},
 		"toughness",
 		0,
@@ -44,6 +47,7 @@ func NewAttackAbility() *Ability {
 func NewAbility(conditions []string, attribute string, modifier int) *Ability {
 	return &Ability{
 		"enterPlay",
+		"target",
 		conditions,
 		attribute,
 		modifier,
