@@ -79,6 +79,20 @@ func (c *Card) Removed() bool {
 	return c.CurrentToughness <= 0
 }
 
+func (c *Card) AttributeValue(attribute string) int {
+	switch attribute {
+	case "power":
+		return c.Power
+	case "toughness":
+		return c.CurrentToughness
+	case "cost":
+		return c.Cost
+	default:
+		fmt.Println("ERROR: Invalid attribute value:", attribute)
+		return 0
+	}
+}
+
 func (c *Card) ModifyAttribute(attribute string, modifier int) {
 	switch attribute {
 	case "power":

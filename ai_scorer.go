@@ -11,7 +11,7 @@ var attributeFactors = map[string]int{
 	"power":     -1,
 }
 
-var powerFactor = 2
+var powerFactor = 3
 
 type AIScorer struct {
 	hand        []*Card
@@ -195,7 +195,7 @@ func (s *AIScorer) scoreTargets(card *Card, targets []*Card) []*Score {
 func (s *AIScorer) scoreTarget(card, target *Card) *Score {
 	score := 0
 
-	score += card.Ability.Modifier * attributeFactors[card.Ability.Attribute]
+	score += card.Ability.ModificationAmount(card) * attributeFactors[card.Ability.Attribute]
 
 	score += s.calcPowerRemoved(card, target) * powerFactor
 

@@ -3,12 +3,13 @@ package main
 import "fmt"
 
 type Ability struct {
-	Trigger    string                             `json:"trigger"`    // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
-	Target     string                             `json:"target"`     // target, all, first, random
-	Conditions []string                           `json:"conditions"` // creature, avatar
-	Attribute  string                             `json:"attribute"`  // power, toughness, cost
-	Modifier   int                                `json:"-"`          // 1, 2, 3, 4
-	resolver   func(*Card, *Card) []*Modification `json:"-"`
+	Trigger      string                             `json:"trigger"`    // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
+	Target       string                             `json:"target"`     // target, all, first, random
+	Conditions   []string                           `json:"conditions"` // creature, avatar
+	Attribute    string                             `json:"attribute"`  // power, toughness, cost
+	Modifier     int                                `json:"-"`          // 1, 2, 3, 4
+	ModifierAttr string                             `json:"-"`          // power, toughness, cost
+	resolver     func(*Card, *Card) []*Modification `json:"-"`
 	// Context    string                             `json:"context"`    // myBoard, yourBoard, myHand, myLibrary, myGraveyard
 }
 
@@ -21,16 +22,16 @@ type Modification struct {
 	Modifier  int
 }
 
-func NewPlayerDamageAbility(modifier int) *Ability {
-	return NewAbility([]string{"avatar"}, "toughness", -modifier)
+func NewPlayerDamageAbility() *Ability {
+	return NewAbility([]string{"avatar"}, "toughness", -1, "power")
 }
 
-func NewDamageAbility(modifier int) *Ability {
-	return NewAbility([]string{"creature", "avatar"}, "toughness", -modifier)
+func NewDamageAbility() *Ability {
+	return NewAbility([]string{"creature", "avatar"}, "toughness", -1, "power")
 }
 
-func NewPlayerHealAbility(modifier int) *Ability {
-	return NewAbility([]string{"avatar"}, "toughness", modifier)
+func NewPlayerHealAbility() *Ability {
+	return NewAbility([]string{"avatar"}, "toughness", 1, "power")
 }
 
 func NewAttackAbility() *Ability {
@@ -39,18 +40,20 @@ func NewAttackAbility() *Ability {
 		"target",
 		[]string{"avatar", "creature"},
 		"toughness",
-		0,
-		ModifyBothByPower,
+		-1,
+		"power",
+		ModifyBothByModifier,
 	}
 }
 
-func NewAbility(conditions []string, attribute string, modifier int) *Ability {
+func NewAbility(conditions []string, attribute string, modifier int, modifierAttr string) *Ability {
 	return &Ability{
 		"enterPlay",
 		"target",
 		conditions,
 		attribute,
 		modifier,
+		modifierAttr,
 		ModifyTargetByModifier,
 	}
 }
@@ -59,25 +62,19 @@ func ModifyTargetByModifier(c, target *Card) []*Modification {
 	return []*Modification{&Modification{
 		target,
 		c.Ability.Attribute,
-		c.Ability.Modifier,
+		c.Ability.ModificationAmount(c),
 	}}
 }
 
-func ModifyBothByPower(c, target *Card) []*Modification {
-	modifications := []*Modification{
-		&Modification{
-			target,
-			c.Ability.Attribute,
-			-c.Power,
-		},
-	}
+func (a *Ability) ModificationAmount(c *Card) int {
+	return c.AttributeValue(a.ModifierAttr) * a.Modifier
+}
+
+func ModifyBothByModifier(c, target *Card) []*Modification {
+	modifications := ModifyTargetByModifier(c, target)
 
 	if target.Ability != nil && target.Ability.Trigger == "activated" {
-		modifications = append(modifications, &Modification{
-			c,
-			target.Ability.Attribute,
-			-target.Power,
-		})
+		modifications = append(modifications, ModifyTargetByModifier(target, c)...)
 	}
 
 	return modifications
@@ -90,21 +87,15 @@ func (a *Ability) Apply(c, target *Card) {
 }
 
 func (a *Ability) TestApplyRemovesCard(c, target *Card) bool {
-	for _, m := range a.resolver(c, target) {
-		if m.Card.Id != target.Id {
-			continue
-		}
+	if a.Attribute != "toughness" {
+		return false
+	}
 
-		if m.Attribute != "toughness" {
-			continue
-		}
-
-		// The modifier is negative if e.g. dealing damage
-		result := target.CurrentToughness + m.Modifier
-		fmt.Println("- Checking if card would be removed (", target.CurrentToughness, "+", m.Modifier, "=", result, "<= 0)")
-		if result <= 0 {
-			return true
-		}
+	// The modifier is negative if e.g. dealing damage
+	result := target.CurrentToughness + a.ModificationAmount(c)
+	fmt.Println("- Checking if card would be removed (", target.CurrentToughness, "+", a.ModificationAmount(c), "=", result, "<= 0)")
+	if result <= 0 {
+		return true
 	}
 
 	return false

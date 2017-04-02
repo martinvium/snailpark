@@ -13,8 +13,8 @@ type CardProto struct {
 	Ability     *Ability `json:"ability"`
 }
 
-func NewSpellProto(title string, cost int, desc string, ability *Ability) *CardProto {
-	return &CardProto{"white", title, cost, "spell", desc, 0, 0, ability}
+func NewSpellProto(title string, cost int, desc string, power int, ability *Ability) *CardProto {
+	return &CardProto{"white", title, cost, "spell", desc, power, 0, ability}
 }
 
 func NewCreatureProto(title string, cost int, desc string, power int, toughness int) *CardProto {
