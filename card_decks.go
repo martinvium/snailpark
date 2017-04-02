@@ -6,7 +6,8 @@ func NewDeckFromDef(playerId string, d []string) []*Card {
 	deck := []*Card{}
 
 	for _, n := range d {
-		deck = append(deck, NewCard(NewCardProtoFromTitle(n), playerId))
+		proto := CardProtoByTitle(CardRepo, n)
+		deck = append(deck, NewCard(proto, playerId))
 	}
 
 	return deck
