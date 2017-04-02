@@ -12,14 +12,21 @@ var CardRepo = []*CardProto{
 	NewAvatarProto("The Bald One", 30),
 }
 
+// NewSummonCreatureAbility: summon one or more creatures from 1 card creature or spell
+// NewBoostBoardAbility: tmp boost to power spell
+// NewDamageAbility: dd
+// NewBoostBoardAbility: buff other minions creature e.g. +1/+0 to all on enterPlay?
+// NewBoostSelfOnCardPlayedAbility: buff self whenever a minion comes into play?
+// NewDrawCardAbility: card draw??
 // var CardRepo = []*CardProto{
-// 	NewCreatureProto("small dude", 1, "", 2, 1),
-// 	NewCreatureProto("small buff dude", 1, "", 1, 1, NewBuffTargetCreatureAbility("power", 2)),
-// 	NewCreatureProto("small card draw dude", 2, "", 1, 3, NewDrawCardAbility(1)),
-// 	NewCreatureProto("medium dude", 2, "", 3, 2),
-// 	NewCreatureProto("medium grower dude", 3, "", 2, 4, NewBuffSelfAbility("power", 1)),
-// 	NewCreatureProto("medium buff dude", 3, "", 3, 3, NewBuffTargetCreatureAbility("power", 3)),
-// 	NewCreatureProto("finisher dude", 5, "", 6, 5),
-// 	NewSpellProto("buff spell", 2, "", NewBuffOwnBoard(2)),
+// 	NewCreatureProto("small summon dude", 1, "", 2, 1, NewSummonCreatureAbility("token dude", 1)),
+// 	NewCreatureProto("small buff dude", 1, "", 1, 2, NewBoostBoardAbility("power", 2)),
+// 	NewCreatureProto("small card draw dude", 2, "", 1, 3, NewDrawCardAbility("enterPlay", 1)),
+// 	NewCreatureProto("medium summon dude", 2, "", 3, 2, NewSummonCreatureAbility("token dude", 2)),
+// 	NewCreatureProto("medium grower dude", 3, "", 2, 4, NewBoostSelfOnCardPlayedAbility("power", 1)),
+// 	NewCreatureProto("medium buff dude", 3, "", 3, 3, NewBoostBoardAbility("power", 2)),
+// 	NewCreatureProto("finisher dude", 5, "", 6, 4),
+// 	NewSpellProto("buff spell", 2, "", NewBoostBoardAbility("power", 2)),
+// 	NewSpellProto("buff spell", 1, "", NewDamageAbility("power", 2)),
 // 	NewAvatarProto("zoo avatar", 30),
 // }

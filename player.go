@@ -19,7 +19,7 @@ type Player struct {
 func NewPlayer(id string) *Player {
 	return NewPlayerWithState(
 		id,
-		NewTestDeck(id),
+		NewPrototypeDeck(id),
 		NewEmptyHand(),
 		NewEmptyBoard(),
 	)
