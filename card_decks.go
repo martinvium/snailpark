@@ -56,16 +56,14 @@ var PrototypeDeckDef = []string{
 	"Lord Zembaio",
 	"Goo-to-the-face",
 	"Goo-to-the-face",
-	"Goo-to-the-face",
-	"Goo-to-the-face",
 	"Awkward conversation",
 	"Awkward conversation",
 	"Awkward conversation",
 	"Awkward conversation",
-	"Green smelly liquid",
-	"Green smelly liquid",
-	"Green smelly liquid",
-	"Green smelly liquid",
+	"Creatine powder",
+	"Creatine powder",
+	"Creatine powder",
+	"Creatine powder",
 }
 
 var ZooDeckDef = []string{

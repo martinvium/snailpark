@@ -34,6 +34,10 @@ func NewPlayerHealAbility() *Ability {
 	return NewAbility([]string{"avatar"}, "toughness", 1, "power")
 }
 
+func NewBuffTargetAbility() *Ability {
+	return NewAbility([]string{"creature"}, "power", 1, "power")
+}
+
 func NewAttackAbility() *Ability {
 	return &Ability{
 		"activated",
