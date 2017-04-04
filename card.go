@@ -7,11 +7,12 @@ type Card struct {
 	Id               string `json:"id"`
 	CurrentToughness int    `json:"currentToughness"`
 	PlayerId         string
+	Location         string `json:location` // board, hand, graveyard, library
 	// Enchantments, effects, combat health state?
 }
 
 func NewCard(proto *CardProto, id, playerId string) *Card {
-	return &Card{*proto, id, proto.Toughness, playerId}
+	return &Card{*proto, id, proto.Toughness, playerId, "library"}
 }
 
 func DeleteCard(s []*Card, c *Card) []*Card {

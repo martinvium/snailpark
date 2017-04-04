@@ -13,6 +13,7 @@ type Player struct {
 	Deck        []*Card
 	Hand        []*Card
 	Board       []*Card
+	Graveyard   []*Card
 	Avatar      *Card
 }
 
@@ -45,6 +46,7 @@ func NewPlayerWithState(id string, deck []*Card, hand, board []*Card) *Player {
 		deck,
 		hand,
 		board,
+		[]*Card{},
 		avatar,
 	}
 }
@@ -80,6 +82,7 @@ func (p *Player) AddToHand(num int) []*Card {
 	p.Deck = p.Deck[:len(p.Deck)-num] // Remove them
 
 	for _, card := range cards {
+		card.Location = "hand"
 		p.Hand = append(p.Hand, card)
 	}
 
@@ -87,7 +90,13 @@ func (p *Player) AddToHand(num int) []*Card {
 }
 
 func (p *Player) AddToBoard(card *Card) {
+	card.Location = "board"
 	p.Board = append(p.Board, card)
+}
+
+func (p *Player) AddToGraveyard(card *Card) {
+	card.Location = "graveyard"
+	p.Graveyard = append(p.Graveyard, card)
 }
 
 func (p *Player) PayCardCost(c *Card) {

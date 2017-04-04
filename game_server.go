@@ -272,20 +272,23 @@ func (g *GameServer) targetAbility(msg *Message) {
 }
 
 func (g *GameServer) ResolveCurrentCard(target *Card) {
-	ability := g.game.CurrentCard.Ability
-	if ability != nil {
-		ability.Apply(g.game.CurrentCard, target)
+	card := g.game.CurrentCard
+	g.game.CurrentCard = nil
+
+	if card.Ability != nil {
+		card.Ability.Apply(card, target)
 	}
 
-	if g.game.CurrentCard.CardType == "creature" {
-		g.game.CurrentPlayer.AddToBoard(g.game.CurrentCard)
+	if card.CardType == "creature" {
+		g.game.CurrentPlayer.AddToBoard(card)
+	} else {
+		g.game.CurrentPlayer.AddToGraveyard(card)
 	}
 
-	g.game.CurrentPlayer.RemoveCardFromHand(g.game.CurrentCard)
+	g.game.CurrentPlayer.RemoveCardFromHand(card)
 	g.game.CleanUpDeadCreatures()
 
-	g.game.CurrentPlayer.PayCardCost(g.game.CurrentCard)
-	g.game.CurrentCard = nil
+	g.game.CurrentPlayer.PayCardCost(card)
 }
 
 func (g *GameServer) getCardOnBoard(id string) *Card {
