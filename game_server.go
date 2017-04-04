@@ -113,8 +113,8 @@ func (g *GameServer) SendStateResponseAll() {
 }
 
 func (g *GameServer) SendOptionsResponse() {
-	cards := FilterCards(g.allBoardCards(), func(c *Card) bool {
-		return g.game.CurrentCard.Ability.AnyValidCondition(c.CardType)
+	cards := FilterCards(g.allBoardCards(), func(target *Card) bool {
+		return g.game.CurrentCard.Ability.ValidTarget(g.game.CurrentCard, target)
 	})
 
 	options := MapCardIds(cards)
@@ -260,7 +260,7 @@ func (g *GameServer) targetAbility(msg *Message) {
 	}
 
 	// Targets must be valid, or we don't transition out of targeting mode.
-	if !g.game.CurrentCard.Ability.AnyValidCondition(target.CardType) {
+	if !g.game.CurrentCard.Ability.ValidTarget(g.game.CurrentCard, target) {
 		log.Println("ERROR: Invalid ability target:", target.CardType)
 		g.game.State.Transition("main")
 		g.game.CurrentCard = nil

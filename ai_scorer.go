@@ -205,7 +205,7 @@ func (s *AIScorer) scoreTarget(card, target *Card) *Score {
 	score *= mod
 
 	// downplay invalid targets
-	if !card.Ability.AnyValidCondition(target.CardType) {
+	if !card.Ability.ValidTarget(card, target) {
 		fmt.Println("- Condition check failed")
 		score -= 100
 	}

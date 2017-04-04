@@ -5,12 +5,11 @@ import "fmt"
 type Ability struct {
 	Trigger      string                             `json:"trigger"`    // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
 	Target       string                             `json:"target"`     // target, all, first, random
-	Conditions   []string                           `json:"conditions"` // creature, avatar
+	Conditions   []*Condition                       `json:"conditions"` // creature, avatar
 	Attribute    string                             `json:"attribute"`  // power, toughness, cost
 	Modifier     int                                `json:"-"`          // 1, 2, 3, 4
 	ModifierAttr string                             `json:"-"`          // power, toughness, cost
 	resolver     func(*Card, *Card) []*Modification `json:"-"`
-	// Context    string                             `json:"context"`    // myBoard, yourBoard, myHand, myLibrary, myGraveyard
 }
 
 // Instead of making the modification directly, we return the intended change
@@ -23,26 +22,31 @@ type Modification struct {
 }
 
 func NewPlayerDamageAbility() *Ability {
-	return NewAbility([]string{"avatar"}, "toughness", -1, "power")
+	con := NewYourBoardConditions([]string{"avatar"})
+	return NewAbility(con, "toughness", -1, "power")
 }
 
 func NewDamageAbility() *Ability {
-	return NewAbility([]string{"creature", "avatar"}, "toughness", -1, "power")
+	con := NewYourBoardConditions([]string{"creature", "avatar"})
+	return NewAbility(con, "toughness", -1, "power")
 }
 
 func NewPlayerHealAbility() *Ability {
-	return NewAbility([]string{"avatar"}, "toughness", 1, "power")
+	con := NewMyBoardConditions([]string{"avatar"})
+	return NewAbility(con, "toughness", 1, "power")
 }
 
 func NewBuffTargetAbility() *Ability {
-	return NewAbility([]string{"creature"}, "power", 1, "power")
+	con := NewMyBoardConditions([]string{"creature"})
+	return NewAbility(con, "power", 1, "power")
 }
 
 func NewAttackAbility() *Ability {
+	con := NewYourBoardConditions([]string{"creature"})
 	return &Ability{
 		"activated",
 		"target",
-		[]string{"avatar", "creature"},
+		con,
 		"toughness",
 		-1,
 		"power",
@@ -50,7 +54,7 @@ func NewAttackAbility() *Ability {
 	}
 }
 
-func NewAbility(conditions []string, attribute string, modifier int, modifierAttr string) *Ability {
+func NewAbility(conditions []*Condition, attribute string, modifier int, modifierAttr string) *Ability {
 	return &Ability{
 		"enterPlay",
 		"target",
@@ -111,16 +115,18 @@ func (a *Ability) TestApplyRemovesCard(c, target *Card) bool {
 }
 
 // Also needs to distinguish between targeted spells and those that just hit all
+// TODO: check a.Target == "target"
 func (a *Ability) RequiresTarget() bool {
 	return a.Trigger == "enterPlay"
 }
 
-func (a *Ability) AnyValidCondition(cardType string) bool {
-	for _, condition := range a.Conditions {
-		if condition == cardType {
-			return true
+// Conditions must all be valid, but each condition can have multiple OR values
+func (a *Ability) ValidTarget(card, target *Card) bool {
+	for _, c := range a.Conditions {
+		if c.Valid(card, target) == false {
+			return false
 		}
 	}
 
-	return false
+	return true
 }
