@@ -90,10 +90,8 @@ func (p *Player) AddToBoard(card *Card) {
 	p.Board = append(p.Board, card)
 }
 
-func (p *Player) PlayCardFromHand(id string) *Card {
-	card := FirstCardWithId(p.Hand, id)
-	p.CurrentMana -= card.Cost
-	return card
+func (p *Player) PayCardCost(c *Card) {
+	p.CurrentMana -= c.Cost
 }
 
 func (p *Player) RemoveCardFromHand(c *Card) {

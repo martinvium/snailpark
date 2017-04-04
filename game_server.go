@@ -168,7 +168,7 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 		return
 	}
 
-	g.game.CurrentCard = g.game.CurrentPlayer.PlayCardFromHand(msg.Card)
+	g.game.CurrentCard = FirstCardWithId(g.game.CurrentPlayer.Hand, msg.Card)
 	g.game.State.Transition("playingCard")
 
 	if g.game.CurrentCard.Ability != nil && g.game.CurrentCard.Ability.RequiresTarget() {
@@ -262,6 +262,8 @@ func (g *GameServer) targetAbility(msg *Message) {
 	// Targets must be valid, or we don't transition out of targeting mode.
 	if !g.game.CurrentCard.Ability.AnyValidCondition(target.CardType) {
 		log.Println("ERROR: Invalid ability target:", target.CardType)
+		g.game.State.Transition("main")
+		g.game.CurrentCard = nil
 		return
 	}
 
@@ -282,6 +284,7 @@ func (g *GameServer) ResolveCurrentCard(target *Card) {
 	g.game.CurrentPlayer.RemoveCardFromHand(g.game.CurrentCard)
 	g.game.CleanUpDeadCreatures()
 
+	g.game.CurrentPlayer.PayCardCost(g.game.CurrentCard)
 	g.game.CurrentCard = nil
 }
 
