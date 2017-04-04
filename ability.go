@@ -84,7 +84,12 @@ func ModifyBothByModifier(c, target *Card) []*Modification {
 	return modifications
 }
 
+// TODO: if card doesn't require a target, apply to any valid target
 func (a *Ability) Apply(c, target *Card) {
+	if target == nil {
+		return
+	}
+
 	for _, m := range a.resolver(c, target) {
 		m.Card.ModifyAttribute(m.Attribute, m.Modifier)
 	}

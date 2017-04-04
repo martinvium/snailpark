@@ -174,7 +174,7 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 	if g.game.CurrentCard.Ability != nil && g.game.CurrentCard.Ability.RequiresTarget() {
 		g.game.State.Transition("targeting")
 	} else {
-		g.ResolveCurrentCard()
+		g.ResolveCurrentCard(nil)
 		g.game.State.Transition("main")
 	}
 }
@@ -259,21 +259,22 @@ func (g *GameServer) targetAbility(msg *Message) {
 		return
 	}
 
+	// Targets must be valid, or we don't transition out of targeting mode.
 	if !g.game.CurrentCard.Ability.AnyValidCondition(target.CardType) {
 		log.Println("ERROR: Invalid ability target:", target.CardType)
 		return
 	}
 
-	// TODO: we should instead assign the target to the effect, and let this resolve
-	// in ResolveCurrentCard, because that would allow abilities without a target to use
-	// the same code?
-	g.game.CurrentCard.Ability.Apply(g.game.CurrentCard, target)
-
-	g.ResolveCurrentCard()
+	g.ResolveCurrentCard(target)
 	g.game.State.Transition("main")
 }
 
-func (g *GameServer) ResolveCurrentCard() {
+func (g *GameServer) ResolveCurrentCard(target *Card) {
+	ability := g.game.CurrentCard.Ability
+	if ability != nil {
+		ability.Apply(g.game.CurrentCard, target)
+	}
+
 	if g.game.CurrentCard.CardType == "creature" {
 		g.game.CurrentPlayer.AddToBoard(g.game.CurrentCard)
 	}
