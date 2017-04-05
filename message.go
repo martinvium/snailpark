@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type Message struct {
 	PlayerId string `json:"playerId"`
 	Action   string `json:"action"`
@@ -55,4 +57,12 @@ func newResponsePlayers(players map[string]*Player) map[string]*ResponsePlayer {
 	}
 
 	return responsePlayers
+}
+
+func (m *ResponseMessage) String() string {
+	return fmt.Sprintf("ResponseMessage(%v, %v)", m.CurrentPlayerId, m.State)
+}
+
+func (m *Message) String() string {
+	return fmt.Sprintf("ActionMessage(%v, %v, %v)", m.PlayerId, m.Action, m.Card)
 }
