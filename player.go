@@ -31,6 +31,7 @@ func NewPlayerWithState(id string, deck []*Card, hand, board []*Card) *Player {
 	avatar := FirstCardWithType(deck, "avatar")
 	if avatar != nil {
 		deck = DeleteCard(deck, avatar)
+		avatar.Location = "board"
 		board = append(board, avatar)
 	} else {
 		fmt.Println("ERROR: No avatar in deck")

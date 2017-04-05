@@ -50,7 +50,7 @@ func TestAI_RespondWithAction_PlaysCard(t *testing.T) {
 	ai := NewAI("ai")
 	p := newPlayers(3)
 
-	p["ai"].Hand = newTestCards("ai", []string{
+	p["ai"].Hand = newTestCards("ai", "hand", []string{
 		"p1_creature",
 		"p1_expensive_creature",
 		"p1_creature",
@@ -68,7 +68,7 @@ func TestAI_RespondWithAction_PlaysSpell(t *testing.T) {
 	ai := NewAI("ai")
 
 	players := newPlayers(3)
-	players["ai"].Hand = newTestCards("ai", []string{"p1_spell"})
+	players["ai"].Hand = newTestCards("ai", "hand", []string{"p1_spell"})
 
 	msg := newTestMainResponseMessage(players)
 
@@ -82,7 +82,7 @@ func TestAI_RespondWithAction_PlaysHeal(t *testing.T) {
 	ai := NewAI("ai")
 
 	players := newPlayers(3)
-	players["ai"].Hand = newTestCards("ai", []string{"p1_heal"})
+	players["ai"].Hand = newTestCards("ai", "hand", []string{"p1_heal"})
 
 	msg := newTestMainResponseMessage(players)
 
@@ -102,7 +102,7 @@ func TestAI_RespondWithAction_HealTargetsOwnAvatar(t *testing.T) {
 		players,
 		[]string{},
 		[]*Engagement{},
-		newTestCard("ai", "p1_heal"),
+		newTestCard("ai", "hand", "p1_heal"),
 	)
 
 	action := ai.RespondWithAction(msg)
@@ -121,7 +121,7 @@ func TestAI_RespondWithAction_SpellTargetsCreature(t *testing.T) {
 		players,
 		[]string{},
 		[]*Engagement{},
-		newTestCard("ai", "p1_spell"),
+		newTestCard("ai", "hand", "p1_spell"),
 	)
 
 	action := ai.RespondWithAction(msg)
@@ -140,7 +140,7 @@ func TestAI_RespondWithAction_SpellTargetsAvatar(t *testing.T) {
 		players,
 		[]string{},
 		[]*Engagement{},
-		newTestCard("ai", "p1_avatar_spell"),
+		newTestCard("ai", "hand", "p1_avatar_spell"),
 	)
 
 	action := ai.RespondWithAction(msg)
@@ -168,7 +168,7 @@ func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
 	msg := newTestResponseMessage(
 		"attackers",
 		players,
-		[]*Engagement{NewEngagement(newTestCard("ai", "p1_creature"), players["ai"].Avatar)},
+		[]*Engagement{NewEngagement(newTestCard("ai", "board", "p1_creature"), players["ai"].Avatar)},
 	)
 
 	action := ai.RespondWithAction(msg)
@@ -184,7 +184,7 @@ func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
 
 func TestAI_RespondWithAction_AssignsBlocker(t *testing.T) {
 	players := newPlayersExpensiveCreatureEmptyHand()
-	attacker := newTestCard("ai2", "p2_creature")
+	attacker := newTestCard("ai2", "board", "p2_creature")
 	engagements := []*Engagement{NewEngagement(attacker, players["ai"].Avatar)}
 	msg := newTestResponseMessage("blockers", players, engagements)
 
@@ -197,7 +197,7 @@ func TestAI_RespondWithAction_AssignsBlocker(t *testing.T) {
 
 func TestAI_RespondWithAction_AssignsBlockTarget(t *testing.T) {
 	players := newPlayersExpensiveCreatureEmptyHand()
-	attacker := newTestCard("ai2", "p2_creature")
+	attacker := newTestCard("ai2", "board", "p2_creature")
 	engagements := []*Engagement{NewEngagement(attacker, players["ai"].Avatar)}
 
 	msg := NewResponseMessage(
@@ -206,7 +206,7 @@ func TestAI_RespondWithAction_AssignsBlockTarget(t *testing.T) {
 		players,
 		[]string{},
 		engagements,
-		newTestCard("ai", "p1_expensive_creature"),
+		newTestCard("ai", "board", "p1_expensive_creature"),
 	)
 
 	ai := NewAI("ai")
@@ -217,7 +217,7 @@ func TestAI_RespondWithAction_AssignsBlockTarget(t *testing.T) {
 }
 
 func TestAI_RespondWithAction_EndsTurnWhenNoBlockers(t *testing.T) {
-	yourBoard := newTestCards("ai2", []string{"p2_creature"})
+	yourBoard := newTestCards("ai2", "board", []string{"p2_creature"})
 
 	players := newPlayersWithBoard(
 		[]*Card{},
@@ -241,16 +241,16 @@ func TestAI_RespondWithAction_EndsTurnWhenNoBlockers(t *testing.T) {
 
 func newPlayersExpensiveCreatureEmptyHand() map[string]*Player {
 	return newPlayersWithBoard(
-		newTestCards("ai", []string{"p1_expensive_creature"}),
-		newTestCards("ai2", []string{"p2_creature"}),
+		newTestCards("ai", "board", []string{"p1_expensive_creature"}),
+		newTestCards("ai2", "board", []string{"p2_creature"}),
 		0,
 	)
 }
 
 func newPlayers(mana int) map[string]*Player {
 	return newPlayersWithBoard(
-		newTestCards("ai", []string{"p1_creature"}),
-		newTestCards("ai2", []string{"p2_creature"}),
+		newTestCards("ai", "board", []string{"p1_creature"}),
+		newTestCards("ai2", "board", []string{"p2_creature"}),
 		mana,
 	)
 }
@@ -301,22 +301,23 @@ func assertResponse(t *testing.T, action *Message, expectedAction string, expect
 	return nil
 }
 
-func newTestCards(playerId string, def []string) []*Card {
+func newTestCards(playerId, loc string, def []string) []*Card {
 	deck := []*Card{}
 
 	for _, n := range def {
 		proto := CardProtoByTitle(testRepo, n)
 		card := NewCard(proto, proto.Title, playerId)
+		card.Location = loc
 		deck = append(deck, card)
 	}
 
 	return deck
 }
 
-func newTestCard(playerId, name string) *Card {
-	return newTestCards(playerId, []string{name})[0]
+func newTestCard(playerId, loc, name string) *Card {
+	return newTestCards(playerId, loc, []string{name})[0]
 }
 
 func newTestDeck(playerId string, def []string) []*Card {
-	return newTestCards(playerId, def)
+	return newTestCards(playerId, "library", def)
 }
