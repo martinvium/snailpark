@@ -124,6 +124,7 @@ func (a *Ability) RequiresTarget() bool {
 func (a *Ability) ValidTarget(card, target *Card) bool {
 	for _, c := range a.Conditions {
 		if c.Valid(card, target) == false {
+			// fmt.Println("- Condition", c, "failed for target", target)
 			return false
 		}
 	}

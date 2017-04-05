@@ -63,3 +63,7 @@ func (c *Condition) Matches(v string) bool {
 	}
 	return false
 }
+
+func (c *Condition) String() string {
+	return fmt.Sprintf("%v (%v)", c.attribute, c.anyOf)
+}
