@@ -73,3 +73,14 @@ func (g *Game) Priority() *Player {
 
 	return g.CurrentPlayer
 }
+
+func (g *Game) AllBoardCards() []*Card {
+	cards := []*Card{}
+	for _, player := range g.Players {
+		for _, card := range player.Board {
+			cards = append(cards, card)
+		}
+	}
+
+	return cards
+}

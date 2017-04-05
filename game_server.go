@@ -113,7 +113,7 @@ func (g *GameServer) SendStateResponseAll() {
 }
 
 func (g *GameServer) SendOptionsResponse() {
-	cards := FilterCards(g.allBoardCards(), func(target *Card) bool {
+	cards := FilterCards(g.game.AllBoardCards(), func(target *Card) bool {
 		return g.game.CurrentCard.Ability.ValidTarget(g.game.CurrentCard, target)
 	})
 
@@ -123,17 +123,6 @@ func (g *GameServer) SendOptionsResponse() {
 }
 
 // private
-
-func (g *GameServer) allBoardCards() []*Card {
-	cards := []*Card{}
-	for _, player := range g.game.Players {
-		for _, card := range player.Board {
-			cards = append(cards, card)
-		}
-	}
-
-	return cards
-}
 
 func (g *GameServer) handleStartAction(msg *Message) {
 	if g.game.State.String() != "unstarted" {
@@ -292,7 +281,7 @@ func (g *GameServer) ResolveCurrentCard(target *Card) {
 }
 
 func (g *GameServer) getCardOnBoard(id string) *Card {
-	for _, card := range g.allBoardCards() {
+	for _, card := range g.game.AllBoardCards() {
 		if card.Id == id {
 			return card
 		}
