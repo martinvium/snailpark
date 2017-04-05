@@ -114,10 +114,9 @@ func (a *Ability) TestApplyRemovesCard(c, target *Card) bool {
 	return false
 }
 
-// Also needs to distinguish between targeted spells and those that just hit all
-// TODO: check a.Target == "target"
+// This is currently only useful for checks when entering play
 func (a *Ability) RequiresTarget() bool {
-	return a.Trigger == "enterPlay"
+	return a.Trigger == "enterPlay" && a.Target == "target"
 }
 
 // Conditions must all be valid, but each condition can have multiple OR values
