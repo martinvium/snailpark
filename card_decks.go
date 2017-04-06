@@ -54,10 +54,10 @@ var PrototypeDeckDef = []string{
 	"Awkward conversation",
 	"Creatine powder",
 	"Creatine powder",
-	"Buff my board",
-	"Buff my board",
-	"Buff my board",
-	"Buff my board",
+	"Make lemonade",
+	"Make lemonade",
+	"Make lemonade",
+	"Make lemonade",
 }
 
 var ZooDeckDef = []string{

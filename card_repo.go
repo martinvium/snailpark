@@ -10,7 +10,7 @@ var CardRepo = []*CardProto{
 	NewSpellProto("Awkward conversation", 2, "Deal 3 damage to target creature or player", 3, NewDamageAbility()),
 	NewSpellProto("Green smelly liquid", 2, "Heal your self for 5 -- But it taste awful!", 5, NewPlayerHealAbility()),
 	NewSpellProto("Creatine powder", 2, "Increase creatures power by 3 until end of turn", 3, NewBuffTargetAbility()),
-	NewSpellProto("Buff my board", 2, "", 2, NewBuffBoardAbility("power")),
+	NewSpellProto("Make lemonade", 2, "Add 2 power to each creature on your board.", 2, NewBuffBoardAbility("power")),
 	NewAvatarProto("The Bald One", 30),
 }
 
