@@ -64,8 +64,10 @@ func MapCardIds(vs []*Card) []string {
 	return vsm
 }
 
-func NewRandomCreatureCard(power int, toughness int) *Card {
-	return NewCard(NewCreatureProto("random", 0, "", power, toughness), NewUUID(), "random")
+func NewRandomCreatureCard(power int, toughness int, playerId string) *Card {
+	c := NewCard(NewCreatureProto("random", 0, "", power, toughness), NewUUID(), playerId)
+	c.Location = "board"
+	return c
 }
 
 func (c *Card) String() string {
@@ -95,6 +97,7 @@ func (c *Card) AttributeValue(attribute string) int {
 }
 
 func (c *Card) ModifyAttribute(attribute string, modifier int) {
+	fmt.Println("Modified attribute", attribute, "by", modifier)
 	switch attribute {
 	case "power":
 		c.Power += modifier

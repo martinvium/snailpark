@@ -3,9 +3,9 @@ package main
 import "testing"
 
 func TestEngagement_ResolveEngagement(t *testing.T) {
-	attacker := NewRandomCreatureCard(1, 2)
-	blocker := NewRandomCreatureCard(1, 2)
-	target := NewRandomCreatureCard(0, 2)
+	attacker := NewRandomCreatureCard(1, 2, "p1")
+	blocker := NewRandomCreatureCard(1, 2, "p2")
+	target := NewRandomCreatureCard(0, 2, "p2")
 
 	engagement := &Engagement{attacker, blocker, target}
 

@@ -1,6 +1,6 @@
 package main
 
-import "log"
+import "fmt"
 
 type Engagement struct {
 	Attacker *Card `json:"attacker"`
@@ -26,10 +26,12 @@ func ResolveEngagement(engagements []*Engagement) {
 	for _, e := range engagements {
 		target := e.Target
 		if e.Blocker != nil {
-			log.Println("Blocker intercepted attacker before its target")
+			fmt.Println("Blocker intercepted attacker before its target")
 			target = e.Blocker
 		}
 
-		e.Attacker.Ability.Apply(e.Attacker, target)
+		if err := e.Attacker.Ability.ApplyToTarget(e.Attacker, target); err != nil {
+			fmt.Println("ERROR:", err)
+		}
 	}
 }

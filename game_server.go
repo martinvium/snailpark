@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"time"
 )
@@ -264,8 +265,12 @@ func (g *GameServer) ResolveCurrentCard(target *Card) {
 	card := g.game.CurrentCard
 	g.game.CurrentCard = nil
 
-	if card.Ability != nil {
-		card.Ability.Apply(card, target)
+	if card.Ability != nil && card.Ability.Trigger == "enterPlay" {
+		fmt.Println("Applying", card.Ability)
+		if err := card.Ability.Apply(g.game, card, target); err != nil {
+			fmt.Println("ERROR:", err)
+			return
+		}
 	}
 
 	if card.CardType == "creature" {

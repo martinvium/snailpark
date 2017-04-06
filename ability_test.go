@@ -2,11 +2,11 @@ package main
 
 import "testing"
 
-func TestAbility_Apply_Attack(t *testing.T) {
-	creature1 := NewRandomCreatureCard(1, 2)
-	creature2 := NewRandomCreatureCard(1, 2)
+func TestAbility_ApplyToTarget_Attack(t *testing.T) {
+	creature1 := NewRandomCreatureCard(1, 2, "p1")
+	creature2 := NewRandomCreatureCard(1, 2, "p2")
 
-	creature1.Ability.Apply(creature1, creature2)
+	creature1.Ability.ApplyToTarget(creature1, creature2)
 	if creature1.CurrentToughness != 1 {
 		t.Errorf("wrong toughness on creature1")
 	}
@@ -16,11 +16,11 @@ func TestAbility_Apply_Attack(t *testing.T) {
 	}
 }
 
-func TestAbility_Apply_AttackVsZeroPower(t *testing.T) {
-	creature1 := NewRandomCreatureCard(1, 2)
-	creature2 := NewRandomCreatureCard(0, 2)
+func TestAbility_ApplyToTarget_AttackVsZeroPower(t *testing.T) {
+	creature1 := NewRandomCreatureCard(1, 2, "p1")
+	creature2 := NewRandomCreatureCard(0, 2, "p2")
 
-	creature1.Ability.Apply(creature1, creature2)
+	creature1.Ability.ApplyToTarget(creature1, creature2)
 	if creature1.CurrentToughness != 2 {
 		t.Errorf("wrong toughness on creature1")
 	}
@@ -30,11 +30,12 @@ func TestAbility_Apply_AttackVsZeroPower(t *testing.T) {
 	}
 }
 
-func TestAbility_Apply_AttackAvatar(t *testing.T) {
-	creature1 := NewRandomCreatureCard(1, 2)
+func TestAbility_ApplyToTarget_AttackAvatar(t *testing.T) {
+	creature1 := NewRandomCreatureCard(1, 2, "p1")
 	avatar := NewCard(NewAvatarProto("test_avatar", 30), "test_avatar", "test")
+	avatar.Location = "board"
 
-	creature1.Ability.Apply(creature1, avatar)
+	creature1.Ability.ApplyToTarget(creature1, avatar)
 	if creature1.CurrentToughness != 2 {
 		t.Errorf("wrong toughness on creature1")
 	}

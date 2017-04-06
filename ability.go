@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type Ability struct {
 	Trigger      string                             `json:"trigger"`    // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
@@ -23,26 +26,31 @@ type Modification struct {
 
 func NewPlayerDamageAbility() *Ability {
 	con := NewYourBoardConditions([]string{"avatar"})
-	return NewAbility(con, "toughness", -1, "power")
+	return NewAbility("target", con, "toughness", -1, "power")
 }
 
 func NewDamageAbility() *Ability {
 	con := NewYourBoardConditions([]string{"creature", "avatar"})
-	return NewAbility(con, "toughness", -1, "power")
+	return NewAbility("target", con, "toughness", -1, "power")
 }
 
 func NewPlayerHealAbility() *Ability {
 	con := NewMyBoardConditions([]string{"avatar"})
-	return NewAbility(con, "toughness", 1, "power")
+	return NewAbility("target", con, "toughness", 1, "power")
 }
 
 func NewBuffTargetAbility() *Ability {
 	con := NewMyBoardConditions([]string{"creature"})
-	return NewAbility(con, "power", 1, "power")
+	return NewAbility("target", con, "power", 1, "power")
+}
+
+func NewBuffBoardAbility(attr string) *Ability {
+	con := NewMyBoardConditions([]string{"creature"})
+	return NewAbility("all", con, attr, 1, "power")
 }
 
 func NewAttackAbility() *Ability {
-	con := NewYourBoardConditions([]string{"creature"})
+	con := NewYourBoardConditions([]string{"creature", "avatar"})
 	return &Ability{
 		"activated",
 		"target",
@@ -54,10 +62,10 @@ func NewAttackAbility() *Ability {
 	}
 }
 
-func NewAbility(conditions []*Condition, attribute string, modifier int, modifierAttr string) *Ability {
+func NewAbility(target string, conditions []*Condition, attribute string, modifier int, modifierAttr string) *Ability {
 	return &Ability{
 		"enterPlay",
-		"target",
+		target,
 		conditions,
 		attribute,
 		modifier,
@@ -88,15 +96,40 @@ func ModifyBothByModifier(c, target *Card) []*Modification {
 	return modifications
 }
 
-// TODO: if card doesn't require a target, apply to any valid target
-func (a *Ability) Apply(c, target *Card) {
-	if target == nil {
-		return
+func (a *Ability) Apply(g *Game, c, target *Card) error {
+	switch a.Target {
+	case "target":
+		return a.ApplyToTarget(c, target)
+	case "all":
+		a.applyToAllValidTargets(g, c)
+		return nil
+	default:
+		return fmt.Errorf("Unsupported Apply target: %v", a.Target)
 	}
+}
+
+func (a *Ability) applyToAllValidTargets(g *Game, c *Card) {
+	for _, t := range g.AllBoardCards() {
+		a.ApplyToTarget(c, t)
+	}
+}
+
+func (a *Ability) ApplyToTarget(c, target *Card) error {
+	if target == nil {
+		return errors.New("applyToTarget failed, target was nil")
+	}
+
+	if !a.ValidTarget(c, target) {
+		return errors.New("applyToTarget failed, target was invalid")
+	}
+
+	fmt.Println("Applying ability to target:", target)
 
 	for _, m := range a.resolver(c, target) {
 		m.Card.ModifyAttribute(m.Attribute, m.Modifier)
 	}
+
+	return nil
 }
 
 func (a *Ability) TestApplyRemovesCard(c, target *Card) bool {
@@ -123,10 +156,14 @@ func (a *Ability) RequiresTarget() bool {
 func (a *Ability) ValidTarget(card, target *Card) bool {
 	for _, c := range a.Conditions {
 		if c.Valid(card, target) == false {
-			// fmt.Println("- Condition", c, "failed for target", target)
+			fmt.Println("- Condition", c, "failed for target", target)
 			return false
 		}
 	}
 
 	return true
+}
+
+func (a *Ability) String() string {
+	return fmt.Sprintf("Ability(when %v %v matching will have %v modified by card %v * %v)", a.Trigger, a.Target, a.Attribute, a.ModifierAttr, a.Modifier)
 }
