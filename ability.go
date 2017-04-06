@@ -24,7 +24,7 @@ type Ability struct {
 type Modification struct {
 	Card      *Card
 	Attribute string
-	Modifier  int
+	Amount    int
 }
 
 func NewPlayerDamageAbility() *Ability {
@@ -129,7 +129,7 @@ func (a *Ability) ApplyToTarget(c, target *Card) error {
 	fmt.Println("Applying ability to target:", target)
 
 	for _, m := range a.resolver(c, target) {
-		m.Card.ModifyAttribute(m.Attribute, m.Modifier)
+		m.Card.ModifyAttribute(m.Attribute, m.Amount)
 	}
 
 	return nil
