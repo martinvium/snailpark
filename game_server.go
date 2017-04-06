@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"time"
 )
 
@@ -22,6 +23,10 @@ type GameServer struct {
 }
 
 func NewGameServer() *GameServer {
+	seed := time.Now().UTC().UnixNano()
+	fmt.Println("Seed:", seed)
+	rand.Seed(seed)
+
 	aiPlayerId := "ai"
 	aiClient := NewAIClient(NewAI(aiPlayerId))
 	clients := make(map[string]Client)
