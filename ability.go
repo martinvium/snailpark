@@ -5,6 +5,9 @@ import (
 	"fmt"
 )
 
+var positiveModifier int = 1
+var negativeModifier int = -1
+
 type Ability struct {
 	Trigger      string                             `json:"trigger"`    // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
 	Target       string                             `json:"target"`     // target, all, first, random
@@ -26,27 +29,27 @@ type Modification struct {
 
 func NewPlayerDamageAbility() *Ability {
 	con := NewYourBoardConditions([]string{"avatar"})
-	return NewAbility("target", con, "toughness", -1, "power")
+	return NewAbility("target", con, "toughness", negativeModifier, "power")
 }
 
 func NewDamageAbility() *Ability {
 	con := NewYourBoardConditions([]string{"creature", "avatar"})
-	return NewAbility("target", con, "toughness", -1, "power")
+	return NewAbility("target", con, "toughness", negativeModifier, "power")
 }
 
 func NewPlayerHealAbility() *Ability {
 	con := NewMyBoardConditions([]string{"avatar"})
-	return NewAbility("target", con, "toughness", 1, "power")
+	return NewAbility("target", con, "toughness", positiveModifier, "power")
 }
 
 func NewBuffTargetAbility() *Ability {
 	con := NewMyBoardConditions([]string{"creature"})
-	return NewAbility("target", con, "power", 1, "power")
+	return NewAbility("target", con, "power", positiveModifier, "power")
 }
 
 func NewBuffBoardAbility(attr string) *Ability {
 	con := NewMyBoardConditions([]string{"creature"})
-	return NewAbility("all", con, attr, 1, "power")
+	return NewAbility("all", con, attr, positiveModifier, "power")
 }
 
 func NewAttackAbility() *Ability {
@@ -56,7 +59,7 @@ func NewAttackAbility() *Ability {
 		"target",
 		con,
 		"toughness",
-		-1,
+		negativeModifier,
 		"power",
 		ModifyBothByModifier,
 	}
