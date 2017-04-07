@@ -11,6 +11,10 @@ func NewCondition(attr string, any []string) *Condition {
 	return &Condition{attr, any}
 }
 
+func NewEmptyConditions() []*Condition {
+	return []*Condition{}
+}
+
 func NewMyBoardConditions(types []string) []*Condition {
 	return []*Condition{
 		NewCondition("type", types),

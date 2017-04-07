@@ -5,48 +5,55 @@ import (
 	"fmt"
 )
 
-type Ability struct {
-	Trigger      string                             `json:"trigger"`    // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
-	Target       string                             `json:"target"`     // target, all, first, random
-	Conditions   []*Condition                       `json:"conditions"` // creature, avatar
-	Attribute    string                             `json:"attribute"`  // power, toughness, cost
-	Modifier     int                                `json:"-"`          // 1, 2, 3, 4
-	ModifierAttr string                             `json:"-"`          // power, toughness, cost
-	resolver     func(*Card, *Card) []*Modification `json:"-"`
-}
+var positiveModifier int = 1
+var negativeModifier int = -1
 
-// Instead of making the modification directly, we return the intended change
-// and let the resolver caller handle the application. This allows us to alow
-// just simulate the change?
-type Modification struct {
-	Card      *Card
-	Attribute string
-	Modifier  int
+type Ability struct {
+	Trigger      string                    `json:"trigger"`    // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
+	Target       string                    `json:"target"`     // target, all, first, random
+	Conditions   []*Condition              `json:"conditions"` // creature, avatar
+	Attribute    string                    `json:"attribute"`  // power, toughness, cost
+	Modifier     int                       `json:"-"`          // 1, 2, 3, 4
+	ModifierAttr string                    `json:"-"`          // power, toughness, cost
+	resolver     func(*Game, *Card, *Card) `json:"-"`
 }
 
 func NewPlayerDamageAbility() *Ability {
 	con := NewYourBoardConditions([]string{"avatar"})
-	return NewAbility("target", con, "toughness", -1, "power")
+	return NewAbility("target", con, "toughness", negativeModifier, "power")
 }
 
 func NewDamageAbility() *Ability {
 	con := NewYourBoardConditions([]string{"creature", "avatar"})
-	return NewAbility("target", con, "toughness", -1, "power")
+	return NewAbility("target", con, "toughness", negativeModifier, "power")
 }
 
 func NewPlayerHealAbility() *Ability {
 	con := NewMyBoardConditions([]string{"avatar"})
-	return NewAbility("target", con, "toughness", 1, "power")
+	return NewAbility("target", con, "toughness", positiveModifier, "power")
 }
 
 func NewBuffTargetAbility() *Ability {
 	con := NewMyBoardConditions([]string{"creature"})
-	return NewAbility("target", con, "power", 1, "power")
+	return NewAbility("target", con, "power", positiveModifier, "power")
 }
 
 func NewBuffBoardAbility(attr string) *Ability {
 	con := NewMyBoardConditions([]string{"creature"})
-	return NewAbility("all", con, attr, 1, "power")
+	return NewAbility("all", con, attr, positiveModifier, "power")
+}
+
+func NewDrawCardsAbility() *Ability {
+	con := NewMyBoardConditions([]string{"avatar"})
+	return &Ability{
+		"enterPlay",
+		"all",
+		con,
+		"not_used",
+		positiveModifier,
+		"power",
+		DrawCardsAbility,
+	}
 }
 
 func NewAttackAbility() *Ability {
@@ -56,7 +63,7 @@ func NewAttackAbility() *Ability {
 		"target",
 		con,
 		"toughness",
-		-1,
+		negativeModifier,
 		"power",
 		ModifyBothByModifier,
 	}
@@ -74,32 +81,35 @@ func NewAbility(target string, conditions []*Condition, attribute string, modifi
 	}
 }
 
-func ModifyTargetByModifier(c, target *Card) []*Modification {
-	return []*Modification{&Modification{
-		target,
+func ModifyTargetByModifier(g *Game, c, target *Card) {
+	target.ModifyAttribute(
 		c.Ability.Attribute,
 		c.Ability.ModificationAmount(c),
-	}}
+	)
+}
+
+func ModifyBothByModifier(g *Game, c, target *Card) {
+	ModifyTargetByModifier(g, c, target)
+
+	if target.Ability != nil && target.Ability.Trigger == "activated" {
+		ModifyTargetByModifier(g, target, c)
+	}
+}
+
+func DrawCardsAbility(g *Game, c, target *Card) {
+	g.Players[target.PlayerId].AddToHand(
+		c.Ability.ModificationAmount(c),
+	)
 }
 
 func (a *Ability) ModificationAmount(c *Card) int {
 	return c.AttributeValue(a.ModifierAttr) * a.Modifier
 }
 
-func ModifyBothByModifier(c, target *Card) []*Modification {
-	modifications := ModifyTargetByModifier(c, target)
-
-	if target.Ability != nil && target.Ability.Trigger == "activated" {
-		modifications = append(modifications, ModifyTargetByModifier(target, c)...)
-	}
-
-	return modifications
-}
-
 func (a *Ability) Apply(g *Game, c, target *Card) error {
 	switch a.Target {
 	case "target":
-		return a.ApplyToTarget(c, target)
+		return a.ApplyToTarget(g, c, target)
 	case "all":
 		a.applyToAllValidTargets(g, c)
 		return nil
@@ -110,11 +120,11 @@ func (a *Ability) Apply(g *Game, c, target *Card) error {
 
 func (a *Ability) applyToAllValidTargets(g *Game, c *Card) {
 	for _, t := range g.AllBoardCards() {
-		a.ApplyToTarget(c, t)
+		a.ApplyToTarget(g, c, t)
 	}
 }
 
-func (a *Ability) ApplyToTarget(c, target *Card) error {
+func (a *Ability) ApplyToTarget(g *Game, c, target *Card) error {
 	if target == nil {
 		return errors.New("applyToTarget failed, target was nil")
 	}
@@ -125,9 +135,7 @@ func (a *Ability) ApplyToTarget(c, target *Card) error {
 
 	fmt.Println("Applying ability to target:", target)
 
-	for _, m := range a.resolver(c, target) {
-		m.Card.ModifyAttribute(m.Attribute, m.Modifier)
-	}
+	a.resolver(g, c, target)
 
 	return nil
 }

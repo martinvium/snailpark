@@ -22,7 +22,7 @@ func AnyAssignedBlockerWithId(e []*Engagement, id string) bool {
 	return false
 }
 
-func ResolveEngagement(engagements []*Engagement) {
+func ResolveEngagement(g *Game, engagements []*Engagement) {
 	for _, e := range engagements {
 		target := e.Target
 		if e.Blocker != nil {
@@ -30,7 +30,7 @@ func ResolveEngagement(engagements []*Engagement) {
 			target = e.Blocker
 		}
 
-		if err := e.Attacker.Ability.ApplyToTarget(e.Attacker, target); err != nil {
+		if err := e.Attacker.Ability.ApplyToTarget(g, e.Attacker, target); err != nil {
 			fmt.Println("ERROR:", err)
 		}
 	}

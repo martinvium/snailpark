@@ -56,8 +56,8 @@ var PrototypeDeckDef = []string{
 	"Creatine powder",
 	"Make lemonade",
 	"Make lemonade",
-	"Make lemonade",
-	"Make lemonade",
+	"More draw",
+	"More draw",
 }
 
 var ZooDeckDef = []string{
