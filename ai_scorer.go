@@ -9,6 +9,8 @@ var attributeFactors = map[string]int{
 	"cost":      1,
 	"toughness": -1,
 	"power":     -1,
+	"mana":      -2,
+	"draw":      -2,
 }
 
 var powerFactor = 3
@@ -106,7 +108,7 @@ func (s *AIScorer) scoreCardForPlay(card *Card) *Score {
 	score := 0
 
 	if card.Cost > s.currentMana {
-		score -= 100
+		return &Score{0, card}
 	}
 
 	switch card.Ability.Trigger {
@@ -193,6 +195,12 @@ func (s *AIScorer) scoreTargets(card *Card, targets []*Card) []*Score {
 }
 
 func (s *AIScorer) scoreTarget(card, target *Card) *Score {
+	// ignore invalid targets
+	if !card.Ability.ValidTarget(card, target) {
+		fmt.Println("- Target is invalid")
+		return &Score{0, target}
+	}
+
 	score := 0
 
 	score += card.Ability.ModificationAmount(card) * attributeFactors[card.Ability.Attribute]
@@ -203,12 +211,6 @@ func (s *AIScorer) scoreTarget(card, target *Card) *Score {
 	mod := s.playerMods[target.PlayerId]
 	fmt.Println("- Applying player mod(", mod, ") was", score)
 	score *= mod
-
-	// downplay invalid targets
-	if !card.Ability.ValidTarget(card, target) {
-		fmt.Println("- Condition check failed")
-		score -= 100
-	}
 
 	return &Score{score, target}
 }
