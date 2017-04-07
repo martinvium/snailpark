@@ -117,7 +117,7 @@ func (s *StateMachine) toAttackers() {
 }
 
 func (s *StateMachine) toCombat() {
-	ResolveEngagement(s.game.Engagements)
+	ResolveEngagement(s.game, s.game.Engagements)
 
 	s.game.CleanUpDeadCreatures()
 
