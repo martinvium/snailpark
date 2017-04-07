@@ -43,6 +43,19 @@ func NewBuffBoardAbility(attr string) *Ability {
 	return NewAbility("all", con, attr, positiveModifier, "power")
 }
 
+func NewAddManaAbility() *Ability {
+	con := NewMyBoardConditions([]string{"avatar"})
+	return &Ability{
+		"enterPlay",
+		"all",
+		con,
+		"not_used",
+		positiveModifier,
+		"power",
+		AddManaAbilityCallback,
+	}
+}
+
 func NewDrawCardsAbility() *Ability {
 	con := NewMyBoardConditions([]string{"avatar"})
 	return &Ability{
@@ -52,7 +65,7 @@ func NewDrawCardsAbility() *Ability {
 		"not_used",
 		positiveModifier,
 		"power",
-		DrawCardsAbility,
+		DrawCardAbilityCallback,
 	}
 }
 
@@ -96,8 +109,14 @@ func ModifyBothByModifier(g *Game, c, target *Card) {
 	}
 }
 
-func DrawCardsAbility(g *Game, c, target *Card) {
+func DrawCardAbilityCallback(g *Game, c, target *Card) {
 	g.Players[target.PlayerId].AddToHand(
+		c.Ability.ModificationAmount(c),
+	)
+}
+
+func AddManaAbilityCallback(g *Game, c, target *Card) {
+	g.Players[target.PlayerId].AddMaxMana(
 		c.Ability.ModificationAmount(c),
 	)
 }

@@ -58,6 +58,10 @@ var PrototypeDeckDef = []string{
 	"Make lemonade",
 	"More draw",
 	"More draw",
+	"Ramp",
+	"Ramp",
+	"Ramp",
+	"Ramp",
 }
 
 var ZooDeckDef = []string{
