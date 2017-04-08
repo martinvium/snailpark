@@ -214,3 +214,22 @@ func (a *Ability) ValidTarget(card, target *Card) bool {
 func (a *Ability) String() string {
 	return fmt.Sprintf("Ability(when %v %v matching will have %v modified by card %v * %v)", a.Trigger, a.Target, a.Attribute, a.ModifierAttr, a.Modifier)
 }
+
+func AnyAbility(vs []*Ability, f func(*Ability) bool) bool {
+	for _, v := range vs {
+		if f(v) {
+			return true
+		}
+	}
+	return false
+}
+
+func FilterAbility(vs []*Ability, f func(*Ability) bool) []*Ability {
+	vsf := make([]*Ability, 0)
+	for _, v := range vs {
+		if f(v) {
+			vsf = append(vsf, v)
+		}
+	}
+	return vsf
+}

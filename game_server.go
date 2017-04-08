@@ -120,7 +120,7 @@ func (g *GameServer) SendStateResponseAll() {
 
 func (g *GameServer) SendOptionsResponse() {
 	cards := FilterCards(g.game.AllBoardCards(), func(target *Card) bool {
-		return g.game.CurrentCard.Ability.ValidTarget(g.game.CurrentCard, target)
+		return g.validTargetForCurrentCard(target)
 	})
 
 	options := MapCardIds(cards)
@@ -166,7 +166,11 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 	g.game.CurrentCard = FirstCardWithId(g.game.CurrentPlayer.Hand, msg.Card)
 	g.game.State.Transition("playingCard")
 
-	if g.game.CurrentCard.Ability != nil && g.game.CurrentCard.Ability.RequiresTarget() {
+	requireTarget := AnyAbility(g.game.CurrentCard.Abilities, func(a *Ability) bool {
+		return a.Trigger == "enterPlay" && a.Target == "target"
+	})
+
+	if requireTarget {
 		g.game.State.Transition("targeting")
 	} else {
 		ResolveCurrentCard(g.game, nil)
@@ -255,7 +259,7 @@ func (g *GameServer) targetAbility(msg *Message) {
 	}
 
 	// Targets must be valid, or we don't transition out of targeting mode.
-	if !g.game.CurrentCard.Ability.ValidTarget(g.game.CurrentCard, target) {
+	if g.validTargetForCurrentCard(target) {
 		log.Println("ERROR: Invalid ability target:", target.CardType)
 		g.game.State.Transition("main")
 		g.game.CurrentCard = nil
@@ -264,6 +268,16 @@ func (g *GameServer) targetAbility(msg *Message) {
 
 	ResolveCurrentCard(g.game, target)
 	g.game.State.Transition("main")
+}
+
+func (g *GameServer) validTargetForCurrentCard(target *Card) bool {
+	targetAbilities := FilterAbility(g.game.CurrentCard.Abilities, func(a *Ability) bool {
+		return a.Trigger == "enterPlay" && a.Target == "target"
+	})
+
+	return AnyAbility(targetAbilities, func(a *Ability) bool {
+		return !a.ValidTarget(g.game.CurrentCard, target)
+	})
 }
 
 func (g *GameServer) getCardOnBoard(id string) *Card {
