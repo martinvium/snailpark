@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type Game struct {
 	Players       map[string]*Player
 	CurrentPlayer *Player
@@ -35,16 +37,6 @@ func (g *Game) AnyPlayerDead() bool {
 	return AnyPlayer(g.Players, func(p *Player) bool {
 		return p.Avatar.CurrentToughness <= 0
 	})
-}
-
-func (g *Game) CleanUpDeadCreatures() {
-	for _, player := range g.Players {
-		for _, card := range player.Board {
-			if card.Removed() {
-				player.Board = DeleteCard(player.Board, card)
-			}
-		}
-	}
 }
 
 func (g *Game) AnyEngagements() bool {
@@ -83,4 +75,9 @@ func (g *Game) AllBoardCards() []*Card {
 	}
 
 	return cards
+}
+
+func OrderCardsByTimePlayed(s []*Card) []*Card {
+	fmt.Println("WARN: OrderCardsByTimePlayed not implemented")
+	return s
 }

@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 type Engagement struct {
 	Attacker *Card `json:"attacker"`
 	Blocker  *Card `json:"blocker"`
@@ -20,18 +18,4 @@ func AnyAssignedBlockerWithId(e []*Engagement, id string) bool {
 	}
 
 	return false
-}
-
-func ResolveEngagement(g *Game, engagements []*Engagement) {
-	for _, e := range engagements {
-		target := e.Target
-		if e.Blocker != nil {
-			fmt.Println("Blocker intercepted attacker before its target")
-			target = e.Blocker
-		}
-
-		if err := e.Attacker.Ability.ApplyToTarget(g, e.Attacker, target); err != nil {
-			fmt.Println("ERROR:", err)
-		}
-	}
 }

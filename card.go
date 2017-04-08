@@ -79,7 +79,15 @@ func (c *Card) CanAttack() bool {
 }
 
 func (c *Card) Removed() bool {
+	return c.DeadCreature() || c.NonPermanent()
+}
+
+func (c *Card) DeadCreature() bool {
 	return c.CurrentToughness <= 0
+}
+
+func (c *Card) NonPermanent() bool {
+	return c.CardType == "spell"
 }
 
 func (c *Card) AttributeValue(attribute string) int {
