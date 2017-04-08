@@ -19,11 +19,13 @@ func ResolveCurrentCard(g *Game, target *Card) {
 
 func InvokeAbilityTrigger(g *Game, origin, target *Card, event string) {
 	for _, c := range OrderCardsByTimePlayed(g.AllBoardCards()) {
-		if c.Ability != nil && c.Ability.Trigger == event {
-			fmt.Println("Applying", c.Ability)
+		for _, a := range c.Abilities {
+			if a.Trigger == event {
+				fmt.Println("Applying", a)
 
-			if err := c.Ability.Apply(g, c, target); err != nil {
-				fmt.Println("ERROR:", err)
+				if err := a.Apply(g, c, target); err != nil {
+					fmt.Println("ERROR:", err)
+				}
 			}
 		}
 	}
@@ -49,8 +51,12 @@ func ResolveEngagement(g *Game, engagements []*Engagement) {
 			target = e.Blocker
 		}
 
-		if err := e.Attacker.Ability.ApplyToTarget(g, e.Attacker, target); err != nil {
-			fmt.Println("ERROR:", err)
+		for _, a := range e.Attacker.Abilities {
+			if a.Trigger == "activated" {
+				if err := a.ApplyToTarget(g, e.Attacker, target); err != nil {
+					fmt.Println("ERROR:", err)
+				}
+			}
 		}
 	}
 }
