@@ -71,18 +71,24 @@ func (s *AIScorer) BestBlocker(engagements []*Engagement) *Card {
 
 	scores := []*Score{}
 	for _, blocker := range s.board {
-		for _, a := range blocker.Abilities {
-			// only creatures can block
-			if a.Trigger == "activated" && AnyAssignedBlockerWithId(engagements, blocker.Id) == false {
-				att_scores := s.scoreTargets(blocker, a, attackers)
-				att_score := highestScoreWithScore(att_scores)
-				if att_score != nil {
-					scores = append(scores, &Score{att_score.Score, blocker})
-				} else {
-					fmt.Println("Blocker", blocker, "skipped, no attractive target")
-				}
-			}
+		a := ActivatedAbility(blocker.Abilities)
+		if a == nil {
+			// Not a creature
+			continue
 		}
+
+		if AnyAssignedBlockerWithId(engagements, blocker.Id) {
+			continue
+		}
+
+		att_scores := s.scoreTargets(blocker, a, attackers)
+		att_score := highestScoreWithScore(att_scores)
+		if att_score == nil {
+			fmt.Println("Blocker", blocker, "skipped, no attractive target")
+			continue
+		}
+
+		scores = append(scores, &Score{att_score.Score, blocker})
 	}
 
 	return HighestScore(scores)
@@ -101,13 +107,8 @@ func (s *AIScorer) BestBlockTarget(currentCard *Card, engagements []*Engagement)
 		}
 	}
 
-	scores := []*Score{}
-	for _, a := range currentCard.Abilities {
-		if a.Trigger == "activated" {
-			scores = append(scores, s.scoreTargets(currentCard, a, attackers)...)
-		}
-	}
-
+	a := ActivatedAbility(currentCard.Abilities)
+	scores := s.scoreTargets(currentCard, a, attackers)
 	return HighestScore(scores)
 }
 

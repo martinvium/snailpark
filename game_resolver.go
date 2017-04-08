@@ -51,12 +51,9 @@ func ResolveEngagement(g *Game, engagements []*Engagement) {
 			target = e.Blocker
 		}
 
-		for _, a := range e.Attacker.Abilities {
-			if a.Trigger == "activated" {
-				if err := a.ApplyToTarget(g, e.Attacker, target); err != nil {
-					fmt.Println("ERROR:", err)
-				}
-			}
+		a := ActivatedAbility(e.Attacker.Abilities)
+		if err := a.Apply(g, e.Attacker, target); err != nil {
+			fmt.Println("ERROR:", err)
 		}
 	}
 }

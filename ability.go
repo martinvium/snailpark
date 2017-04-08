@@ -148,7 +148,7 @@ func (a *Ability) ModificationAmount(c *Card) int {
 func (a *Ability) Apply(g *Game, c, target *Card) error {
 	switch a.Target {
 	case "target":
-		return a.ApplyToTarget(g, c, target)
+		return a.applyToTarget(g, c, target)
 	case "all":
 		a.applyToAllValidTargets(g, c)
 		return nil
@@ -159,11 +159,11 @@ func (a *Ability) Apply(g *Game, c, target *Card) error {
 
 func (a *Ability) applyToAllValidTargets(g *Game, c *Card) {
 	for _, t := range g.AllBoardCards() {
-		a.ApplyToTarget(g, c, t)
+		a.applyToTarget(g, c, t)
 	}
 }
 
-func (a *Ability) ApplyToTarget(g *Game, c, target *Card) error {
+func (a *Ability) applyToTarget(g *Game, c, target *Card) error {
 	if target == nil {
 		return errors.New("applyToTarget failed, target was nil")
 	}
@@ -232,4 +232,16 @@ func FilterAbility(vs []*Ability, f func(*Ability) bool) []*Ability {
 		}
 	}
 	return vsf
+}
+
+// we only support a single activated ability
+func ActivatedAbility(as []*Ability) *Ability {
+	for _, a := range as {
+		if a.Trigger == "activated" {
+			return a
+		}
+	}
+
+	fmt.Println("ERROR: Failed to find activated ability")
+	return nil
 }
