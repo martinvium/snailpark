@@ -9,13 +9,14 @@ var positiveModifier int = 1
 var negativeModifier int = -1
 
 type Ability struct {
-	Trigger      string                              `json:"trigger"`    // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
-	Target       string                              `json:"target"`     // target, all, first, random
-	Conditions   []*Condition                        `json:"conditions"` // creature, avatar
-	Attribute    string                              `json:"attribute"`  // power, toughness, cost
-	Modifier     int                                 `json:"-"`          // 1, 2, 3, 4
-	ModifierAttr string                              `json:"-"`          // power, toughness, cost
-	resolver     func(*Game, *Ability, *Card, *Card) `json:"-"`
+	Trigger           string                              `json:"trigger"`           // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
+	TriggerConditions []*Condition                        `json:"triggerConditions"` // creature, avatar
+	Target            string                              `json:"target"`            // target, all, self, random
+	TargetConditions  []*Condition                        `json:"targetConditions"`  // creature, avatar
+	Attribute         string                              `json:"attribute"`         // power, toughness, cost
+	Modifier          int                                 `json:"-"`                 // 1, 2, 3, 4
+	ModifierAttr      string                              `json:"-"`                 // power, toughness, cost
+	resolver          func(*Game, *Ability, *Card, *Card) `json:"-"`
 }
 
 func NewPlayerDamageAbility() *Ability {
@@ -44,11 +45,11 @@ func NewBuffBoardAbility(attr string) *Ability {
 }
 
 func NewAddManaAbility() *Ability {
-	con := NewMyBoardConditions([]string{"avatar"})
 	return &Ability{
 		"enterPlay",
+		NewEmptyTriggerConditions(),
 		"all",
-		con,
+		NewMyBoardConditions([]string{"avatar"}),
 		"mana",
 		positiveModifier,
 		"power",
@@ -57,11 +58,11 @@ func NewAddManaAbility() *Ability {
 }
 
 func NewDrawCardsAbility() *Ability {
-	con := NewMyBoardConditions([]string{"avatar"})
 	return &Ability{
 		"enterPlay",
+		NewEmptyTriggerConditions(),
 		"all",
-		con,
+		NewMyBoardConditions([]string{"avatar"}),
 		"draw",
 		positiveModifier,
 		"power",
@@ -70,24 +71,28 @@ func NewDrawCardsAbility() *Ability {
 }
 
 func NewBuffPowerWhenCreatuePlayedAbility() *Ability {
-	con := NewYourBoardConditions([]string{"creature"})
+	triggerConditions := []*Condition{
+		NewCondition("type", []string{"creature"}),
+		NewCondition("player", []string{"me"}),
+	}
 	return &Ability{
 		"cardPlayed",
-		"all",
-		con,
-		"not_used",
-		positiveModifier,
+		triggerConditions,
+		"self",
+		NewEmptyTargetConditions(),
 		"power",
+		positiveModifier,
+		"not_used",
 		ModifySelfByModifier,
 	}
 }
 
 func NewAttackAbility() *Ability {
-	con := NewYourBoardConditions([]string{"creature", "avatar"})
 	return &Ability{
 		"activated",
+		NewEmptyTriggerConditions(),
 		"target",
-		con,
+		NewYourBoardConditions([]string{"creature", "avatar"}),
 		"toughness",
 		negativeModifier,
 		"power",
@@ -95,11 +100,12 @@ func NewAttackAbility() *Ability {
 	}
 }
 
-func NewAbility(target string, conditions []*Condition, attribute string, modifier int, modifierAttr string) *Ability {
+func NewAbility(target string, targetConditions []*Condition, attribute string, modifier int, modifierAttr string) *Ability {
 	return &Ability{
 		"enterPlay",
+		NewEmptyTriggerConditions(),
 		target,
-		conditions,
+		targetConditions,
 		attribute,
 		modifier,
 		modifierAttr,
@@ -137,7 +143,7 @@ func AddManaAbilityCallback(g *Game, a *Ability, c, target *Card) {
 func ModifySelfByModifier(g *Game, a *Ability, c, target *Card) {
 	c.ModifyAttribute(
 		a.Attribute,
-		a.ModificationAmount(c),
+		1, // we still dont have any way to put "arbitrary" values here...
 	)
 }
 
@@ -152,6 +158,8 @@ func (a *Ability) Apply(g *Game, c, target *Card) error {
 	case "all":
 		a.applyToAllValidTargets(g, c)
 		return nil
+	case "self":
+		return a.applyToTarget(g, c, c)
 	default:
 		return fmt.Errorf("Unsupported Apply target: %v", a.Target)
 	}
@@ -199,9 +207,24 @@ func (a *Ability) RequiresTarget() bool {
 	return a.Trigger == "enterPlay" && a.Target == "target"
 }
 
+func (a *Ability) ValidTrigger(event string, card, origin *Card) bool {
+	if event != a.Trigger {
+		return false
+	}
+
+	for _, c := range a.TriggerConditions {
+		if c.Valid(card, origin) == false {
+			fmt.Println("- Condition", c, "failed for trigger", origin)
+			return false
+		}
+	}
+
+	return true
+}
+
 // Conditions must all be valid, but each condition can have multiple OR values
 func (a *Ability) ValidTarget(card, target *Card) bool {
-	for _, c := range a.Conditions {
+	for _, c := range a.TargetConditions {
 		if c.Valid(card, target) == false {
 			fmt.Println("- Condition", c, "failed for target", target)
 			return false

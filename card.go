@@ -65,7 +65,7 @@ func MapCardIds(vs []*Card) []string {
 }
 
 func NewRandomCreatureCard(power int, toughness int, playerId string) *Card {
-	c := NewCard(NewCreatureProto("random", 0, "", power, toughness), NewUUID(), playerId)
+	c := NewCard(NewCreatureProto("random", 0, "", power, toughness, nil), NewUUID(), playerId)
 	c.Location = "board"
 	return c
 }

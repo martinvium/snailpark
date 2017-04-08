@@ -1,11 +1,12 @@
 package main
 
 var CardRepo = []*CardProto{
-	NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2),
-	NewCreatureProto("Pugnent Cheese", 2, "Who died in here?!", 2, 2),
-	NewCreatureProto("Hungry Goat Herder", 3, "But what will I do tomorrow?", 3, 2),
-	NewCreatureProto("Empty Flask", 4, "Fill me up, or i Kill You.", 5, 3),
-	NewCreatureProto("Lord Zembaio", 6, "Today, I shall get out of bed!", 2, 9),
+	NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2, nil),
+	NewCreatureProto("Pugnent Cheese", 2, "Who died in here?!", 2, 2, nil),
+	NewCreatureProto("Hungry Goat Herder", 3, "But what will I do tomorrow?", 3, 2, nil),
+	NewCreatureProto("Ser Vira", 1, "Becomes more powerful every time another creature is played.", 1, 2, NewBuffPowerWhenCreatuePlayedAbility()),
+	NewCreatureProto("Empty Flask", 4, "Fill me up, or i Kill You.", 5, 3, nil),
+	NewCreatureProto("Lord Zembaio", 6, "Today, I shall get out of bed!", 2, 9, nil),
 	NewSpellProto("Goo-to-the-face", 3, "Deal 5 damage to target player -- That's not nice.", 5, NewPlayerDamageAbility()),
 	NewSpellProto("Awkward conversation", 2, "Deal 3 damage to target creature or player", 3, NewDamageAbility()),
 	NewSpellProto("Green smelly liquid", 2, "Heal your self for 5 -- But it taste awful!", 5, NewPlayerHealAbility()),

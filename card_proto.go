@@ -18,8 +18,11 @@ func NewSpellProto(title string, cost int, desc string, power int, ability *Abil
 	return &CardProto{"white", title, cost, "spell", desc, power, 0, abilities}
 }
 
-func NewCreatureProto(title string, cost int, desc string, power int, toughness int) *CardProto {
+func NewCreatureProto(title string, cost int, desc string, power int, toughness int, ability *Ability) *CardProto {
 	abilities := []*Ability{NewAttackAbility()}
+	if ability != nil {
+		abilities = append(abilities, ability)
+	}
 	return &CardProto{"white", title, cost, "creature", desc, power, toughness, abilities}
 }
 

@@ -11,7 +11,11 @@ func NewCondition(attr string, any []string) *Condition {
 	return &Condition{attr, any}
 }
 
-func NewEmptyConditions() []*Condition {
+func NewEmptyTargetConditions() []*Condition {
+	return []*Condition{}
+}
+
+func NewEmptyTriggerConditions() []*Condition {
 	return []*Condition{}
 }
 
