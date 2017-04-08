@@ -87,6 +87,19 @@ func NewBuffPowerWhenCreatuePlayedAbility() *Ability {
 	}
 }
 
+func NewSummonCreaturesAbility() *Ability {
+	return &Ability{
+		"enterPlay",
+		NewEmptyTriggerConditions(),
+		"self",
+		NewEmptyTargetConditions(),
+		"not_used",
+		positiveModifier,
+		"not_used",
+		SummonCreaturesAbility,
+	}
+}
+
 func NewAttackAbility() *Ability {
 	return &Ability{
 		"activated",
@@ -145,6 +158,17 @@ func ModifySelfByModifier(g *Game, a *Ability, c, target *Card) {
 		a.Attribute,
 		1, // we still dont have any way to put "arbitrary" values here...
 	)
+}
+
+func SummonCreaturesAbility(g *Game, a *Ability, c, target *Card) {
+	cards := NewCards(TokenRepo, c.PlayerId, []string{
+		"Dodgy Fella",
+		"Dodgy Fella",
+	})
+
+	for _, c := range cards {
+		g.Players[c.PlayerId].AddToBoard(c)
+	}
 }
 
 func (a *Ability) ModificationAmount(c *Card) int {
