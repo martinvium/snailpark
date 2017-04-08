@@ -9,13 +9,13 @@ var positiveModifier int = 1
 var negativeModifier int = -1
 
 type Ability struct {
-	Trigger      string                    `json:"trigger"`    // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
-	Target       string                    `json:"target"`     // target, all, first, random
-	Conditions   []*Condition              `json:"conditions"` // creature, avatar
-	Attribute    string                    `json:"attribute"`  // power, toughness, cost
-	Modifier     int                       `json:"-"`          // 1, 2, 3, 4
-	ModifierAttr string                    `json:"-"`          // power, toughness, cost
-	resolver     func(*Game, *Card, *Card) `json:"-"`
+	Trigger      string                              `json:"trigger"`    // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
+	Target       string                              `json:"target"`     // target, all, first, random
+	Conditions   []*Condition                        `json:"conditions"` // creature, avatar
+	Attribute    string                              `json:"attribute"`  // power, toughness, cost
+	Modifier     int                                 `json:"-"`          // 1, 2, 3, 4
+	ModifierAttr string                              `json:"-"`          // power, toughness, cost
+	resolver     func(*Game, *Ability, *Card, *Card) `json:"-"`
 }
 
 func NewPlayerDamageAbility() *Ability {
@@ -107,37 +107,37 @@ func NewAbility(target string, conditions []*Condition, attribute string, modifi
 	}
 }
 
-func ModifyTargetByModifier(g *Game, c, target *Card) {
+func ModifyTargetByModifier(g *Game, a *Ability, c, target *Card) {
 	target.ModifyAttribute(
-		c.Ability.Attribute,
-		c.Ability.ModificationAmount(c),
+		a.Attribute,
+		a.ModificationAmount(c),
 	)
 }
 
-func ModifyBothByModifier(g *Game, c, target *Card) {
-	ModifyTargetByModifier(g, c, target)
+func ModifyBothByModifier(g *Game, a *Ability, c, target *Card) {
+	ModifyTargetByModifier(g, a, c, target)
 
-	if target.Ability != nil && target.Ability.Trigger == "activated" {
-		ModifyTargetByModifier(g, target, c)
+	if ta := ActivatedAbility(target.Abilities); ta != nil {
+		ModifyTargetByModifier(g, ta, target, c)
 	}
 }
 
-func DrawCardAbilityCallback(g *Game, c, target *Card) {
+func DrawCardAbilityCallback(g *Game, a *Ability, c, target *Card) {
 	g.Players[target.PlayerId].AddToHand(
-		c.Ability.ModificationAmount(c),
+		a.ModificationAmount(c),
 	)
 }
 
-func AddManaAbilityCallback(g *Game, c, target *Card) {
+func AddManaAbilityCallback(g *Game, a *Ability, c, target *Card) {
 	g.Players[target.PlayerId].AddMaxMana(
-		c.Ability.ModificationAmount(c),
+		a.ModificationAmount(c),
 	)
 }
 
-func ModifySelfByModifier(g *Game, c, target *Card) {
+func ModifySelfByModifier(g *Game, a *Ability, c, target *Card) {
 	c.ModifyAttribute(
-		c.Ability.Attribute,
-		c.Ability.ModificationAmount(c),
+		a.Attribute,
+		a.ModificationAmount(c),
 	)
 }
 
@@ -174,7 +174,7 @@ func (a *Ability) applyToTarget(g *Game, c, target *Card) error {
 
 	fmt.Println("Applying ability to target:", target)
 
-	a.resolver(g, c, target)
+	a.resolver(g, a, c, target)
 
 	return nil
 }
