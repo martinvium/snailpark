@@ -8,15 +8,15 @@ import (
 
 var testRepo = []*CardProto{
 	// P1
-	NewCreatureProto("p1_creature", 1, "", 1, 2),
-	NewCreatureProto("p1_expensive_creature", 3, "", 3, 2),
+	NewCreatureProto("p1_creature", 1, "", 1, 2, nil),
+	NewCreatureProto("p1_expensive_creature", 3, "", 3, 2, nil),
 	NewSpellProto("p1_spell", 1, "", 5, NewDamageAbility()),
 	NewSpellProto("p1_avatar_spell", 1, "", 5, NewPlayerDamageAbility()),
 	NewSpellProto("p1_heal", 1, "", 5, NewPlayerHealAbility()),
 	NewAvatarProto("p1_avatar", 30),
 
 	// P2
-	NewCreatureProto("p2_creature", 1, "Something stinks.", 1, 2),
+	NewCreatureProto("p2_creature", 1, "Something stinks.", 1, 2, nil),
 	NewAvatarProto("p2_avatar", 30),
 }
 

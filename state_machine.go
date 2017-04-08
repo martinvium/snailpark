@@ -118,8 +118,7 @@ func (s *StateMachine) toAttackers() {
 
 func (s *StateMachine) toCombat() {
 	ResolveEngagement(s.game, s.game.Engagements)
-
-	s.game.CleanUpDeadCreatures()
+	ResolveRemovedCards(s.game)
 
 	if s.game.AnyPlayerDead() {
 		s.Transition("finished")

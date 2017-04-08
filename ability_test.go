@@ -7,7 +7,8 @@ func TestAbility_ApplyToTarget_Attack(t *testing.T) {
 	creature1 := NewRandomCreatureCard(1, 2, "p1")
 	creature2 := NewRandomCreatureCard(1, 2, "p2")
 
-	creature1.Ability.ApplyToTarget(game, creature1, creature2)
+	a := ActivatedAbility(creature1.Abilities)
+	a.Apply(game, creature1, creature2)
 	if creature1.CurrentToughness != 1 {
 		t.Errorf("wrong toughness on creature1")
 	}
@@ -22,7 +23,8 @@ func TestAbility_ApplyToTarget_AttackVsZeroPower(t *testing.T) {
 	creature1 := NewRandomCreatureCard(1, 2, "p1")
 	creature2 := NewRandomCreatureCard(0, 2, "p2")
 
-	creature1.Ability.ApplyToTarget(game, creature1, creature2)
+	a := ActivatedAbility(creature1.Abilities)
+	a.Apply(game, creature1, creature2)
 	if creature1.CurrentToughness != 2 {
 		t.Errorf("wrong toughness on creature1")
 	}
@@ -38,7 +40,8 @@ func TestAbility_ApplyToTarget_AttackAvatar(t *testing.T) {
 	avatar := NewCard(NewAvatarProto("test_avatar", 30), "test_avatar", "test")
 	avatar.Location = "board"
 
-	creature1.Ability.ApplyToTarget(game, creature1, avatar)
+	a := ActivatedAbility(creature1.Abilities)
+	a.Apply(game, creature1, avatar)
 	if creature1.CurrentToughness != 2 {
 		t.Errorf("wrong toughness on creature1")
 	}
