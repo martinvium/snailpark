@@ -75,13 +75,23 @@ func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
 
 func (a *AI) targetSpell(msg *ResponseMessage) *Message {
 	scorer := NewAIScorer(a.playerId, msg)
-	target := scorer.BestTargetByPowerRemoved(msg.CurrentCard)
-	if target == nil {
-		fmt.Println("ERROR: Failed to find target, should never happen")
-		return nil
+
+	for _, ability := range msg.CurrentCard.Abilities {
+		if ability.Trigger != "enterPlay" {
+			continue
+		}
+
+		target := scorer.BestTargetByPowerRemoved(msg.CurrentCard, ability)
+		if target == nil {
+			fmt.Println("ERROR: Failed to find target, should never happen")
+			return nil
+		}
+
+		return NewCardActionMessage(a.playerId, "target", target.Id)
 	}
 
-	return NewCardActionMessage(a.playerId, "target", target.Id)
+	fmt.Println("ERROR: No target was found")
+	return nil
 }
 
 func (a *AI) playCard(card *Card) *Message {
