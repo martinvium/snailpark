@@ -14,8 +14,10 @@ ability:
       location: board
     target: target
     attribute: toughness
-    modifier: 1
-    modifierAttr: power
+    modFactor: 1
+    modAttr: power
+    modValue: 1
+    modValueS: bla
     resolver: creatureAttack
   - trigger: cardPlayed
     triggerConditions:
