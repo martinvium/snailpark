@@ -9,11 +9,11 @@ func TestAbility_ApplyToTarget_Attack(t *testing.T) {
 
 	a := ActivatedAbility(creature1.Abilities)
 	a.Apply(game, creature1, creature2)
-	if creature1.CurrentToughness != 1 {
+	if creature1.Attributes["toughness"] != 1 {
 		t.Errorf("wrong toughness on creature1")
 	}
 
-	if creature2.CurrentToughness != 1 {
+	if creature2.Attributes["toughness"] != 1 {
 		t.Errorf("wrong toughness on creature2")
 	}
 }
@@ -25,11 +25,11 @@ func TestAbility_ApplyToTarget_AttackVsZeroPower(t *testing.T) {
 
 	a := ActivatedAbility(creature1.Abilities)
 	a.Apply(game, creature1, creature2)
-	if creature1.CurrentToughness != 2 {
+	if creature1.Attributes["toughness"] != 2 {
 		t.Errorf("wrong toughness on creature1")
 	}
 
-	if creature2.CurrentToughness != 1 {
+	if creature2.Attributes["toughness"] != 1 {
 		t.Errorf("wrong toughness on creature2")
 	}
 }
@@ -42,11 +42,11 @@ func TestAbility_ApplyToTarget_AttackAvatar(t *testing.T) {
 
 	a := ActivatedAbility(creature1.Abilities)
 	a.Apply(game, creature1, avatar)
-	if creature1.CurrentToughness != 2 {
+	if creature1.Attributes["toughness"] != 2 {
 		t.Errorf("wrong toughness on creature1")
 	}
 
-	if avatar.CurrentToughness != 29 {
+	if avatar.Attributes["toughness"] != 29 {
 		t.Errorf("wrong toughness on avatar")
 	}
 }

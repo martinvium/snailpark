@@ -101,7 +101,7 @@ func (p *Player) AddToGraveyard(card *Card) {
 }
 
 func (p *Player) PayCardCost(c *Card) {
-	p.CurrentMana -= c.Cost
+	p.CurrentMana -= c.Attributes["cost"]
 }
 
 func (p *Player) RemoveCardFromHand(c *Card) {
@@ -116,12 +116,12 @@ func (p *Player) CanPlayCard(cardId string) bool {
 		return false
 	}
 
-	if p.CurrentMana < card.Cost {
-		log.Println("ERROR: Client trying to use card without enough mana", p.CurrentMana, ":", card.Cost)
+	if p.CurrentMana < card.Attributes["cost"] {
+		log.Println("ERROR: Client trying to use card without enough mana", p.CurrentMana, ":", card.Attributes["cost"])
 		return false
 	}
 
-	log.Println("Approved casting card because mana is good", p.CurrentMana, ":", card.Cost)
+	log.Println("Approved casting card because mana is good", p.CurrentMana, ":", card.Attributes["cost"])
 	return true
 }
 

@@ -8,6 +8,8 @@ type Game struct {
 	State         *StateMachine
 	Engagements   []*Engagement
 	CurrentCard   *Card
+	// Tags map[string]*Card
+	// Could work with int by sorting, or grouping them?
 }
 
 func NewGame(players map[string]*Player) *Game {
@@ -35,7 +37,7 @@ func (g *Game) NextPlayer() {
 
 func (g *Game) AnyPlayerDead() bool {
 	return AnyPlayer(g.Players, func(p *Player) bool {
-		return p.Avatar.CurrentToughness <= 0
+		return p.Avatar.Location != "board"
 	})
 }
 

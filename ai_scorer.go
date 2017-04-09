@@ -115,14 +115,14 @@ func (s *AIScorer) BestBlockTarget(currentCard *Card, engagements []*Engagement)
 func (s *AIScorer) scoreCardForPlay(card *Card) *Score {
 	score := 0
 
-	if card.Cost > s.currentMana {
+	if card.Attributes["cost"] > s.currentMana {
 		return &Score{0, card}
 	}
 
 	for _, a := range card.Abilities {
 		switch a.Trigger {
 		case "activated":
-			score += card.Power * powerFactor
+			score += card.Attributes["power"] * powerFactor
 		case "enterPlay":
 			score += s.scoreCardForPlayByTarget(card, a)
 		}
@@ -227,8 +227,8 @@ func (s *AIScorer) scoreTarget(card *Card, a *Ability, target *Card) *Score {
 
 func (s *AIScorer) calcPowerRemoved(card *Card, a *Ability, target *Card) int {
 	if a.TestApplyRemovesCard(card, target) {
-		fmt.Println("- Removes target", target, "with power of", target.Power)
-		return target.Power
+		fmt.Println("- Removes target", target)
+		return target.Attributes["power"]
 	} else {
 		fmt.Println("- Doesn't remove target")
 		return 0

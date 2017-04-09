@@ -240,7 +240,7 @@ func (g *GameServer) assignAttacker(msg *Message) {
 		return
 	}
 
-	if card.CardType != "creature" {
+	if card.Tags["type"] != "creature" {
 		log.Println("ERROR: Attacker not a creature:", card)
 		return
 	}
@@ -260,7 +260,7 @@ func (g *GameServer) targetAbility(msg *Message) {
 
 	// Targets must be valid, or we don't transition out of targeting mode.
 	if g.validTargetForCurrentCard(target) {
-		log.Println("ERROR: Invalid ability target:", target.CardType)
+		log.Println("ERROR: Invalid ability target:", target)
 		g.game.State.Transition("main")
 		g.game.CurrentCard = nil
 		return

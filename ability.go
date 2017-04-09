@@ -172,7 +172,12 @@ func SummonCreaturesAbility(g *Game, a *Ability, c, target *Card) {
 }
 
 func (a *Ability) ModificationAmount(c *Card) int {
-	return c.AttributeValue(a.modAttr) * a.modFactor
+	if val, ok := c.Attributes[a.modAttr]; ok {
+		return val * a.modFactor
+	} else {
+		fmt.Println("ERROR: Failed to find ModificationAmount attr on card")
+		return 0
+	}
 }
 
 func (a *Ability) Apply(g *Game, c, target *Card) error {
@@ -216,9 +221,15 @@ func (a *Ability) TestApplyRemovesCard(c, target *Card) bool {
 		return false
 	}
 
+	toughness, ok := target.Attributes["toughness"]
+	if !ok {
+		fmt.Println("ERROR: Target has no toughness")
+		return false
+	}
+
 	// The modifier is negative if e.g. dealing damage
-	result := target.CurrentToughness + a.ModificationAmount(c)
-	fmt.Println("- Checking if card would be removed (", target.CurrentToughness, "+", a.ModificationAmount(c), "=", result, "<= 0)")
+	result := toughness + a.ModificationAmount(c)
+	fmt.Println("- Checking if card would be removed (", toughness, "+", a.ModificationAmount(c), "=", result, "<= 0)")
 	if result <= 0 {
 		return true
 	}
@@ -289,6 +300,5 @@ func ActivatedAbility(as []*Ability) *Ability {
 		}
 	}
 
-	fmt.Println("ERROR: Failed to find activated ability")
 	return nil
 }
