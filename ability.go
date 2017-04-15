@@ -128,8 +128,8 @@ func NewAbility(target string, targetConditions []*Condition, attribute string, 
 		attribute,
 		modFactor,
 		modAttr,
-		DummyEffectFactory,
-		ModifyTargetByModifier,
+		ModifyTargetByModifierFactory,
+		nil,
 	}
 }
 

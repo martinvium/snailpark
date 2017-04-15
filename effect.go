@@ -8,20 +8,23 @@ package main
 // const NeverExpires = ""
 
 type EffectFactory func(*Game, *Ability, *Card, *Card) *Effect
-type EffectApplier func(*Game, *Ability, *Card, *Card)
+type EffectApplier func(*Game, *Ability, *Effect, *Card, *Card)
 
 type Effect struct {
-	Origin  *Ability
-	Applier EffectApplier
-	// Attributes map[string]int
-	// Tags       map[string]string
+	Origin     *Ability
+	Applier    EffectApplier
+	Attributes map[string]int
+	Tags       map[string]string
 	// ExpireTrigger    string       // cardResolved, "" == permanent?, endTurn, startTurn?
 	// ExpireConditions []*Condition // so we can make sure its the right player?
-	// Origin *Card?
 }
 
 func NewEffect(a *Ability, applier EffectApplier) *Effect {
-	return &Effect{a, applier}
+	return &Effect{Origin: a, Applier: applier}
+}
+
+func NewEffectVerbose(a *Ability, applier EffectApplier, attr map[string]int) *Effect {
+	return &Effect{Origin: a, Applier: applier, Attributes: attr}
 }
 
 func DummyEffectFactory(g *Game, a *Ability, c, target *Card) *Effect {
@@ -29,44 +32,54 @@ func DummyEffectFactory(g *Game, a *Ability, c, target *Card) *Effect {
 }
 
 func (e *Effect) Apply(g *Game, c *Card, target *Card) {
-	e.Applier(g, e.Origin, c, target)
+	e.Applier(g, e.Origin, e, c, target)
 }
 
-func ModifyTargetByModifier(g *Game, a *Ability, c, target *Card) {
+func AttributeEffectApplier(g *Game, a *Ability, e *Effect, c, target *Card) {
+	for k, _ := range e.Attributes {
+		target.Attributes[k] += e.Attributes[k]
+	}
+}
+
+func ModifyTargetByModifierFactory(g *Game, a *Ability, c, target *Card) *Effect {
+	return NewEffectVerbose(a, AttributeEffectApplier, map[string]int{a.Attribute: a.ModificationAmount(c)})
+}
+
+func ModifyTargetByModifier(g *Game, a *Ability, e *Effect, c, target *Card) {
 	target.ModifyAttribute(
 		a.Attribute,
 		a.ModificationAmount(c),
 	)
 }
 
-func ModifyBothByModifier(g *Game, a *Ability, c, target *Card) {
-	ModifyTargetByModifier(g, a, c, target)
+func ModifyBothByModifier(g *Game, a *Ability, e *Effect, c, target *Card) {
+	ModifyTargetByModifier(g, a, e, c, target)
 
 	if ta := ActivatedAbility(target.Abilities); ta != nil {
-		ModifyTargetByModifier(g, ta, target, c)
+		ModifyTargetByModifier(g, ta, e, target, c)
 	}
 }
 
-func DrawCardAbilityCallback(g *Game, a *Ability, c, target *Card) {
+func DrawCardAbilityCallback(g *Game, a *Ability, e *Effect, c, target *Card) {
 	g.Players[target.PlayerId].AddToHand(
 		a.ModificationAmount(c),
 	)
 }
 
-func AddManaAbilityCallback(g *Game, a *Ability, c, target *Card) {
+func AddManaAbilityCallback(g *Game, a *Ability, e *Effect, c, target *Card) {
 	g.Players[target.PlayerId].AddMaxMana(
 		a.ModificationAmount(c),
 	)
 }
 
-func ModifySelfByModifier(g *Game, a *Ability, c, target *Card) {
+func ModifySelfByModifier(g *Game, a *Ability, e *Effect, c, target *Card) {
 	c.ModifyAttribute(
 		a.Attribute,
 		1, // we still dont have any way to put "arbitrary" values here...
 	)
 }
 
-func SummonCreaturesAbility(g *Game, a *Ability, c, target *Card) {
+func SummonCreaturesAbility(g *Game, a *Ability, e *Effect, c, target *Card) {
 	cards := NewCards(TokenRepo, c.PlayerId, []string{
 		"Dodgy Fella",
 		"Dodgy Fella",
@@ -76,12 +89,6 @@ func SummonCreaturesAbility(g *Game, a *Ability, c, target *Card) {
 		g.Players[c.PlayerId].AddToBoard(c)
 	}
 }
-
-// func AttributeEffectApplier(g *Game, a *Ability, e *Effect, c, target *Card) {
-// 	for k, v := range e.Attributes {
-// 		target.Attributes[k] += e.Attributes[k]
-// 	}
-// }
 
 // type DamageEffectFactory struct{}
 
