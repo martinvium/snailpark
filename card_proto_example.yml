@@ -1,31 +1,35 @@
-color: green
-title: "Green beast"
-cost: 1
-type: creature
-description: "Something that bashes"
-power: 1
-toughness: 2
-ability:
-  - trigger: activated
-    triggerConditions: []
-    targetConditions:
-      type: [creature, avatar]
-      player: you
-      location: board
-    target: target
-    attribute: toughness
-    modifier: 1
-    modifierAttr: power
-    resolver: creatureAttack
-  - trigger: cardPlayed
-    triggerConditions:
-      type: [creature]
-      player: me
-      location: board
-    targetConditions: []
-    target: self
-    attribute: power
-    modifier: 1
-    modifierAttr: none
-    resolver: NewBuffPowerWhenCreatuePlayedAbility
+cards:
+  - tags:
+      color: green
+      title: "Green beast"
+      type: creature
+      description: "Something that bashes"
+    attributes:
+      cost: 1
+      power: 1
+      toughness: 2
+    abilities:
+      - trigger: activated
+        triggerConditions: []
+        targetConditions:
+          type: [creature, avatar]
+          player: you
+          location: board
+        target: target
+        attribute: toughness
+        modFactor: 1
+        modAttr: power
+        modValue: 1
+        resolver: creatureAttack
+      - trigger: cardPlayed
+        triggerConditions:
+          type: [creature]
+          player: me
+          location: board
+        targetConditions: []
+        target: self
+        attribute: power
+        modifier: 1
+        modifierAttr: none
+        resolver: NewBuffPowerWhenCreatuePlayedAbility
 

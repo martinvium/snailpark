@@ -10,7 +10,7 @@ func ResolveCurrentCard(g *Game, target *Card) {
 
 	g.CurrentPlayer.AddToBoard(card)
 	g.CurrentPlayer.RemoveCardFromHand(card)
-	InvokeAbilityTrigger(g, card, target, "enterPlay")
+	InvokeCardAbilityTrigger(g, card, card, target, "enterPlay")
 
 	ResolveRemovedCards(g)
 
@@ -19,15 +19,19 @@ func ResolveCurrentCard(g *Game, target *Card) {
 
 func InvokeAbilityTrigger(g *Game, origin, target *Card, event string) {
 	for _, c := range OrderCardsByTimePlayed(g.AllBoardCards()) {
-		for _, a := range c.Abilities {
-			if !a.ValidTrigger(event, c, origin) {
-				continue
-			}
+		InvokeCardAbilityTrigger(g, c, origin, target, event)
+	}
+}
 
-			fmt.Println("Applying", a)
-			if err := a.Apply(g, c, target); err != nil {
-				fmt.Println("ERROR:", err)
-			}
+func InvokeCardAbilityTrigger(g *Game, c, origin, target *Card, event string) {
+	for _, a := range c.Abilities {
+		if !a.ValidTrigger(event, c, origin) {
+			continue
+		}
+
+		fmt.Println("Applying", a)
+		if err := a.Apply(g, c, target); err != nil {
+			fmt.Println("ERROR:", err)
 		}
 	}
 }

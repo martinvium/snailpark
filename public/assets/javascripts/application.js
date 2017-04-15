@@ -56,7 +56,7 @@ $(document).ready(function() {
       renderEngagementArrows();
 
       if(msg.state == "finished") {
-        if(getAvatar(players["player"])["currentToughness"] <= 0) {
+        if(getAvatar(players["player"])["attributes"]["toughness"] <= 0) {
           $('#messages').text('You lost! :(').addClass('red').show();
         } else {
           $('#messages').text('You won! :)').addClass('green').show();
@@ -64,8 +64,8 @@ $(document).ready(function() {
       }
 
       $.each(players, function(key, player) {
-        var old = getAvatar(oldPlayers[key])["currentToughness"],
-            now = getAvatar(player)["currentToughness"];
+        var old = getAvatar(oldPlayers[key])["attributes"]["toughness"],
+            now = getAvatar(player)["attributes"]["toughness"];
 
         if(now < old) {
           $('.current', healthEl(player["id"])).effect('highlight', { color: 'red' }, 3000);
@@ -183,12 +183,12 @@ $(document).ready(function() {
 
   function getAvatar(player) {
     for(var i in player["board"]) {
-      if(player["board"][i]["type"] === "avatar") {
+      if(player["board"][i]['tags']["type"] === "avatar") {
         return player["board"][i];
       }
     }
 
-    return { "currentToughness": 0 };
+    return { 'attributes': { "toughness": 0 }};
   }
 
   function boardEl(playerId) {
@@ -281,16 +281,16 @@ $(document).ready(function() {
   function renderCard(value, callback) {
     var card = card_proto.clone();
     card.attr('data-id', value.id);
-    card.addClass(value['color']).show();
+    card.addClass(value['tags']['color']).show();
     card.click(callback);
-    $('.title', card).text(value['title']);
-    $('.cost', card).text(value['cost']);
-    $('.type', card).text(value['type']);
-    $('.description', card).text(value['description']);
-    $('img', card).attr('src', '/assets/images/' + value['type'] + '.jpg');
-    if(value['toughness'] > 0) {
-      $('.power-toughness .power', card).text(value['power']);
-      $('.power-toughness .toughness', card).text(value['currentToughness']);
+    $('.title', card).text(value['tags']['title']);
+    $('.cost', card).text(value['attributes']['cost']);
+    $('.type', card).text(value['tags']['type']);
+    $('.description', card).text(value['tags']['description']);
+    $('img', card).attr('src', '/assets/images/' + value['tags']['type'] + '.jpg');
+    if(value['attributes']['toughness'] > 0) {
+      $('.power-toughness .power', card).text(value['attributes']['power']);
+      $('.power-toughness .toughness', card).text(value['attributes']['toughness']);
     } else {
       $('.power-toughness', card).hide();
     }
@@ -307,7 +307,7 @@ $(document).ready(function() {
   function renderHealth() {
     $.each(players, function(_, player) {
       var avatar = getAvatar(player);
-      $('.current', healthEl(player["id"])).text(avatar["currentToughness"]);
+      $('.current', healthEl(player["id"])).text(avatar["attributes"]["toughness"]);
     });
   }
 

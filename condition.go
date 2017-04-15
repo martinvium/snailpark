@@ -38,7 +38,7 @@ func NewYourBoardConditions(types []string) []*Condition {
 func (c *Condition) Valid(card, target *Card) bool {
 	switch c.attribute {
 	case "type":
-		return c.Matches(target.CardType)
+		return c.Matches(target.Tags["type"])
 	case "player":
 		return c.MatchesPlayer(card, target)
 	case "location":

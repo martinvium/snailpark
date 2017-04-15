@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-var positiveModifier int = 1
-var negativeModifier int = -1
+var positiveModFactor int = 1
+var negativeModFactor int = -1
 
 type Ability struct {
 	Trigger           string                              `json:"trigger"`           // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
@@ -14,34 +14,34 @@ type Ability struct {
 	Target            string                              `json:"target"`            // target, all, self, random
 	TargetConditions  []*Condition                        `json:"targetConditions"`  // creature, avatar
 	Attribute         string                              `json:"attribute"`         // power, toughness, cost
-	Modifier          int                                 `json:"-"`                 // 1, 2, 3, 4
-	ModifierAttr      string                              `json:"-"`                 // power, toughness, cost
+	modFactor         int                                 `json:"-"`                 // 1, 2, 3, 4
+	modAttr           string                              `json:"-"`                 // power, toughness, cost
 	resolver          func(*Game, *Ability, *Card, *Card) `json:"-"`
 }
 
 func NewPlayerDamageAbility() *Ability {
 	con := NewYourBoardConditions([]string{"avatar"})
-	return NewAbility("target", con, "toughness", negativeModifier, "power")
+	return NewAbility("target", con, "toughness", negativeModFactor, "power")
 }
 
 func NewDamageAbility() *Ability {
 	con := NewYourBoardConditions([]string{"creature", "avatar"})
-	return NewAbility("target", con, "toughness", negativeModifier, "power")
+	return NewAbility("target", con, "toughness", negativeModFactor, "power")
 }
 
 func NewPlayerHealAbility() *Ability {
 	con := NewMyBoardConditions([]string{"avatar"})
-	return NewAbility("target", con, "toughness", positiveModifier, "power")
+	return NewAbility("target", con, "toughness", positiveModFactor, "power")
 }
 
 func NewBuffTargetAbility() *Ability {
 	con := NewMyBoardConditions([]string{"creature"})
-	return NewAbility("target", con, "power", positiveModifier, "power")
+	return NewAbility("target", con, "power", positiveModFactor, "power")
 }
 
 func NewBuffBoardAbility(attr string) *Ability {
 	con := NewMyBoardConditions([]string{"creature"})
-	return NewAbility("all", con, attr, positiveModifier, "power")
+	return NewAbility("all", con, attr, positiveModFactor, "power")
 }
 
 func NewAddManaAbility() *Ability {
@@ -51,7 +51,7 @@ func NewAddManaAbility() *Ability {
 		"all",
 		NewMyBoardConditions([]string{"avatar"}),
 		"mana",
-		positiveModifier,
+		positiveModFactor,
 		"power",
 		AddManaAbilityCallback,
 	}
@@ -64,7 +64,7 @@ func NewDrawCardsAbility() *Ability {
 		"all",
 		NewMyBoardConditions([]string{"avatar"}),
 		"draw",
-		positiveModifier,
+		positiveModFactor,
 		"power",
 		DrawCardAbilityCallback,
 	}
@@ -81,7 +81,7 @@ func NewBuffPowerWhenCreatuePlayedAbility() *Ability {
 		"self",
 		NewEmptyTargetConditions(),
 		"power",
-		positiveModifier,
+		positiveModFactor,
 		"not_used",
 		ModifySelfByModifier,
 	}
@@ -94,7 +94,7 @@ func NewSummonCreaturesAbility() *Ability {
 		"self",
 		NewEmptyTargetConditions(),
 		"not_used",
-		positiveModifier,
+		positiveModFactor,
 		"not_used",
 		SummonCreaturesAbility,
 	}
@@ -107,21 +107,21 @@ func NewAttackAbility() *Ability {
 		"target",
 		NewYourBoardConditions([]string{"creature", "avatar"}),
 		"toughness",
-		negativeModifier,
+		negativeModFactor,
 		"power",
 		ModifyBothByModifier,
 	}
 }
 
-func NewAbility(target string, targetConditions []*Condition, attribute string, modifier int, modifierAttr string) *Ability {
+func NewAbility(target string, targetConditions []*Condition, attribute string, modFactor int, modAttr string) *Ability {
 	return &Ability{
 		"enterPlay",
 		NewEmptyTriggerConditions(),
 		target,
 		targetConditions,
 		attribute,
-		modifier,
-		modifierAttr,
+		modFactor,
+		modAttr,
 		ModifyTargetByModifier,
 	}
 }
@@ -172,7 +172,12 @@ func SummonCreaturesAbility(g *Game, a *Ability, c, target *Card) {
 }
 
 func (a *Ability) ModificationAmount(c *Card) int {
-	return c.AttributeValue(a.ModifierAttr) * a.Modifier
+	if val, ok := c.Attributes[a.modAttr]; ok {
+		return val * a.modFactor
+	} else {
+		fmt.Println("ERROR: Failed to find ModificationAmount attr on card")
+		return 0
+	}
 }
 
 func (a *Ability) Apply(g *Game, c, target *Card) error {
@@ -216,9 +221,15 @@ func (a *Ability) TestApplyRemovesCard(c, target *Card) bool {
 		return false
 	}
 
+	toughness, ok := target.Attributes["toughness"]
+	if !ok {
+		fmt.Println("ERROR: Target has no toughness")
+		return false
+	}
+
 	// The modifier is negative if e.g. dealing damage
-	result := target.CurrentToughness + a.ModificationAmount(c)
-	fmt.Println("- Checking if card would be removed (", target.CurrentToughness, "+", a.ModificationAmount(c), "=", result, "<= 0)")
+	result := toughness + a.ModificationAmount(c)
+	fmt.Println("- Checking if card would be removed (", toughness, "+", a.ModificationAmount(c), "=", result, "<= 0)")
 	if result <= 0 {
 		return true
 	}
@@ -259,7 +270,7 @@ func (a *Ability) ValidTarget(card, target *Card) bool {
 }
 
 func (a *Ability) String() string {
-	return fmt.Sprintf("Ability(when %v %v matching will have %v modified by card %v * %v)", a.Trigger, a.Target, a.Attribute, a.ModifierAttr, a.Modifier)
+	return fmt.Sprintf("Ability(when %v %v matching will have %v modified by card %v * %v)", a.Trigger, a.Target, a.Attribute, a.modAttr, a.modFactor)
 }
 
 func AnyAbility(vs []*Ability, f func(*Ability) bool) bool {
@@ -289,6 +300,5 @@ func ActivatedAbility(as []*Ability) *Ability {
 		}
 	}
 
-	fmt.Println("ERROR: Failed to find activated ability")
 	return nil
 }

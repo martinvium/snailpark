@@ -12,15 +12,15 @@ func TestEngagement_ResolveEngagement(t *testing.T) {
 
 	ResolveEngagement(game, []*Engagement{engagement})
 
-	if engagement.Attacker.CurrentToughness != 1 {
-		t.Errorf("Attack.CurrentToughness: %v", engagement.Attacker.CurrentToughness)
+	if engagement.Attacker.Attributes["toughness"] != 1 {
+		t.Errorf("Attack.toughness: %v", engagement.Attacker.Attributes["toughness"])
 	}
 
-	if engagement.Blocker.CurrentToughness != 1 {
-		t.Errorf("engagement.Blocker.CurrentToughness: %v", engagement.Blocker.CurrentToughness)
+	if engagement.Blocker.Attributes["toughness"] != 1 {
+		t.Errorf("engagement.Blocker.toughness: %v", engagement.Blocker.Attributes["toughness"])
 	}
 
-	if engagement.Target.CurrentToughness != 2 {
-		t.Errorf("engagement.Target.CurrentToughness: %v", engagement.Target.CurrentToughness)
+	if engagement.Target.Attributes["toughness"] != 2 {
+		t.Errorf("engagement.Target.toughness: %v", engagement.Target.Attributes["toughness"])
 	}
 }

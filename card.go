@@ -3,16 +3,39 @@ package main
 import "fmt"
 
 type Card struct {
-	CardProto
-	Id               string `json:"id"`
-	CurrentToughness int    `json:"currentToughness"`
-	PlayerId         string
-	Location         string `json:location` // board, hand, graveyard, library
-	// Enchantments, effects, combat health state?
+	proto CardProto
+
+	Id       string `json:"id"`
+	PlayerId string `json:"playerId"`
+	Location string `json:location` // board, hand, graveyard, library
+
+	Tags       map[string]string `json:"tags"`       // color, title, type
+	Attributes map[string]int    `json:"attributes"` // power, toughness, cost
+	Abilities  []*Ability
 }
 
+const DefaultLocation = "library"
+
 func NewCard(proto *CardProto, id, playerId string) *Card {
-	return &Card{*proto, id, proto.Toughness, playerId, "library"}
+	tags := make(map[string]string)
+	for k, v := range proto.Tags {
+		tags[k] = v
+	}
+
+	attributes := make(map[string]int)
+	for k, v := range proto.Attributes {
+		attributes[k] = v
+	}
+
+	return &Card{
+		*proto,
+		id,
+		playerId,
+		DefaultLocation,
+		tags,
+		attributes,
+		proto.Abilities,
+	}
 }
 
 func DeleteCard(s []*Card, c *Card) []*Card {
@@ -37,7 +60,7 @@ func FirstCardWithId(s []*Card, id string) *Card {
 
 func FirstCardWithType(s []*Card, cardType string) *Card {
 	for _, c := range s {
-		if c.CardType == cardType {
+		if c.Tags["type"] == cardType {
 			return c
 		}
 	}
@@ -71,47 +94,28 @@ func NewRandomCreatureCard(power int, toughness int, playerId string) *Card {
 }
 
 func (c *Card) String() string {
-	return fmt.Sprintf("Card(%v, %v)", c.Title, c.PlayerId)
+	return fmt.Sprintf("Card(%v, %v)", c.Tags["title"], c.PlayerId)
 }
 
 func (c *Card) CanAttack() bool {
-	return c.Power > 0
+	return ActivatedAbility(c.Abilities) != nil
 }
 
 func (c *Card) Removed() bool {
-	return c.DeadCreature() || c.NonPermanent()
-}
-
-func (c *Card) DeadCreature() bool {
-	return c.CurrentToughness <= 0
-}
-
-func (c *Card) NonPermanent() bool {
-	return c.CardType == "spell"
-}
-
-func (c *Card) AttributeValue(attribute string) int {
-	switch attribute {
-	case "power":
-		return c.Power
-	case "toughness":
-		return c.CurrentToughness
-	case "cost":
-		return c.Cost
-	default:
-		fmt.Println("ERROR: Invalid attribute value:", attribute)
-		return 0
+	if toughness, ok := c.Attributes["toughness"]; ok {
+		return toughness <= 0
 	}
+
+	return false
 }
 
 func (c *Card) ModifyAttribute(attribute string, modifier int) {
 	fmt.Println("Modified attribute", attribute, "by", modifier)
-	switch attribute {
-	case "power":
-		c.Power += modifier
-	case "toughness":
-		c.CurrentToughness += modifier
-	case "cost":
-		c.Cost += modifier
+	if _, ok := c.Attributes[attribute]; ok {
+		c.Attributes[attribute] += modifier
+	} else {
+		// not sure if problem...
+		fmt.Println("ERROR: modified attribute doesnt exist")
+		c.Attributes[attribute] = modifier
 	}
 }
