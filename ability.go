@@ -16,6 +16,7 @@ type Ability struct {
 	Attribute         string        `json:"attribute"`         // power, toughness, cost
 	modFactor         int           `json:"-"`                 // 1, 2, 3, 4
 	modAttr           string        `json:"-"`                 // power, toughness, cost
+	effectFactory     EffectFactory `json:"-"`
 	effectApplier     EffectApplier `json:"-"`
 }
 
@@ -53,6 +54,7 @@ func NewAddManaAbility() *Ability {
 		"mana",
 		positiveModFactor,
 		"power",
+		DummyEffectFactory,
 		AddManaAbilityCallback,
 	}
 }
@@ -66,6 +68,7 @@ func NewDrawCardsAbility() *Ability {
 		"draw",
 		positiveModFactor,
 		"power",
+		DummyEffectFactory,
 		DrawCardAbilityCallback,
 	}
 }
@@ -83,6 +86,7 @@ func NewBuffPowerWhenCreatuePlayedAbility() *Ability {
 		"power",
 		positiveModFactor,
 		"not_used",
+		DummyEffectFactory,
 		ModifySelfByModifier,
 	}
 }
@@ -96,6 +100,7 @@ func NewSummonCreaturesAbility() *Ability {
 		"not_used",
 		positiveModFactor,
 		"not_used",
+		DummyEffectFactory,
 		SummonCreaturesAbility,
 	}
 }
@@ -109,6 +114,7 @@ func NewAttackAbility() *Ability {
 		"toughness",
 		negativeModFactor,
 		"power",
+		DummyEffectFactory,
 		ModifyBothByModifier,
 	}
 }
@@ -122,6 +128,7 @@ func NewAbility(target string, targetConditions []*Condition, attribute string, 
 		attribute,
 		modFactor,
 		modAttr,
+		DummyEffectFactory,
 		ModifyTargetByModifier,
 	}
 }
@@ -166,7 +173,7 @@ func (a *Ability) applyToTarget(g *Game, c, target *Card) error {
 
 	fmt.Println("Applying ability to target:", target)
 
-	effect := NewEffect(a, a.effectApplier)
+	effect := a.effectFactory(g, a, c, target)
 	effect.Apply(g, c, target)
 
 	return nil

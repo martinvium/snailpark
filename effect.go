@@ -7,6 +7,7 @@ package main
 
 // const NeverExpires = ""
 
+type EffectFactory func(*Game, *Ability, *Card, *Card) *Effect
 type EffectApplier func(*Game, *Ability, *Card, *Card)
 
 type Effect struct {
@@ -21,6 +22,10 @@ type Effect struct {
 
 func NewEffect(a *Ability, applier EffectApplier) *Effect {
 	return &Effect{a, applier}
+}
+
+func DummyEffectFactory(g *Game, a *Ability, c, target *Card) *Effect {
+	return NewEffect(a, a.effectApplier)
 }
 
 func (e *Effect) Apply(g *Game, c *Card, target *Card) {
