@@ -1,25 +1,35 @@
 package main
 
-var TokenRepo = []*CardProto{
-	NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2, nil),
+var repos = map[string][]*CardProto{}
+
+func TokenRepo() []*CardProto {
+	repos["tokenRepo"] = []*CardProto{
+		NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2, nil),
+	}
+
+	return repos["tokenRepo"]
 }
 
-var CardRepo = []*CardProto{
-	NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2, nil),
-	NewCreatureProto("Pugnent Cheese", 2, "Who died in here?!", 2, 2, nil),
-	NewCreatureProto("Hungry Goat Herder", 3, "But what will I do tomorrow?", 3, 2, nil),
-	NewCreatureProto("Ser Vira", 2, "Becomes more powerful every time another creature is played.", 1, 2, NewBuffPowerWhenCreatuePlayedAbility()),
-	NewCreatureProto("School Bully", 3, "Summons 2 companions", 2, 2, NewSummonCreaturesAbility()),
-	NewCreatureProto("Empty Flask", 4, "Fill me up, or i Kill You.", 5, 3, nil),
-	NewCreatureProto("Lord Zembaio", 6, "Today, I shall get out of bed!", 2, 9, nil),
-	NewSpellProto("Goo-to-the-face", 3, "Deal 5 damage to target player -- That's not nice.", 5, NewPlayerDamageAbility()),
-	NewSpellProto("Awkward conversation", 2, "Deal 3 damage to target creature or player", 3, NewDamageAbility()),
-	NewSpellProto("Green smelly liquid", 2, "Heal your self for 5 -- But it taste awful!", 5, NewPlayerHealAbility()),
-	NewSpellProtoVerbose(2, 3, NewBuffTargetAbility(), map[string]string{"title": "Creatine powder", "description": "Increase creatures power by 3 until end of turn", "effectExpireTrigger": "endTurn"}),
-	NewSpellProto("Make lemonade", 2, "Add 2 power to each creature on your board.", 2, NewBuffBoardAbility("power")),
-	NewSpellProto("More draw", 2, "Draw 2 cards", 2, NewDrawCardsAbility()),
-	NewSpellProto("Ramp", 2, "Permanently add 2 mana to your mana pool", 2, NewAddManaAbility()),
-	NewAvatarProto("The Bald One", 30),
+func StandardRepo() []*CardProto {
+	repos["standardRepo"] = []*CardProto{
+		NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2, nil),
+		NewCreatureProto("Pugnent Cheese", 2, "Who died in here?!", 2, 2, nil),
+		NewCreatureProto("Hungry Goat Herder", 3, "But what will I do tomorrow?", 3, 2, nil),
+		NewCreatureProto("Ser Vira", 2, "Becomes more powerful every time another creature is played.", 1, 2, NewBuffPowerWhenCreatuePlayedAbility()),
+		NewCreatureProto("School Bully", 3, "Summons 2 companions", 2, 2, NewSummonCreaturesAbility()),
+		NewCreatureProto("Empty Flask", 4, "Fill me up, or i Kill You.", 5, 3, nil),
+		NewCreatureProto("Lord Zembaio", 6, "Today, I shall get out of bed!", 2, 9, nil),
+		NewSpellProto("Goo-to-the-face", 3, "Deal 5 damage to target player -- That's not nice.", 5, NewPlayerDamageAbility()),
+		NewSpellProto("Awkward conversation", 2, "Deal 3 damage to target creature or player", 3, NewDamageAbility()),
+		NewSpellProto("Green smelly liquid", 2, "Heal your self for 5 -- But it taste awful!", 5, NewPlayerHealAbility()),
+		NewSpellProtoVerbose(2, 3, NewBuffTargetAbility(), map[string]string{"title": "Creatine powder", "description": "Increase creatures power by 3 until end of turn", "effectExpireTrigger": "endTurn"}),
+		NewSpellProto("Make lemonade", 2, "Add 2 power to each creature on your board.", 2, NewBuffBoardAbility("power")),
+		NewSpellProto("More draw", 2, "Draw 2 cards", 2, NewDrawCardsAbility()),
+		NewSpellProto("Ramp", 2, "Permanently add 2 mana to your mana pool", 2, NewAddManaAbility()),
+		NewAvatarProto("The Bald One", 30),
+	}
+
+	return repos["standardRepo"]
 }
 
 // NewSummonCreatureAbility: summon one or more creatures from 1 card creature or spell

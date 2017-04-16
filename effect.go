@@ -21,6 +21,26 @@ type Effect struct {
 	// ExpireConditions []*Condition // so we can make sure its the right player?
 }
 
+func NewEffectFactory(key string) EffectFactory {
+	switch key {
+	case "modifyTarget":
+		return ModifyTargetEffectFactory
+	case "modifyBoth":
+		return ModifyBothEffectFactory
+	case "modifySelf":
+		return ModifySelfEffectFactory
+	case "addMana":
+		return AddManaEffectFactory
+	case "drawCard":
+		return DrawCardEffectFactory
+	case "summonCreature":
+		return SummonCreaturesEffectFactory
+	default:
+		fmt.Println("ERROR: Uknown factory:", key)
+		return nil
+	}
+}
+
 func (e *Effect) String() string {
 	return fmt.Sprintf("Effect(%v)", e.Attributes)
 }
@@ -81,7 +101,7 @@ func ModifySelfEffectFactory(g *Game, a *Ability, c, target *Card) {
 }
 
 func SummonCreaturesEffectFactory(g *Game, a *Ability, c, target *Card) {
-	cards := NewCards(TokenRepo, c.PlayerId, []string{
+	cards := NewCards(TokenRepo(), c.PlayerId, []string{
 		"Dodgy Fella",
 		"Dodgy Fella",
 	})
@@ -90,93 +110,3 @@ func SummonCreaturesEffectFactory(g *Game, a *Ability, c, target *Card) {
 		g.Players[c.PlayerId].AddToBoard(c)
 	}
 }
-
-// type DamageEffectFactory struct{}
-
-// func (f *DamageEffectFactory) Create(c *Card, a *Ability) *Effect {
-// 	return NewEffect(
-// 		NeverExpires,
-// 		a,
-// 		map[string]int{"toughness": c.Attributes["power"] * -1},
-// 		AttributeEffectApplier,
-// 	)
-// }
-
-// type RandomDirectDamageEffectFactory struct {
-// 	minDam, maxDam int
-// }
-
-// func (f *RandomDirectDamageEffectFactory) Create() *Effect {
-// 	dam := rand.Int(f.minDam, f.maxDam)
-// 	return NewEffect("cardResolved", a, map[string]int{"toughness": dam * -1}, AttributeEffectApplier)
-// }
-
-// type BoostAttributesEffectFactory struct {
-// 	ExpireTrigger string
-// 	Attributes    map[string]int
-// }
-
-// func (f *BoostAttributeEffectFactory) Create(c *Card, a *Ability) *Effect {
-// 	return NewEffect(e.ExpireTrigger, a, e.Attributes, AttributeEffectApplier)
-// }
-
-// type AddManaEffectFactory struct {
-// 	ExpireTrigger string
-// 	manaToAdd     int
-// }
-
-// func (f *AddManaEffectFactory) Create() *Effect {
-// 	return NewEffect("endTurn", a, map[string]int{}, AddManaEffectApplier)
-// }
-
-// type DrawCardsEffectFactory struct {
-// 	cardsToDraw int
-// }
-
-// func (f *DrawCardsEffectFactory) Create() *Effect {
-// 	return NewEffect("cardResolved", a, map[string]int{}, DrawCardEffectApplier)
-// }
-
-// type SummonCreatureEffectFactory struct {
-// 	creaturesToSummon []string
-// }
-
-// func (f *SummonCreatureEffectFactory) Creature() *Effect {
-// 	return NewEffect("cardResolved", a, map[string]int{}, SummonCreatureEffectApplier)
-// }
-
-// type DoubleHealthEffectFactory struct{}
-
-// func (f *DoubleHealthEffectFactory) Create() {
-// 	return NewEffect(
-// 		NeverExpires,
-// 		a,
-// 		map[string]int{"toughness": c.Attributes["toughness"]},
-// 		AttributeEffectApplier,
-// 	)
-// }
-
-// type AddAbilityToTargetEffectFactory struct {
-// 	ability *Ability
-// }
-
-// func (f *AddAbilityToTargetEffectFactory) Create() *Effect {
-// 	return NewEffect(
-// 		"cardResolved",
-// 		a,
-// 		map[string]int{},
-// 		AddAbilityToTargetEffectApplier,
-// 	)
-// }
-
-// // DamageEffect X
-// // HealEffect X
-// // BuffPowerEffect X
-// // BuffPowerToughnessEffect X
-
-// // AddManaEffect X
-// // DrawCardEffect Xk
-// // SummonCreatureEffect
-// // DoubleHealthEffect
-// // Scry
-// // Discover

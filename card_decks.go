@@ -3,7 +3,7 @@ package main
 import "math/rand"
 
 func NewStandardDeck(playerId string, def []string) []*Card {
-	return NewCards(CardRepo, playerId, def)
+	return NewCards(StandardRepo(), playerId, def)
 }
 
 func NewCards(repo []*CardProto, playerId string, def []string) []*Card {

@@ -53,7 +53,7 @@ func NewAddManaAbility() *Ability {
 		"mana",
 		positiveModFactor,
 		"power",
-		AddManaEffectFactory,
+		NewEffectFactory("addMana"),
 	}
 }
 
@@ -66,7 +66,7 @@ func NewDrawCardsAbility() *Ability {
 		"draw",
 		positiveModFactor,
 		"power",
-		DrawCardEffectFactory,
+		NewEffectFactory("drawCard"),
 	}
 }
 
@@ -83,7 +83,7 @@ func NewBuffPowerWhenCreatuePlayedAbility() *Ability {
 		"power",
 		positiveModFactor,
 		"not_used",
-		ModifySelfEffectFactory,
+		NewEffectFactory("modifySelf"),
 	}
 }
 
@@ -96,7 +96,7 @@ func NewSummonCreaturesAbility() *Ability {
 		"not_used",
 		positiveModFactor,
 		"not_used",
-		SummonCreaturesEffectFactory,
+		NewEffectFactory("summonCreature"),
 	}
 }
 
@@ -109,7 +109,7 @@ func NewAttackAbility() *Ability {
 		"toughness",
 		negativeModFactor,
 		"power",
-		ModifyBothEffectFactory,
+		NewEffectFactory("modifyBoth"),
 	}
 }
 
@@ -122,7 +122,7 @@ func NewAbility(target string, targetConditions []*Condition, attribute string, 
 		attribute,
 		modFactor,
 		modAttr,
-		ModifyTargetEffectFactory,
+		NewEffectFactory("modifyTarget"),
 	}
 }
 
