@@ -7,17 +7,17 @@ import "fmt"
 // or abilities added. We can add those effects to the target card, and the
 // effect(s) can be applied, and reapplied unless instant.
 
-// const NeverExpires = ""
+const NeverExpires = ""
 
 type EffectFactory func(*Game, *Ability, *Card, *Card)
 type EffectApplier func(*Game, *Ability, *Effect, *Card, *Card)
 
 type Effect struct {
-	Origin     *Ability
-	Applier    EffectApplier
-	Attributes map[string]int
-	Tags       map[string]string
-	// ExpireTrigger    string       // cardResolved, "" == permanent?, endTurn, startTurn?
+	Origin        *Ability
+	Applier       EffectApplier
+	Attributes    map[string]int
+	Tags          map[string]string
+	ExpireTrigger string // cardResolved, "" == permanent?, endTurn, startTurn?
 	// ExpireConditions []*Condition // so we can make sure its the right player?
 }
 
@@ -25,8 +25,8 @@ func (e *Effect) String() string {
 	return fmt.Sprintf("Effect(%v)", e.Attributes)
 }
 
-func NewEffect(a *Ability, applier EffectApplier, attr map[string]int) *Effect {
-	return &Effect{Origin: a, Applier: applier, Attributes: attr}
+func NewEffect(a *Ability, applier EffectApplier, attr map[string]int, expireTrigger string) *Effect {
+	return &Effect{Origin: a, Applier: applier, Attributes: attr, ExpireTrigger: expireTrigger}
 }
 
 func (e *Effect) Apply(g *Game, originCard *Card, target *Card) {
@@ -40,7 +40,17 @@ func AttributeEffectApplier(g *Game, a *Ability, e *Effect, c, target *Card) {
 }
 
 func ModifyTargetEffectFactory(g *Game, a *Ability, c, target *Card) {
-	e := NewEffect(a, AttributeEffectApplier, map[string]int{a.Attribute: a.ModificationAmount(c)})
+	expireTrigger := NeverExpires
+	if v, ok := c.Tags["AbilityExpireTrigger"]; ok {
+		expireTrigger = v
+	}
+
+	e := NewEffect(
+		a,
+		AttributeEffectApplier,
+		map[string]int{a.Attribute: a.ModificationAmount(c)},
+		expireTrigger,
+	)
 	target.AddEffect(g, c, e)
 }
 
@@ -66,7 +76,7 @@ func AddManaEffectFactory(g *Game, a *Ability, c, target *Card) {
 
 func ModifySelfEffectFactory(g *Game, a *Ability, c, target *Card) {
 	amount := 1
-	e := NewEffect(a, AttributeEffectApplier, map[string]int{a.Attribute: amount})
+	e := NewEffect(a, AttributeEffectApplier, map[string]int{a.Attribute: amount}, NeverExpires)
 	c.AddEffect(g, c, e)
 }
 
