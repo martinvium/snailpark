@@ -10,7 +10,7 @@ import "fmt"
 const NeverExpires = ""
 
 type EffectFactory func(*Game, *Ability, *Card, *Card)
-type EffectApplier func(*Game, *Ability, *Effect, *Card, *Card)
+type EffectApplier func(*Game, *Ability, *Effect, *Card)
 
 type Effect struct {
 	Origin        *Ability
@@ -29,11 +29,11 @@ func NewEffect(a *Ability, applier EffectApplier, attr map[string]int, expireTri
 	return &Effect{Origin: a, Applier: applier, Attributes: attr, ExpireTrigger: expireTrigger}
 }
 
-func (e *Effect) Apply(g *Game, originCard *Card, target *Card) {
-	e.Applier(g, e.Origin, e, originCard, target)
+func (e *Effect) Apply(g *Game, target *Card) {
+	e.Applier(g, e.Origin, e, target)
 }
 
-func AttributeEffectApplier(g *Game, a *Ability, e *Effect, c, target *Card) {
+func AttributeEffectApplier(g *Game, a *Ability, e *Effect, target *Card) {
 	for k, _ := range e.Attributes {
 		target.ModifyAttribute(k, e.Attributes[k])
 	}
@@ -51,7 +51,7 @@ func ModifyTargetEffectFactory(g *Game, a *Ability, c, target *Card) {
 		map[string]int{a.Attribute: a.ModificationAmount(c)},
 		expireTrigger,
 	)
-	target.AddEffect(g, c, e)
+	target.AddEffect(g, e)
 }
 
 func ModifyBothEffectFactory(g *Game, a *Ability, c, target *Card) {
@@ -77,7 +77,7 @@ func AddManaEffectFactory(g *Game, a *Ability, c, target *Card) {
 func ModifySelfEffectFactory(g *Game, a *Ability, c, target *Card) {
 	amount := 1
 	e := NewEffect(a, AttributeEffectApplier, map[string]int{a.Attribute: amount}, NeverExpires)
-	c.AddEffect(g, c, e)
+	c.AddEffect(g, e)
 }
 
 func SummonCreaturesEffectFactory(g *Game, a *Ability, c, target *Card) {

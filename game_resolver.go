@@ -48,6 +48,8 @@ func InvokeEffectTrigger(g *Game, event string) {
 				c.Effects = append(c.Effects[:i], c.Effects[i+1:]...)
 			}
 		}
+
+		c.UpdateEffects(g)
 	}
 }
 
