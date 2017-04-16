@@ -17,7 +17,6 @@ type Ability struct {
 	modFactor         int           `json:"-"`                 // 1, 2, 3, 4
 	modAttr           string        `json:"-"`                 // power, toughness, cost
 	effectFactory     EffectFactory `json:"-"`
-	effectApplier     EffectApplier `json:"-"`
 }
 
 func NewPlayerDamageAbility() *Ability {
@@ -55,7 +54,6 @@ func NewAddManaAbility() *Ability {
 		positiveModFactor,
 		"power",
 		AddManaEffectFactory,
-		nil,
 	}
 }
 
@@ -69,7 +67,6 @@ func NewDrawCardsAbility() *Ability {
 		positiveModFactor,
 		"power",
 		DrawCardEffectFactory,
-		nil,
 	}
 }
 
@@ -87,7 +84,6 @@ func NewBuffPowerWhenCreatuePlayedAbility() *Ability {
 		positiveModFactor,
 		"not_used",
 		ModifySelfEffectFactory,
-		nil,
 	}
 }
 
@@ -101,7 +97,6 @@ func NewSummonCreaturesAbility() *Ability {
 		positiveModFactor,
 		"not_used",
 		SummonCreaturesEffectFactory,
-		nil,
 	}
 }
 
@@ -115,7 +110,6 @@ func NewAttackAbility() *Ability {
 		negativeModFactor,
 		"power",
 		ModifyBothByModifierFactory,
-		nil,
 	}
 }
 
@@ -129,7 +123,6 @@ func NewAbility(target string, targetConditions []*Condition, attribute string, 
 		modFactor,
 		modAttr,
 		ModifyTargetByModifierFactory,
-		nil,
 	}
 }
 

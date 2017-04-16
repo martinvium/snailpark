@@ -25,11 +25,7 @@ func (e *Effect) String() string {
 	return fmt.Sprintf("Effect(%v)", e.Attributes)
 }
 
-func NewEffect(a *Ability, applier EffectApplier) *Effect {
-	return &Effect{Origin: a, Applier: applier}
-}
-
-func NewEffectVerbose(a *Ability, applier EffectApplier, attr map[string]int) *Effect {
+func NewEffect(a *Ability, applier EffectApplier, attr map[string]int) *Effect {
 	return &Effect{Origin: a, Applier: applier, Attributes: attr}
 }
 
@@ -43,13 +39,8 @@ func AttributeEffectApplier(g *Game, a *Ability, e *Effect, c, target *Card) {
 	}
 }
 
-func DummyEffectFactory(g *Game, a *Ability, c, target *Card) {
-	e := NewEffect(a, a.effectApplier)
-	target.AddEffect(g, c, e)
-}
-
 func ModifyTargetByModifierFactory(g *Game, a *Ability, c, target *Card) {
-	e := NewEffectVerbose(a, AttributeEffectApplier, map[string]int{a.Attribute: a.ModificationAmount(c)})
+	e := NewEffect(a, AttributeEffectApplier, map[string]int{a.Attribute: a.ModificationAmount(c)})
 	target.AddEffect(g, c, e)
 }
 
@@ -75,7 +66,7 @@ func AddManaEffectFactory(g *Game, a *Ability, c, target *Card) {
 
 func ModifySelfEffectFactory(g *Game, a *Ability, c, target *Card) {
 	amount := 1
-	e := NewEffectVerbose(a, AttributeEffectApplier, map[string]int{a.Attribute: amount})
+	e := NewEffect(a, AttributeEffectApplier, map[string]int{a.Attribute: amount})
 	c.AddEffect(g, c, e)
 }
 
