@@ -54,8 +54,8 @@ func NewAddManaAbility() *Ability {
 		"mana",
 		positiveModFactor,
 		"power",
-		DummyEffectFactory,
-		AddManaAbilityCallback,
+		AddManaEffectFactory,
+		nil,
 	}
 }
 
@@ -68,8 +68,8 @@ func NewDrawCardsAbility() *Ability {
 		"draw",
 		positiveModFactor,
 		"power",
-		DummyEffectFactory,
-		DrawCardAbilityCallback,
+		DrawCardEffectFactory,
+		nil,
 	}
 }
 
@@ -100,8 +100,8 @@ func NewSummonCreaturesAbility() *Ability {
 		"not_used",
 		positiveModFactor,
 		"not_used",
-		DummyEffectFactory,
-		SummonCreaturesAbility,
+		SummonCreaturesEffectFactory,
+		nil,
 	}
 }
 

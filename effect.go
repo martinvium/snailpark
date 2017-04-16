@@ -61,13 +61,13 @@ func ModifyBothByModifierFactory(g *Game, a *Ability, c, target *Card) {
 	}
 }
 
-func DrawCardAbilityCallback(g *Game, a *Ability, e *Effect, c, target *Card) {
+func DrawCardEffectFactory(g *Game, a *Ability, c, target *Card) {
 	g.Players[target.PlayerId].AddToHand(
 		a.ModificationAmount(c),
 	)
 }
 
-func AddManaAbilityCallback(g *Game, a *Ability, e *Effect, c, target *Card) {
+func AddManaEffectFactory(g *Game, a *Ability, c, target *Card) {
 	g.Players[target.PlayerId].AddMaxMana(
 		a.ModificationAmount(c),
 	)
@@ -80,7 +80,7 @@ func ModifySelfByModifier(g *Game, a *Ability, e *Effect, c, target *Card) {
 	)
 }
 
-func SummonCreaturesAbility(g *Game, a *Ability, e *Effect, c, target *Card) {
+func SummonCreaturesEffectFactory(g *Game, a *Ability, c, target *Card) {
 	cards := NewCards(TokenRepo, c.PlayerId, []string{
 		"Dodgy Fella",
 		"Dodgy Fella",
