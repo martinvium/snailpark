@@ -50,6 +50,11 @@ func (c *Condition) Valid(card, target *Card) bool {
 }
 
 func (c *Condition) MatchesPlayer(card, target *Card) bool {
+	if target == nil {
+		fmt.Println("ERROR: expecting a target for matching player")
+		return false
+	}
+
 	for _, a := range c.anyOf {
 		if a == "you" && card.PlayerId != target.PlayerId {
 			return true

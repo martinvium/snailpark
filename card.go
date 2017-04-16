@@ -111,10 +111,23 @@ func (c *Card) Removed() bool {
 	return false
 }
 
-func (c *Card) AddEffect(g *Game, originCard *Card, e *Effect) {
+func (c *Card) AddEffect(g *Game, e *Effect) {
 	fmt.Println("Addded and applied effect:", e)
 	c.Effects = append(c.Effects, e)
-	e.Apply(g, originCard, c)
+	e.Apply(g, c)
+}
+
+func (c *Card) UpdateEffects(g *Game) {
+	attributes := make(map[string]int)
+	for k, v := range c.proto.Attributes {
+		attributes[k] = v
+	}
+
+	c.Attributes = attributes
+
+	for _, e := range c.Effects {
+		e.Apply(g, c)
+	}
 }
 
 func (c *Card) ModifyAttribute(attribute string, modifier int) {
