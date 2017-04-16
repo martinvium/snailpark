@@ -41,7 +41,7 @@ func AttributeEffectApplier(g *Game, a *Ability, e *Effect, c, target *Card) {
 
 func ModifyTargetEffectFactory(g *Game, a *Ability, c, target *Card) {
 	expireTrigger := NeverExpires
-	if v, ok := c.Tags["AbilityExpireTrigger"]; ok {
+	if v, ok := c.Tags["effectExpireTrigger"]; ok {
 		expireTrigger = v
 	}
 

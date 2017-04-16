@@ -9,14 +9,20 @@ type CardProto struct {
 }
 
 func NewSpellProto(title string, cost int, desc string, power int, ability *Ability) *CardProto {
+	tags := map[string]string{}
+	tags["title"] = title
+	tags["description"] = desc
+	return NewSpellProtoVerbose(cost, power, ability, tags)
+}
+
+func NewSpellProtoVerbose(cost int, power int, ability *Ability, tags map[string]string) *CardProto {
 	abilities := []*Ability{ability}
+
+	tags["color"] = "white"
+	tags["type"] = "spell"
+
 	return &CardProto{
-		map[string]string{
-			"color":       "white",
-			"title":       title,
-			"type":        "spell",
-			"description": desc,
-		},
+		tags,
 		map[string]int{
 			"cost":      cost,
 			"power":     power,
