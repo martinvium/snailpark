@@ -6,7 +6,7 @@ func ResolveCurrentCard(g *Game, target *Card) {
 	card := g.CurrentCard
 	g.CurrentCard = nil
 
-	InvokeAbilityTrigger(g, card, nil, "cardPlayed")
+	InvokeTrigger(g, card, target, "cardPlayed")
 
 	g.CurrentPlayer.AddToBoard(card)
 	g.CurrentPlayer.RemoveCardFromHand(card)
@@ -15,6 +15,11 @@ func ResolveCurrentCard(g *Game, target *Card) {
 	ResolveRemovedCards(g)
 
 	g.CurrentPlayer.PayCardCost(card)
+}
+
+func InvokeTrigger(g *Game, origin, target *Card, event string) {
+	InvokeAbilityTrigger(g, origin, target, event)
+	InvokeEffectTrigger(g, event)
 }
 
 func InvokeAbilityTrigger(g *Game, origin, target *Card, event string) {
@@ -36,13 +41,23 @@ func InvokeCardAbilityTrigger(g *Game, c, origin, target *Card, event string) {
 	}
 }
 
+func InvokeEffectTrigger(g *Game, event string) {
+	for _, c := range g.AllBoardCards() {
+		for i, e := range c.Effects {
+			if e.ExpireTrigger == event {
+				c.Effects = append(c.Effects[:i], c.Effects[i+1:]...)
+			}
+		}
+	}
+}
+
 func ResolveRemovedCards(g *Game) {
 	for _, player := range g.Players {
 		for _, card := range player.Board {
 			if card.Removed() {
 				player.Board = DeleteCard(player.Board, card)
 				player.AddToGraveyard(card)
-				InvokeAbilityTrigger(g, card, nil, "enterGraveyard")
+				InvokeTrigger(g, card, nil, "enterGraveyard")
 			}
 		}
 	}

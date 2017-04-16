@@ -128,6 +128,7 @@ func (s *StateMachine) toCombat() {
 }
 
 func (s *StateMachine) toEnd() {
+	InvokeTrigger(s.game, nil, nil, "endTurn")
 	s.game.NextPlayer()
 	s.Transition("upkeep")
 }
