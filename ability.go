@@ -86,8 +86,8 @@ func NewBuffPowerWhenCreatuePlayedAbility() *Ability {
 		"power",
 		positiveModFactor,
 		"not_used",
-		DummyEffectFactory,
-		ModifySelfByModifier,
+		ModifySelfEffectFactory,
+		nil,
 	}
 }
 

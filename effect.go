@@ -73,11 +73,10 @@ func AddManaEffectFactory(g *Game, a *Ability, c, target *Card) {
 	)
 }
 
-func ModifySelfByModifier(g *Game, a *Ability, e *Effect, c, target *Card) {
-	c.ModifyAttribute(
-		a.Attribute,
-		1, // we still dont have any way to put "arbitrary" values here...
-	)
+func ModifySelfEffectFactory(g *Game, a *Ability, c, target *Card) {
+	amount := 1
+	e := NewEffectVerbose(a, AttributeEffectApplier, map[string]int{a.Attribute: amount})
+	c.AddEffect(g, c, e)
 }
 
 func SummonCreaturesEffectFactory(g *Game, a *Ability, c, target *Card) {
