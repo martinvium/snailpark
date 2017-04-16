@@ -11,7 +11,8 @@ type Card struct {
 
 	Tags       map[string]string `json:"tags"`       // color, title, type
 	Attributes map[string]int    `json:"attributes"` // power, toughness, cost
-	Abilities  []*Ability
+	Abilities  []*Ability        `json:"-"`
+	Effects    []*Effect         `json:"-"`
 }
 
 const DefaultLocation = "library"
@@ -35,6 +36,7 @@ func NewCard(proto *CardProto, id, playerId string) *Card {
 		tags,
 		attributes,
 		proto.Abilities,
+		[]*Effect{},
 	}
 }
 
@@ -107,6 +109,12 @@ func (c *Card) Removed() bool {
 	}
 
 	return false
+}
+
+func (c *Card) AddEffect(g *Game, originCard *Card, e *Effect) {
+	fmt.Println("Addded and applied effect:", e)
+	c.Effects = append(c.Effects, e)
+	e.Apply(g, originCard, c)
 }
 
 func (c *Card) ModifyAttribute(attribute string, modifier int) {

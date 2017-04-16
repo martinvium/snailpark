@@ -141,7 +141,9 @@ func (c *SocketClient) listenWrite() {
 		// send message to the client
 		case msg := <-c.msgCh:
 			log.Println("Send:", msg)
-			c.ws.WriteJSON(msg)
+			if err := c.ws.WriteJSON(msg); err != nil {
+				log.Println("ERROR: WriteJSON failed:", err)
+			}
 
 		// receive done request
 		case <-c.doneCh:
