@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 // Create the effect that actually _does_ the thing
 // AI will be able to inspect which attributes are changed and by what explicitly
 // or abilities added. We can add those effects to the target card, and the
@@ -7,7 +9,7 @@ package main
 
 // const NeverExpires = ""
 
-type EffectFactory func(*Game, *Ability, *Card, *Card) *Effect
+type EffectFactory func(*Game, *Ability, *Card, *Card)
 type EffectApplier func(*Game, *Ability, *Effect, *Card, *Card)
 
 type Effect struct {
@@ -19,6 +21,10 @@ type Effect struct {
 	// ExpireConditions []*Condition // so we can make sure its the right player?
 }
 
+func (e *Effect) String() string {
+	return fmt.Sprintf("Effect(%v)", e.Attributes)
+}
+
 func NewEffect(a *Ability, applier EffectApplier) *Effect {
 	return &Effect{Origin: a, Applier: applier}
 }
@@ -27,36 +33,31 @@ func NewEffectVerbose(a *Ability, applier EffectApplier, attr map[string]int) *E
 	return &Effect{Origin: a, Applier: applier, Attributes: attr}
 }
 
-func DummyEffectFactory(g *Game, a *Ability, c, target *Card) *Effect {
-	return NewEffect(a, a.effectApplier)
-}
-
-func (e *Effect) Apply(g *Game, c *Card, target *Card) {
-	e.Applier(g, e.Origin, e, c, target)
+func (e *Effect) Apply(g *Game, originCard *Card, target *Card) {
+	e.Applier(g, e.Origin, e, originCard, target)
 }
 
 func AttributeEffectApplier(g *Game, a *Ability, e *Effect, c, target *Card) {
 	for k, _ := range e.Attributes {
-		target.Attributes[k] += e.Attributes[k]
+		target.ModifyAttribute(k, e.Attributes[k])
 	}
 }
 
-func ModifyTargetByModifierFactory(g *Game, a *Ability, c, target *Card) *Effect {
-	return NewEffectVerbose(a, AttributeEffectApplier, map[string]int{a.Attribute: a.ModificationAmount(c)})
+func DummyEffectFactory(g *Game, a *Ability, c, target *Card) {
+	e := NewEffect(a, a.effectApplier)
+	target.AddEffect(g, c, e)
 }
 
-func ModifyTargetByModifier(g *Game, a *Ability, e *Effect, c, target *Card) {
-	target.ModifyAttribute(
-		a.Attribute,
-		a.ModificationAmount(c),
-	)
+func ModifyTargetByModifierFactory(g *Game, a *Ability, c, target *Card) {
+	e := NewEffectVerbose(a, AttributeEffectApplier, map[string]int{a.Attribute: a.ModificationAmount(c)})
+	target.AddEffect(g, c, e)
 }
 
-func ModifyBothByModifier(g *Game, a *Ability, e *Effect, c, target *Card) {
-	ModifyTargetByModifier(g, a, e, c, target)
+func ModifyBothByModifierFactory(g *Game, a *Ability, c, target *Card) {
+	ModifyTargetByModifierFactory(g, a, c, target)
 
 	if ta := ActivatedAbility(target.Abilities); ta != nil {
-		ModifyTargetByModifier(g, ta, e, target, c)
+		ModifyTargetByModifierFactory(g, ta, target, c)
 	}
 }
 

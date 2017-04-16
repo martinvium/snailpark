@@ -114,8 +114,8 @@ func NewAttackAbility() *Ability {
 		"toughness",
 		negativeModFactor,
 		"power",
-		DummyEffectFactory,
-		ModifyBothByModifier,
+		ModifyBothByModifierFactory,
+		nil,
 	}
 }
 
@@ -173,8 +173,7 @@ func (a *Ability) applyToTarget(g *Game, c, target *Card) error {
 
 	fmt.Println("Applying ability to target:", target)
 
-	effect := a.effectFactory(g, a, c, target)
-	effect.Apply(g, c, target)
+	a.effectFactory(g, a, c, target)
 
 	return nil
 }
