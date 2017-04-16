@@ -109,7 +109,7 @@ func NewAttackAbility() *Ability {
 		"toughness",
 		negativeModFactor,
 		"power",
-		ModifyBothByModifierFactory,
+		ModifyBothEffectFactory,
 	}
 }
 
@@ -122,7 +122,7 @@ func NewAbility(target string, targetConditions []*Condition, attribute string, 
 		attribute,
 		modFactor,
 		modAttr,
-		ModifyTargetByModifierFactory,
+		ModifyTargetEffectFactory,
 	}
 }
 

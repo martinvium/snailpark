@@ -39,16 +39,16 @@ func AttributeEffectApplier(g *Game, a *Ability, e *Effect, c, target *Card) {
 	}
 }
 
-func ModifyTargetByModifierFactory(g *Game, a *Ability, c, target *Card) {
+func ModifyTargetEffectFactory(g *Game, a *Ability, c, target *Card) {
 	e := NewEffect(a, AttributeEffectApplier, map[string]int{a.Attribute: a.ModificationAmount(c)})
 	target.AddEffect(g, c, e)
 }
 
-func ModifyBothByModifierFactory(g *Game, a *Ability, c, target *Card) {
-	ModifyTargetByModifierFactory(g, a, c, target)
+func ModifyBothEffectFactory(g *Game, a *Ability, c, target *Card) {
+	ModifyTargetEffectFactory(g, a, c, target)
 
 	if ta := ActivatedAbility(target.Abilities); ta != nil {
-		ModifyTargetByModifierFactory(g, ta, target, c)
+		ModifyTargetEffectFactory(g, ta, target, c)
 	}
 }
 
