@@ -1,5 +1,14 @@
 package main
 
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"path"
+	"path/filepath"
+	"runtime"
+)
+
 var repos = map[string][]*CardProto{}
 
 func TokenRepo() []*CardProto {
@@ -12,6 +21,7 @@ func TokenRepo() []*CardProto {
 
 func StandardRepo() []*CardProto {
 	repos["standardRepo"] = []*CardProto{
+		LoadCardProtoById("standard", "dodgy_fella"),
 		NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2, nil),
 		NewCreatureProto("Pugnent Cheese", 2, "Who died in here?!", 2, 2, nil),
 		NewCreatureProto("Hungry Goat Herder", 3, "But what will I do tomorrow?", 3, 2, nil),
@@ -30,6 +40,66 @@ func StandardRepo() []*CardProto {
 	}
 
 	return repos["standardRepo"]
+}
+
+func LoadCardProtoById(set, id string) *CardProto {
+	filename := fmt.Sprintf("./cards/%s/%s.json", set, id)
+	proto, err := LoadCardProto(filename)
+	fmt.Println("Loaded:", proto)
+	if err != nil {
+		fmt.Println("ERROR: Failed to load proto:", err)
+		return nil
+	} else {
+		return proto
+	}
+}
+
+func LoadCardProto(filename string) (*CardProto, error) {
+	file, err := loadJson(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	cardProto := CardProto{}
+	json.Unmarshal(file, &cardProto)
+
+	return &cardProto, nil
+}
+
+func LoadAllCardProtos() []CardProto {
+	var cardProtos []CardProto
+
+	dir := path.Join(rootDir(), "cards", "standard", "*.json")
+	filenames, err := filepath.Glob(dir)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, filename := range filenames {
+		cardProto, err := LoadCardProto(filename)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		cardProtos = append(cardProtos, *cardProto)
+	}
+
+	return cardProtos
+}
+
+func loadJson(filename string) ([]byte, error) {
+	file, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return file, nil
+}
+
+func rootDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
 }
 
 // NewSummonCreatureAbility: summon one or more creatures from 1 card creature or spell

@@ -9,14 +9,14 @@ var positiveModFactor int = 1
 var negativeModFactor int = -1
 
 type Ability struct {
-	Trigger           string        `json:"trigger"`           // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
-	TriggerConditions []*Condition  `json:"triggerConditions"` // creature, avatar
-	Target            string        `json:"target"`            // target, all, self, random
-	TargetConditions  []*Condition  `json:"targetConditions"`  // creature, avatar
-	Attribute         string        `json:"attribute"`         // power, toughness, cost
-	modFactor         int           `json:"-"`                 // 1, 2, 3, 4
-	modAttr           string        `json:"-"`                 // power, toughness, cost
-	effectFactory     EffectFactory `json:"-"`
+	Trigger           string       `json:"trigger"`           // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
+	TriggerConditions []*Condition `json:"triggerConditions"` // creature, avatar
+	Target            string       `json:"target"`            // target, all, self, random
+	TargetConditions  []*Condition `json:"targetConditions"`  // creature, avatar
+	Attribute         string       `json:"attribute"`         // power, toughness, cost
+	ModFactor         int          `json:"modFactor"`         // 1, 2, 3, 4
+	ModAttr           string       `json:"modAttr"`           // power, toughness, cost
+	EffectFactory     string       `json:"effectFactory"`
 }
 
 func NewPlayerDamageAbility() *Ability {
@@ -53,7 +53,7 @@ func NewAddManaAbility() *Ability {
 		"mana",
 		positiveModFactor,
 		"power",
-		NewEffectFactory("addMana"),
+		"addMana",
 	}
 }
 
@@ -66,7 +66,7 @@ func NewDrawCardsAbility() *Ability {
 		"draw",
 		positiveModFactor,
 		"power",
-		NewEffectFactory("drawCard"),
+		"drawCard",
 	}
 }
 
@@ -83,7 +83,7 @@ func NewBuffPowerWhenCreatuePlayedAbility() *Ability {
 		"power",
 		positiveModFactor,
 		"not_used",
-		NewEffectFactory("modifySelf"),
+		"modifySelf",
 	}
 }
 
@@ -96,7 +96,7 @@ func NewSummonCreaturesAbility() *Ability {
 		"not_used",
 		positiveModFactor,
 		"not_used",
-		NewEffectFactory("summonCreature"),
+		"summonCreature",
 	}
 }
 
@@ -109,7 +109,7 @@ func NewAttackAbility() *Ability {
 		"toughness",
 		negativeModFactor,
 		"power",
-		NewEffectFactory("modifyBoth"),
+		"modifyBoth",
 	}
 }
 
@@ -122,13 +122,13 @@ func NewAbility(target string, targetConditions []*Condition, attribute string, 
 		attribute,
 		modFactor,
 		modAttr,
-		NewEffectFactory("modifyTarget"),
+		"modifyTarget",
 	}
 }
 
 func (a *Ability) ModificationAmount(c *Card) int {
-	if val, ok := c.Attributes[a.modAttr]; ok {
-		return val * a.modFactor
+	if val, ok := c.Attributes[a.ModAttr]; ok {
+		return val * a.ModFactor
 	} else {
 		fmt.Println("ERROR: Failed to find ModificationAmount attr on card")
 		return 0
@@ -166,7 +166,7 @@ func (a *Ability) applyToTarget(g *Game, c, target *Card) error {
 
 	fmt.Println("Applying ability to target:", target)
 
-	a.effectFactory(g, a, c, target)
+	NewEffectFactory(a.EffectFactory)(g, a, c, target)
 
 	return nil
 }
@@ -225,7 +225,7 @@ func (a *Ability) ValidTarget(card, target *Card) bool {
 }
 
 func (a *Ability) String() string {
-	return fmt.Sprintf("Ability(when %v %v matching will have %v modified by card %v * %v)", a.Trigger, a.Target, a.Attribute, a.modAttr, a.modFactor)
+	return fmt.Sprintf("Ability(when %v %v matching will have %v modified by card %v * %v via %v)", a.Trigger, a.Target, a.Attribute, a.ModAttr, a.ModFactor, a.EffectFactory)
 }
 
 func AnyAbility(vs []*Ability, f func(*Ability) bool) bool {

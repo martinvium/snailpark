@@ -5,7 +5,7 @@ import "fmt"
 type CardProto struct {
 	Tags       map[string]string `json:"tags"`       // color, title, type
 	Attributes map[string]int    `json:"attributes"` // power, toughness, cost
-	Abilities  []*Ability        `json:"-"`
+	Abilities  []*Ability        `json:"abilities"`
 }
 
 func NewSpellProto(title string, cost int, desc string, power int, ability *Ability) *CardProto {

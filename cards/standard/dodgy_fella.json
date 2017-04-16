@@ -1,0 +1,29 @@
+{
+  "tags": {
+    "color": "white",
+    "title": "Dodgy Fella",
+    "type": "creature",
+    "description": "Something stinks"
+  },
+  "attributes": {
+    "cost": 1,
+    "power": 1,
+    "toughness": 2
+  },
+  "abilities": [
+    {
+      "trigger": "activated",
+      "triggerConditions": [],
+      "target": "target",
+      "targetConditions": {
+        "type": ["creature", "avatar"],
+        "player": "you",
+        "location": "board"
+      },
+      "attribute": "toughness",
+      "modFactor": -1,
+      "modAttr": "power",
+      "effectFactory": "modifyBoth"
+    }
+  ]
+}
