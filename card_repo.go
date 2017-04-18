@@ -5,9 +5,13 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"path"
-	"path/filepath"
 	"runtime"
 )
+
+type CardProtoFile struct {
+	Name       string
+	CardProtos map[string]*CardProto `yaml:"cards"`
+}
 
 var repos = map[string][]*CardProto{}
 
@@ -50,53 +54,48 @@ func StandardRepo() []*CardProto {
 }
 
 func LoadCardProtoById(set, id string) *CardProto {
-	filename := fmt.Sprintf("./cards/%s/%s.yaml", set, id)
-	proto, err := LoadCardProto(filename)
+	filename := fmt.Sprintf("./cards/%s.yaml", set)
+	file, err := LoadCardProtoFile(filename)
+
+	if err != nil {
+		fmt.Println("ERROR: Failed to load set:", err)
+		return nil
+	}
+
+	proto, ok := file.CardProtos[id]
+
+	if ok == false {
+		fmt.Println("ERROR: Failed to find card proto:", id)
+	}
+
 	fmt.Println("Loaded:", proto)
 	for _, v := range proto.Abilities {
 		fmt.Println("Ability:", v)
 	}
-	// fmt.Printf("Loaded: %v", proto)
-	if err != nil {
-		fmt.Println("ERROR: Failed to load proto:", err)
-		return nil
-	} else {
-		return proto
-	}
+
+	return proto
 }
 
-func LoadCardProto(filename string) (*CardProto, error) {
+var cardProtoFiles = map[string]*CardProtoFile{}
+
+func LoadCardProtoFile(filename string) (*CardProtoFile, error) {
+	if file, ok := cardProtoFiles[filename]; ok {
+		return file, nil
+	}
+
 	file, err := loadYaml(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	cardProto := CardProto{}
-	yaml.Unmarshal(file, &cardProto)
-
-	return &cardProto, nil
-}
-
-func LoadAllCardProtos() []CardProto {
-	var cardProtos []CardProto
-
-	dir := path.Join(rootDir(), "cards", "standard", "*.yaml")
-	filenames, err := filepath.Glob(dir)
-	if err != nil {
-		panic(err)
+	cardProtoFile := CardProtoFile{}
+	if err := yaml.Unmarshal(file, &cardProtoFile); err != nil {
+		fmt.Println("ERROR: YAML Unmarshal:", err)
 	}
 
-	for _, filename := range filenames {
-		cardProto, err := LoadCardProto(filename)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
+	cardProtoFiles[filename] = &cardProtoFile
 
-		cardProtos = append(cardProtos, *cardProto)
-	}
-
-	return cardProtos
+	return &cardProtoFile, nil
 }
 
 func loadYaml(filename string) ([]byte, error) {
