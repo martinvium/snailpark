@@ -9,14 +9,14 @@ var positiveModFactor int = 1
 var negativeModFactor int = -1
 
 type Ability struct {
-	Trigger           string       `json:"trigger"`           // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
-	TriggerConditions []*Condition `json:"triggerConditions"` // creature, avatar
-	Target            string       `json:"target"`            // target, all, self, random
-	TargetConditions  []*Condition `json:"targetConditions"`  // creature, avatar
-	Attribute         string       `json:"attribute"`         // power, toughness, cost
-	ModFactor         int          `json:"modFactor"`         // 1, 2, 3, 4
-	ModAttr           string       `json:"modAttr"`           // power, toughness, cost
-	EffectFactory     string       `json:"effectFactory"`
+	Trigger           string       `yaml:"trigger"`            // enterPlay, activated, draw, cardPlayed, cardDead, cardExiled
+	TriggerConditions []*Condition `yaml:"trigger_conditions"` // creature, avatar
+	Target            string       `yaml:"target"`             // target, all, self, random
+	TargetConditions  []*Condition `yaml:"target_conditions"`  // creature, avatar
+	Attribute         string       `yaml:"attribute"`          // power, toughness, cost
+	ModFactor         int          `yaml:"mod_factor"`         // 1, 2, 3, 4
+	ModAttr           string       `yaml:"mod_attr"`           // power, toughness, cost
+	EffectFactory     string       `yaml:"behaviour"`
 }
 
 func NewPlayerDamageAbility() *Ability {

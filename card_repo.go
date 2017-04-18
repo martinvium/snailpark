@@ -1,8 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"path"
 	"path/filepath"
@@ -12,6 +12,10 @@ import (
 var repos = map[string][]*CardProto{}
 
 func TokenRepo() []*CardProto {
+	if repo, ok := repos["tokenRepo"]; ok {
+		return repo
+	}
+
 	repos["tokenRepo"] = []*CardProto{
 		NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2, nil),
 	}
@@ -20,6 +24,10 @@ func TokenRepo() []*CardProto {
 }
 
 func StandardRepo() []*CardProto {
+	if repo, ok := repos["standardRepo"]; ok {
+		return repo
+	}
+
 	repos["standardRepo"] = []*CardProto{
 		LoadCardProtoById("standard", "dodgy_fella"),
 		NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2, nil),
@@ -43,9 +51,13 @@ func StandardRepo() []*CardProto {
 }
 
 func LoadCardProtoById(set, id string) *CardProto {
-	filename := fmt.Sprintf("./cards/%s/%s.json", set, id)
+	filename := fmt.Sprintf("./cards/%s/%s.yaml", set, id)
 	proto, err := LoadCardProto(filename)
 	fmt.Println("Loaded:", proto)
+	for _, v := range proto.Abilities {
+		fmt.Println("Ability:", v)
+	}
+	// fmt.Printf("Loaded: %v", proto)
 	if err != nil {
 		fmt.Println("ERROR: Failed to load proto:", err)
 		return nil
@@ -55,13 +67,13 @@ func LoadCardProtoById(set, id string) *CardProto {
 }
 
 func LoadCardProto(filename string) (*CardProto, error) {
-	file, err := loadJson(filename)
+	file, err := loadYaml(filename)
 	if err != nil {
 		return nil, err
 	}
 
 	cardProto := CardProto{}
-	json.Unmarshal(file, &cardProto)
+	yaml.Unmarshal(file, &cardProto)
 
 	return &cardProto, nil
 }
@@ -69,7 +81,7 @@ func LoadCardProto(filename string) (*CardProto, error) {
 func LoadAllCardProtos() []CardProto {
 	var cardProtos []CardProto
 
-	dir := path.Join(rootDir(), "cards", "standard", "*.json")
+	dir := path.Join(rootDir(), "cards", "standard", "*.yaml")
 	filenames, err := filepath.Glob(dir)
 	if err != nil {
 		panic(err)
@@ -88,7 +100,7 @@ func LoadAllCardProtos() []CardProto {
 	return cardProtos
 }
 
-func loadJson(filename string) ([]byte, error) {
+func loadYaml(filename string) ([]byte, error) {
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return []byte{}, err

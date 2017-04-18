@@ -3,8 +3,8 @@ package main
 import "fmt"
 
 type Condition struct {
-	attribute string
-	anyOf     []string
+	Attribute string   `yaml:"attribute"`
+	AnyOf     []string `yaml:"any_of"`
 }
 
 func NewCondition(attr string, any []string) *Condition {
@@ -36,7 +36,7 @@ func NewYourBoardConditions(types []string) []*Condition {
 }
 
 func (c *Condition) Valid(card, target *Card) bool {
-	switch c.attribute {
+	switch c.Attribute {
 	case "type":
 		return c.Matches(target.Tags["type"])
 	case "player":
@@ -44,7 +44,7 @@ func (c *Condition) Valid(card, target *Card) bool {
 	case "location":
 		return c.Matches(target.Location)
 	default:
-		fmt.Println("ERROR: Invalid condition:", c.attribute)
+		fmt.Println("ERROR: Invalid condition:", c.Attribute)
 		return false
 	}
 }
@@ -55,7 +55,7 @@ func (c *Condition) MatchesPlayer(card, target *Card) bool {
 		return false
 	}
 
-	for _, a := range c.anyOf {
+	for _, a := range c.AnyOf {
 		if a == "you" && card.PlayerId != target.PlayerId {
 			return true
 		}
@@ -69,7 +69,7 @@ func (c *Condition) MatchesPlayer(card, target *Card) bool {
 }
 
 func (c *Condition) Matches(v string) bool {
-	for _, a := range c.anyOf {
+	for _, a := range c.AnyOf {
 		if a == v {
 			return true
 		}
@@ -78,5 +78,5 @@ func (c *Condition) Matches(v string) bool {
 }
 
 func (c *Condition) String() string {
-	return fmt.Sprintf("%v (%v)", c.attribute, c.anyOf)
+	return fmt.Sprintf("%v%v", c.Attribute, c.AnyOf)
 }
