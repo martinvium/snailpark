@@ -1,0 +1,24 @@
+tags:
+  color: white
+  title: "Pugnent Cheese"
+  type: creature
+  description: "Who died in here?!"
+attributes:
+  cost: 2
+  power: 2
+  toughness: 2
+abilities:
+  - trigger: activated
+    trigger_conditions: []
+    target: target
+    attribute: toughness
+    mod_factor: -1
+    mod_attr: power
+    behaviour: modifyBoth
+    target_conditions:
+      - attribute: type
+        any_of: [creature, avatar]
+      - attribute: player
+        any_of: [you]
+      - attribute: location
+        any_of: [board]

@@ -30,8 +30,7 @@ func StandardRepo() []*CardProto {
 
 	repos["standardRepo"] = []*CardProto{
 		LoadCardProtoById("standard", "dodgy_fella"),
-		NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2, nil),
-		NewCreatureProto("Pugnent Cheese", 2, "Who died in here?!", 2, 2, nil),
+		LoadCardProtoById("standard", "pugnent_cheese"),
 		NewCreatureProto("Hungry Goat Herder", 3, "But what will I do tomorrow?", 3, 2, nil),
 		NewCreatureProto("Ser Vira", 2, "Becomes more powerful every time another creature is played.", 1, 2, NewBuffPowerWhenCreatuePlayedAbility()),
 		NewCreatureProto("School Bully", 3, "Summons 2 companions", 2, 2, NewSummonCreaturesAbility()),
