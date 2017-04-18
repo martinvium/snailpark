@@ -2,10 +2,6 @@ creature_attack: &creature_attack
   trigger: activated
   trigger_conditions: []
   target: target
-  attribute: toughness
-  mod_factor: -1
-  mod_attr: power
-  behaviour: modifyBoth
   target_conditions:
     - attribute: type
       any_of: [creature, avatar]
@@ -13,6 +9,10 @@ creature_attack: &creature_attack
       any_of: [you]
     - attribute: location
       any_of: [board]
+  attribute: toughness
+  mod_factor: -1
+  mod_attr: power
+  behaviour: modifyBoth
 
 cards:
   dodgy_fella:
@@ -39,3 +39,39 @@ cards:
       toughness: 2
     abilities:
       - <<: *creature_attack
+  hungry_goat_herder:
+    tags:
+      color: white
+      title: "Hungry Goat Herder"
+      type: creature
+      description: "But what will I do tomorrow?"
+    attributes:
+      cost: 3
+      power: 3
+      toughness: 2
+    abilities:
+      - <<: *creature_attack
+  ser_vira:
+    tags:
+      color: white
+      title: "Ser Vira"
+      type: creature
+      description: "Becomes more powerful every time another creature is played."
+    attributes:
+      cost: 2
+      power: 1
+      toughness: 2
+    abilities:
+      - <<: *creature_attack
+      - trigger: enterPlay
+        trigger_conditions: 
+          - attribute: type
+            any_of: [creature]
+          - attribute: player
+            any_of: [me]
+        target: self
+        target_conditions: []
+        attribute: power
+        mod_factor: 1
+        mod_attr: not_used
+        behaviour: modifySelf

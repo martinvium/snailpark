@@ -35,8 +35,9 @@ func StandardRepo() []*CardProto {
 	repos["standardRepo"] = []*CardProto{
 		LoadCardProtoById("standard", "dodgy_fella"),
 		LoadCardProtoById("standard", "pugnent_cheese"),
-		NewCreatureProto("Hungry Goat Herder", 3, "But what will I do tomorrow?", 3, 2, nil),
-		NewCreatureProto("Ser Vira", 2, "Becomes more powerful every time another creature is played.", 1, 2, NewBuffPowerWhenCreatuePlayedAbility()),
+		LoadCardProtoById("standard", "hungry_goat_herder"),
+		// TODO: triggers abilit when first played, but not when later played... something is wrong...
+		LoadCardProtoById("standard", "ser_vira"),
 		NewCreatureProto("School Bully", 3, "Summons 2 companions", 2, 2, NewSummonCreaturesAbility()),
 		NewCreatureProto("Empty Flask", 4, "Fill me up, or i Kill You.", 5, 3, nil),
 		NewCreatureProto("Lord Zembaio", 6, "Today, I shall get out of bed!", 2, 9, nil),

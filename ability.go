@@ -70,23 +70,6 @@ func NewDrawCardsAbility() *Ability {
 	}
 }
 
-func NewBuffPowerWhenCreatuePlayedAbility() *Ability {
-	triggerConditions := []*Condition{
-		NewCondition("type", []string{"creature"}),
-		NewCondition("player", []string{"me"}),
-	}
-	return &Ability{
-		"cardPlayed",
-		triggerConditions,
-		"self",
-		NewEmptyTargetConditions(),
-		"power",
-		positiveModFactor,
-		"not_used",
-		"modifySelf",
-	}
-}
-
 func NewSummonCreaturesAbility() *Ability {
 	return &Ability{
 		"enterPlay",
@@ -222,10 +205,6 @@ func (a *Ability) ValidTarget(card, target *Card) bool {
 	}
 
 	return true
-}
-
-func (a *Ability) String() string {
-	return fmt.Sprintf("Ability(when %v %v matching will have %v modified by card %v * %v via %v)", a.Trigger, a.Target, a.Attribute, a.ModAttr, a.ModFactor, a.EffectFactory)
 }
 
 func AnyAbility(vs []*Ability, f func(*Ability) bool) bool {
