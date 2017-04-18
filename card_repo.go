@@ -66,6 +66,7 @@ func LoadCardProtoById(set, id string) *CardProto {
 
 	if ok == false {
 		fmt.Println("ERROR: Failed to find card proto:", id)
+		return nil
 	}
 
 	fmt.Println("Loaded:", proto)

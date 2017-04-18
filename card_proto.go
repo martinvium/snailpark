@@ -8,6 +8,15 @@ type CardProto struct {
 	Abilities  []*Ability        `json:"abilities"`
 }
 
+func (p *CardProto) Valid() bool {
+	if _, ok := p.Tags["title"]; ok {
+		return true
+	}
+
+	fmt.Println("ERROR: Invalid card proto")
+	return false
+}
+
 func NewSpellProto(title string, cost int, desc string, power int, ability *Ability) *CardProto {
 	tags := map[string]string{}
 	tags["title"] = title
