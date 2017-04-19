@@ -19,45 +19,6 @@ type Ability struct {
 	EffectFactory     string       `yaml:"behaviour"`
 }
 
-func NewAddManaAbility() *Ability {
-	return &Ability{
-		"enterPlay",
-		NewEmptyTriggerConditions(),
-		"all",
-		NewMyBoardConditions([]string{"avatar"}),
-		"mana",
-		positiveModFactor,
-		"power",
-		"addMana",
-	}
-}
-
-func NewDrawCardsAbility() *Ability {
-	return &Ability{
-		"enterPlay",
-		NewEmptyTriggerConditions(),
-		"all",
-		NewMyBoardConditions([]string{"avatar"}),
-		"draw",
-		positiveModFactor,
-		"power",
-		"drawCard",
-	}
-}
-
-func NewAbility(target string, targetConditions []*Condition, attribute string, modFactor int, modAttr string) *Ability {
-	return &Ability{
-		"enterPlay",
-		NewEmptyTriggerConditions(),
-		target,
-		targetConditions,
-		attribute,
-		modFactor,
-		modAttr,
-		"modifyTarget",
-	}
-}
-
 func (a *Ability) ModificationAmount(c *Card) int {
 	if val, ok := c.Attributes[a.ModAttr]; ok {
 		return val * a.ModFactor

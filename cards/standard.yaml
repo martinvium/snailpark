@@ -236,3 +236,49 @@ cards:
         mod_factor: 1
         mod_attr: power
         behaviour: modifyTarget
+  more_draw:
+    tags:
+      color: white
+      title: "More draw"
+      type: spell
+      description: "Draw 2 cards"
+    attributes:
+      cost: 2
+      power: 2
+    abilities:
+      - trigger: enterPlay
+        target: all
+        target_conditions:
+        - attribute: type
+          any_of: [avatar]
+        - attribute: player
+          any_of: [me]
+        - attribute: location
+          any_of: [board]
+        attribute: not_used
+        mod_factor: 1
+        mod_attr: power
+        behaviour: drawCard
+  ramp:
+    tags:
+      color: white
+      title: "Ramp"
+      type: spell
+      description: "Permanently add 2 mana to your mana pool"
+    attributes:
+      cost: 2
+      power: 2
+    abilities:
+      - trigger: enterPlay
+        target: all
+        target_conditions:
+        - attribute: type
+          any_of: [avatar]
+        - attribute: player
+          any_of: [me]
+        - attribute: location
+          any_of: [board]
+        attribute: not_used
+        mod_factor: 1
+        mod_attr: power
+        behaviour: addMana

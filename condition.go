@@ -7,34 +7,6 @@ type Condition struct {
 	AnyOf     []string `yaml:"any_of"`
 }
 
-func NewCondition(attr string, any []string) *Condition {
-	return &Condition{attr, any}
-}
-
-func NewEmptyTargetConditions() []*Condition {
-	return []*Condition{}
-}
-
-func NewEmptyTriggerConditions() []*Condition {
-	return []*Condition{}
-}
-
-func NewMyBoardConditions(types []string) []*Condition {
-	return []*Condition{
-		NewCondition("type", types),
-		NewCondition("player", []string{"me"}),
-		NewCondition("location", []string{"board"}),
-	}
-}
-
-func NewYourBoardConditions(types []string) []*Condition {
-	return []*Condition{
-		NewCondition("type", types),
-		NewCondition("player", []string{"you"}),
-		NewCondition("location", []string{"board"}),
-	}
-}
-
 func (c *Condition) Valid(card, target *Card) bool {
 	switch c.Attribute {
 	case "type":
