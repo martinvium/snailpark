@@ -64,7 +64,7 @@ cards:
     abilities:
       - <<: *creature_attack
       - trigger: enterPlay
-        trigger_conditions: 
+        trigger_conditions:
           - attribute: type
             any_of: [creature]
           - attribute: player
