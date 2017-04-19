@@ -32,25 +32,26 @@ func StandardRepo() []*CardProto {
 		return repo
 	}
 
-	repos["standardRepo"] = []*CardProto{
-		LoadCardProtoById("standard", "dodgy_fella"),
-		LoadCardProtoById("standard", "pugnent_cheese"),
-		LoadCardProtoById("standard", "hungry_goat_herder"),
-		LoadCardProtoById("standard", "ser_vira"),
-		LoadCardProtoById("standard", "school_bully"),
-		LoadCardProtoById("standard", "empty_flask"),
-		LoadCardProtoById("standard", "lord_zembaio"),
-		LoadCardProtoById("standard", "goo_to_the_face"),
-		LoadCardProtoById("standard", "awkward_conversation"),
-		LoadCardProtoById("standard", "green_smelly_liquid"),
-		LoadCardProtoById("standard", "creatine_powder"),
-		LoadCardProtoById("standard", "make_lemonade"),
-		LoadCardProtoById("standard", "more_draw"),
-		LoadCardProtoById("standard", "ramp"),
-		LoadCardProtoById("standard", "the_bald_one"),
-	}
+	repos["standardRepo"] = LoadCardProtoSet("standard")
 
 	return repos["standardRepo"]
+}
+
+func LoadCardProtoSet(set string) []*CardProto {
+	filename := fmt.Sprintf("./cards/%s.yaml", set)
+	file, err := LoadCardProtoFile(filename)
+
+	if err != nil {
+		fmt.Println("ERROR: Failed to load set:", err)
+		return nil
+	}
+
+	var protos = []*CardProto{}
+	for _, c := range file.CardProtos {
+		protos = append(protos, c)
+	}
+
+	return protos
 }
 
 func LoadCardProtoById(set, id string) *CardProto {
