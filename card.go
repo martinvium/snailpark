@@ -95,15 +95,15 @@ func MapCardIds(vs []*Card) []string {
 	return vsm
 }
 
-func NewRandomCreatureCard(power int, toughness int, playerId string) *Card {
-	c := NewCard(NewCreatureProto("random", 0, "", power, toughness, nil), NewUUID(), playerId)
-	c.Location = "board"
-	return c
-}
-
 func NewTestCard(title string, playerId string) *Card {
 	proto := CardProtoByTitle(StandardRepo(), title)
 	return NewCard(proto, NewUUID(), playerId)
+}
+
+func NewBoardTestCard(title string, playerId string) *Card {
+	c := NewTestCard(title, playerId)
+	c.Location = "board"
+	return c
 }
 
 func (c *Card) String() string {

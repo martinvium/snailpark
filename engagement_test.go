@@ -3,12 +3,13 @@ package main
 import "testing"
 
 func TestEngagement_ResolveEngagement(t *testing.T) {
-	game := NewGame(map[string]*Player{})
-	attacker := NewRandomCreatureCard(1, 2, "p1")
-	blocker := NewRandomCreatureCard(1, 2, "p2")
-	target := NewRandomCreatureCard(0, 2, "p2")
+	game := NewTestGame()
 
-	engagement := &Engagement{attacker, blocker, target}
+	engagement := &Engagement{
+		Attacker: NewBoardTestCard("Dodgy Fella", "p1"),
+		Blocker:  NewBoardTestCard("Dodgy Fella", "p2"),
+		Target:   game.Players["p2"].Avatar,
+	}
 
 	ResolveEngagement(game, []*Engagement{engagement})
 
@@ -20,7 +21,7 @@ func TestEngagement_ResolveEngagement(t *testing.T) {
 		t.Errorf("engagement.Blocker.toughness: %v", engagement.Blocker.Attributes["toughness"])
 	}
 
-	if engagement.Target.Attributes["toughness"] != 2 {
+	if engagement.Target.Attributes["toughness"] != 30 {
 		t.Errorf("engagement.Target.toughness: %v", engagement.Target.Attributes["toughness"])
 	}
 }

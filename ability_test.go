@@ -3,9 +3,9 @@ package main
 import "testing"
 
 func TestAbility_ApplyToTarget_Attack(t *testing.T) {
-	game := NewGame(map[string]*Player{})
-	creature1 := NewRandomCreatureCard(1, 2, "p1")
-	creature2 := NewRandomCreatureCard(1, 2, "p2")
+	game := NewTestGame()
+	creature1 := NewBoardTestCard("Dodgy Fella", "p1")
+	creature2 := NewBoardTestCard("Dodgy Fella", "p2")
 
 	a := ActivatedAbility(creature1.Abilities)
 	a.Apply(game, creature1, creature2)
@@ -18,27 +18,10 @@ func TestAbility_ApplyToTarget_Attack(t *testing.T) {
 	}
 }
 
-func TestAbility_ApplyToTarget_AttackVsZeroPower(t *testing.T) {
-	game := NewGame(map[string]*Player{})
-	creature1 := NewRandomCreatureCard(1, 2, "p1")
-	creature2 := NewRandomCreatureCard(0, 2, "p2")
-
-	a := ActivatedAbility(creature1.Abilities)
-	a.Apply(game, creature1, creature2)
-	if creature1.Attributes["toughness"] != 2 {
-		t.Errorf("wrong toughness on creature1")
-	}
-
-	if creature2.Attributes["toughness"] != 1 {
-		t.Errorf("wrong toughness on creature2")
-	}
-}
-
 func TestAbility_ApplyToTarget_AttackAvatar(t *testing.T) {
-	game := NewGame(map[string]*Player{})
-	creature1 := NewRandomCreatureCard(1, 2, "p1")
-	avatar := NewCard(NewAvatarProto("test_avatar", 30), "test_avatar", "test")
-	avatar.Location = "board"
+	game := NewTestGame()
+	creature1 := NewBoardTestCard("Dodgy Fella", "p1")
+	avatar := game.Players["p2"].Avatar
 
 	a := ActivatedAbility(creature1.Abilities)
 	a.Apply(game, creature1, avatar)
