@@ -21,7 +21,7 @@ func TokenRepo() []*CardProto {
 	}
 
 	repos["tokenRepo"] = []*CardProto{
-		NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2, nil),
+		LoadCardProtoById("standard", "dodgy_fella"),
 	}
 
 	return repos["tokenRepo"]

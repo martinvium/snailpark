@@ -41,28 +41,6 @@ func NewSpellProtoVerbose(cost int, power int, ability *Ability, tags map[string
 	}
 }
 
-func NewCreatureProto(title string, cost int, desc string, power int, toughness int, ability *Ability) *CardProto {
-	abilities := []*Ability{NewAttackAbility()}
-	if ability != nil {
-		abilities = append(abilities, ability)
-	}
-
-	return &CardProto{
-		map[string]string{
-			"color":       "white",
-			"title":       title,
-			"type":        "creature",
-			"description": desc,
-		},
-		map[string]int{
-			"cost":      cost,
-			"power":     power,
-			"toughness": toughness,
-		},
-		abilities,
-	}
-}
-
 func NewAvatarProto(title string, toughness int) *CardProto {
 	return &CardProto{
 		map[string]string{

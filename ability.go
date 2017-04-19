@@ -55,19 +55,6 @@ func NewDrawCardsAbility() *Ability {
 	}
 }
 
-func NewAttackAbility() *Ability {
-	return &Ability{
-		"activated",
-		NewEmptyTriggerConditions(),
-		"target",
-		NewYourBoardConditions([]string{"creature", "avatar"}),
-		"toughness",
-		negativeModFactor,
-		"power",
-		"modifyBoth",
-	}
-}
-
 func NewAbility(target string, targetConditions []*Condition, attribute string, modFactor int, modAttr string) *Ability {
 	return &Ability{
 		"enterPlay",
