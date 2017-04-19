@@ -71,6 +71,12 @@ func FirstCardWithType(s []*Card, cardType string) *Card {
 	return nil
 }
 
+func FilterCardsWithTitle(s []*Card, t string) []*Card {
+	return FilterCards(s, func(c *Card) bool {
+		return c.Tags["title"] == t
+	})
+}
+
 func FilterCards(vs []*Card, f func(*Card) bool) []*Card {
 	vsf := make([]*Card, 0)
 	for _, v := range vs {
@@ -89,8 +95,13 @@ func MapCardIds(vs []*Card) []string {
 	return vsm
 }
 
-func NewRandomCreatureCard(power int, toughness int, playerId string) *Card {
-	c := NewCard(NewCreatureProto("random", 0, "", power, toughness, nil), NewUUID(), playerId)
+func NewTestCard(title string, playerId string) *Card {
+	proto := CardProtoByTitle(StandardRepo(), title)
+	return NewCard(proto, NewUUID(), playerId)
+}
+
+func NewBoardTestCard(title string, playerId string) *Card {
+	c := NewTestCard(title, playerId)
 	c.Location = "board"
 	return c
 }
@@ -139,4 +150,8 @@ func (c *Card) ModifyAttribute(attribute string, modifier int) {
 		fmt.Println("ERROR: modified attribute doesnt exist")
 		c.Attributes[attribute] = modifier
 	}
+}
+
+func (c *Card) StaysOnBoard() bool {
+	return c.Tags["type"] != "spell"
 }

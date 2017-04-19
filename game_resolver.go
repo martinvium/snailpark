@@ -8,7 +8,10 @@ func ResolveCurrentCard(g *Game, target *Card) {
 
 	InvokeTrigger(g, card, target, "cardPlayed")
 
-	g.CurrentPlayer.AddToBoard(card)
+	if card.StaysOnBoard() {
+		g.CurrentPlayer.AddToBoard(card)
+	}
+
 	g.CurrentPlayer.RemoveCardFromHand(card)
 	InvokeCardAbilityTrigger(g, card, card, target, "enterPlay")
 

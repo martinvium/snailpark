@@ -1,0 +1,293 @@
+creature_attack: &creature_attack
+  trigger: activated
+  trigger_conditions: []
+  target: target
+  target_conditions:
+    - attribute: type
+      any_of: [creature, avatar]
+    - attribute: player
+      any_of: [you]
+    - attribute: location
+      any_of: [board]
+  attribute: toughness
+  mod_factor: -1
+  mod_attr: power
+  behaviour: modifyBoth
+
+cards:
+  the_bald_one:
+    tags:
+      color: gold
+      title: "The Bald One"
+      type: avatar
+      description: "When this card dies, the opponent player wins!"
+    attributes:
+      # power: 0
+      toughness: 30
+  dodgy_fella:
+    tags:
+      color: white
+      title: "Dodgy Fella"
+      type: creature
+      description: "Something stinks"
+    attributes:
+      cost: 1
+      power: 1
+      toughness: 2
+    abilities:
+      - <<: *creature_attack
+  pugnent_cheese:
+    tags:
+      color: white
+      title: "Pugnent Cheese"
+      type: creature
+      description: "Who died in here?!"
+    attributes:
+      cost: 2
+      power: 2
+      toughness: 2
+    abilities:
+      - <<: *creature_attack
+  hungry_goat_herder:
+    tags:
+      color: white
+      title: "Hungry Goat Herder"
+      type: creature
+      description: "But what will I do tomorrow?"
+    attributes:
+      cost: 3
+      power: 3
+      toughness: 2
+    abilities:
+      - <<: *creature_attack
+  empty_flask:
+    tags:
+      color: white
+      title: "Empty Flask"
+      type: creature
+      description: "Fill me up, or i Kill You."
+    attributes:
+      cost: 4
+      power: 5
+      toughness: 3
+    abilities:
+      - <<: *creature_attack
+  lord_zembaio:
+    tags:
+      color: white
+      title: "Lord Zembaio"
+      type: creature
+      description: "Today, I shall get out of bed!"
+    attributes:
+      cost: 6
+      power: 2
+      toughness: 9
+    abilities:
+      - <<: *creature_attack
+  ser_vira:
+    tags:
+      color: white
+      title: "Ser Vira"
+      type: creature
+      description: "Becomes more powerful every time another creature is played."
+    attributes:
+      cost: 2
+      power: 1
+      toughness: 2
+    abilities:
+      - <<: *creature_attack
+      - trigger: cardPlayed
+        trigger_conditions:
+          - attribute: type
+            any_of: [creature]
+          - attribute: player
+            any_of: [me]
+        target: self
+        target_conditions: []
+        attribute: power
+        mod_factor: 1
+        mod_attr: not_used
+        behaviour: modifySelf
+  school_bully:
+    tags:
+      color: white
+      title: "School Bully"
+      type: creature
+      description: "Summons 2 companions"
+    attributes:
+      cost: 3
+      power: 2
+      toughness: 2
+    abilities:
+      - <<: *creature_attack
+      - trigger: enterPlay
+        trigger_conditions: []
+        target: self
+        target_conditions: []
+        attribute: not_used
+        mod_factor: 1
+        mod_attr: not_used
+        behaviour: summonCreature
+  goo_to_the_face:
+    tags:
+      color: white
+      title: "Goo-to-the-face"
+      type: spell
+      description: "Deal 5 damage to target player -- That's not nice."
+    attributes:
+      cost: 3
+      power: 5
+    abilities:
+      - trigger: enterPlay
+        target: target
+        target_conditions:
+        - attribute: type
+          any_of: [avatar]
+        - attribute: player
+          any_of: [you]
+        - attribute: location
+          any_of: [board]
+        attribute: toughness
+        mod_factor: -1
+        mod_attr: power
+        behaviour: modifyTarget
+  awkward_conversation:
+    tags:
+      color: white
+      title: "Awkward conversation"
+      type: spell
+      description: "Deal 3 damage to target creature or player"
+    attributes:
+      cost: 2
+      power: 3
+    abilities:
+      - trigger: enterPlay
+        target: target
+        target_conditions:
+        - attribute: type
+          any_of: [avatar, creature]
+        - attribute: player
+          any_of: [you]
+        - attribute: location
+          any_of: [board]
+        attribute: toughness
+        mod_factor: -1
+        mod_attr: power
+        behaviour: modifyTarget
+  green_smelly_liquid:
+    tags:
+      color: white
+      title: "Green smelly liquid"
+      type: spell
+      description: "Heal your self for 5 -- But it taste awful!"
+    attributes:
+      cost: 2
+      power: 5
+    abilities:
+      - trigger: enterPlay
+        target: target
+        target_conditions:
+        - attribute: type
+          any_of: [avatar]
+        - attribute: player
+          any_of: [me]
+        - attribute: location
+          any_of: [board]
+        attribute: toughness
+        mod_factor: 1
+        mod_attr: power
+        behaviour: modifyTarget
+  creatine_powder:
+    tags:
+      color: white
+      title: "Creatine powder"
+      type: spell
+      description: "Increase creatures power by 3 until end of turn"
+      effectExpireTrigger: endTurn
+    attributes:
+      cost: 2
+      power: 3
+    abilities:
+      - trigger: enterPlay
+        target: target
+        target_conditions:
+        - attribute: type
+          any_of: [creature]
+        - attribute: player
+          any_of: [me]
+        - attribute: location
+          any_of: [board]
+        attribute: power
+        mod_factor: 1
+        mod_attr: power
+        behaviour: modifyTarget
+  make_lemonade:
+    tags:
+      color: white
+      title: "Make lemonade"
+      type: spell
+      description: "Add 2 power to all creatures on your board until end of turn."
+      effectExpireTrigger: endTurn
+    attributes:
+      cost: 2
+      power: 2
+    abilities:
+      - trigger: enterPlay
+        target: all
+        target_conditions:
+        - attribute: type
+          any_of: [creature]
+        - attribute: player
+          any_of: [me]
+        - attribute: location
+          any_of: [board]
+        attribute: power
+        mod_factor: 1
+        mod_attr: power
+        behaviour: modifyTarget
+  more_draw:
+    tags:
+      color: white
+      title: "More draw"
+      type: spell
+      description: "Draw 2 cards"
+    attributes:
+      cost: 2
+      power: 2
+    abilities:
+      - trigger: enterPlay
+        target: all
+        target_conditions:
+        - attribute: type
+          any_of: [avatar]
+        - attribute: player
+          any_of: [me]
+        - attribute: location
+          any_of: [board]
+        attribute: not_used
+        mod_factor: 1
+        mod_attr: power
+        behaviour: drawCard
+  ramp:
+    tags:
+      color: white
+      title: "Ramp"
+      type: spell
+      description: "Permanently add 2 mana to your mana pool"
+    attributes:
+      cost: 2
+      power: 2
+    abilities:
+      - trigger: enterPlay
+        target: all
+        target_conditions:
+        - attribute: type
+          any_of: [avatar]
+        - attribute: player
+          any_of: [me]
+        - attribute: location
+          any_of: [board]
+        attribute: not_used
+        mod_factor: 1
+        mod_attr: power
+        behaviour: addMana

@@ -1,25 +1,117 @@
 package main
 
-var TokenRepo = []*CardProto{
-	NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2, nil),
+import (
+	"fmt"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"path"
+	"runtime"
+)
+
+type CardProtoFile struct {
+	Name       string
+	CardProtos map[string]*CardProto `yaml:"cards"`
 }
 
-var CardRepo = []*CardProto{
-	NewCreatureProto("Dodgy Fella", 1, "Something stinks.", 1, 2, nil),
-	NewCreatureProto("Pugnent Cheese", 2, "Who died in here?!", 2, 2, nil),
-	NewCreatureProto("Hungry Goat Herder", 3, "But what will I do tomorrow?", 3, 2, nil),
-	NewCreatureProto("Ser Vira", 2, "Becomes more powerful every time another creature is played.", 1, 2, NewBuffPowerWhenCreatuePlayedAbility()),
-	NewCreatureProto("School Bully", 3, "Summons 2 companions", 2, 2, NewSummonCreaturesAbility()),
-	NewCreatureProto("Empty Flask", 4, "Fill me up, or i Kill You.", 5, 3, nil),
-	NewCreatureProto("Lord Zembaio", 6, "Today, I shall get out of bed!", 2, 9, nil),
-	NewSpellProto("Goo-to-the-face", 3, "Deal 5 damage to target player -- That's not nice.", 5, NewPlayerDamageAbility()),
-	NewSpellProto("Awkward conversation", 2, "Deal 3 damage to target creature or player", 3, NewDamageAbility()),
-	NewSpellProto("Green smelly liquid", 2, "Heal your self for 5 -- But it taste awful!", 5, NewPlayerHealAbility()),
-	NewSpellProtoVerbose(2, 3, NewBuffTargetAbility(), map[string]string{"title": "Creatine powder", "description": "Increase creatures power by 3 until end of turn", "effectExpireTrigger": "endTurn"}),
-	NewSpellProto("Make lemonade", 2, "Add 2 power to each creature on your board.", 2, NewBuffBoardAbility("power")),
-	NewSpellProto("More draw", 2, "Draw 2 cards", 2, NewDrawCardsAbility()),
-	NewSpellProto("Ramp", 2, "Permanently add 2 mana to your mana pool", 2, NewAddManaAbility()),
-	NewAvatarProto("The Bald One", 30),
+var repos = map[string][]*CardProto{}
+
+func TokenRepo() []*CardProto {
+	if repo, ok := repos["tokenRepo"]; ok {
+		return repo
+	}
+
+	repos["tokenRepo"] = []*CardProto{
+		LoadCardProtoById("standard", "dodgy_fella"),
+	}
+
+	return repos["tokenRepo"]
+}
+
+func StandardRepo() []*CardProto {
+	if repo, ok := repos["standardRepo"]; ok {
+		return repo
+	}
+
+	repos["standardRepo"] = LoadCardProtoSet("standard")
+
+	return repos["standardRepo"]
+}
+
+func LoadCardProtoSet(set string) []*CardProto {
+	filename := fmt.Sprintf("./cards/%s.yaml", set)
+	file, err := LoadCardProtoFile(filename)
+
+	if err != nil {
+		fmt.Println("ERROR: Failed to load set:", err)
+		return nil
+	}
+
+	var protos = []*CardProto{}
+	for _, p := range file.CardProtos {
+		protos = append(protos, p)
+	}
+
+	return protos
+}
+
+func LoadCardProtoById(set, id string) *CardProto {
+	filename := fmt.Sprintf("./cards/%s.yaml", set)
+	file, err := LoadCardProtoFile(filename)
+
+	if err != nil {
+		fmt.Println("ERROR: Failed to load set:", err)
+		return nil
+	}
+
+	proto, ok := file.CardProtos[id]
+
+	if ok == false {
+		fmt.Println("ERROR: Failed to find card proto:", id)
+		return nil
+	}
+
+	fmt.Println("Loaded:", proto)
+	for _, v := range proto.Abilities {
+		fmt.Println("Ability:", v)
+	}
+
+	return proto
+}
+
+var cardProtoFiles = map[string]*CardProtoFile{}
+
+func LoadCardProtoFile(filename string) (*CardProtoFile, error) {
+	if file, ok := cardProtoFiles[filename]; ok {
+		return file, nil
+	}
+
+	file, err := loadYaml(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	cardProtoFile := CardProtoFile{}
+	if err := yaml.Unmarshal(file, &cardProtoFile); err != nil {
+		fmt.Println("ERROR: YAML Unmarshal:", err)
+	}
+
+	cardProtoFiles[filename] = &cardProtoFile
+
+	return &cardProtoFile, nil
+}
+
+func loadYaml(filename string) ([]byte, error) {
+	file, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return file, nil
+}
+
+func rootDir() string {
+	_, filename, _, _ := runtime.Caller(1)
+	return path.Dir(filename)
 }
 
 // NewSummonCreatureAbility: summon one or more creatures from 1 card creature or spell
