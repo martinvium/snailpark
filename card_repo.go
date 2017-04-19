@@ -47,7 +47,7 @@ func StandardRepo() []*CardProto {
 		LoadCardProtoById("standard", "make_lemonade"),
 		LoadCardProtoById("standard", "more_draw"),
 		LoadCardProtoById("standard", "ramp"),
-		NewAvatarProto("The Bald One", 30),
+		LoadCardProtoById("standard", "the_bald_one"),
 	}
 
 	return repos["standardRepo"]

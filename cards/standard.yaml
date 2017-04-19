@@ -15,6 +15,14 @@ creature_attack: &creature_attack
   behaviour: modifyBoth
 
 cards:
+  the_bald_one:
+    tags:
+      color: gold
+      title: "The Bald One"
+      type: avatar
+      description: "When this card dies, the opponent player wins!"
+    attributes:
+      toughness: 30
   dodgy_fella:
     tags:
       color: white

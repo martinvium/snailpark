@@ -41,23 +41,6 @@ func NewSpellProtoVerbose(cost int, power int, ability *Ability, tags map[string
 	}
 }
 
-func NewAvatarProto(title string, toughness int) *CardProto {
-	return &CardProto{
-		map[string]string{
-			"color":       "gold",
-			"title":       title,
-			"type":        "avatar",
-			"description": "When this card dies, the opponent player wins!",
-		},
-		map[string]int{
-			"cost":      0,
-			"power":     0,
-			"toughness": toughness,
-		},
-		[]*Ability{},
-	}
-}
-
 func CardProtoByTitle(repo []*CardProto, n string) *CardProto {
 	for _, p := range repo {
 		if p.Tags["title"] == n {

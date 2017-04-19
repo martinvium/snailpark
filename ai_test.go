@@ -6,47 +6,37 @@ import (
 	"testing"
 )
 
-var testRepo = []*CardProto{
-	LoadCardProtoById("standard", "dodgy_fella"),
-	LoadCardProtoById("standard", "hungry_goat_herder"),
-	LoadCardProtoById("standard", "awkward_conversation"),
-	LoadCardProtoById("standard", "goo_to_the_face"),
-	LoadCardProtoById("standard", "green_smelly_liquid"),
-	NewAvatarProto("p1_avatar", 30),
-	NewAvatarProto("p2_avatar", 30),
-}
-
 var p1DeckDef = []string{
 	"Dodgy Fella",
 	"Hungry Goat Herder",
 	"Awkward conversation",
 	"Goo-to-the-face",
 	"Green smelly liquid",
-	"p1_avatar",
+	"The Bald One",
 }
 
 var p2DeckDef = []string{
 	"Dodgy Fella",
-	"p2_avatar",
+	"The Bald One",
 }
 
 func TestAI_RespondWithAction_IgnoreWhenEnemyTurn(t *testing.T) {
-	ai := NewAI("ai")
+	p1 := NewAI("p1")
 	players := newPlayers(0)
 
-	msg := NewResponseMessage("main", "ai2", players, []string{}, []*Engagement{}, nil)
+	msg := NewResponseMessage("main", "p2", players, []string{}, []*Engagement{}, nil)
 
-	action := ai.RespondWithAction(msg)
+	action := p1.RespondWithAction(msg)
 	if action != nil {
 		t.Errorf("action not nil")
 	}
 }
 
 func TestAI_RespondWithAction_PlaysCard(t *testing.T) {
-	ai := NewAI("ai")
+	p1 := NewAI("p1")
 	p := newPlayers(3)
 
-	p["ai"].Hand = newTestCards("ai", "hand", []string{
+	p["p1"].Hand = newTestCards("p1", "hand", []string{
 		"Dodgy Fella",
 		"Hungry Goat Herder",
 		"Dodgy Fella",
@@ -54,120 +44,122 @@ func TestAI_RespondWithAction_PlaysCard(t *testing.T) {
 
 	msg := newTestMainResponseMessage(p)
 
-	action := ai.RespondWithAction(msg)
+	action := p1.RespondWithAction(msg)
 	if err := assertResponse(t, action, "playCard", "Hungry Goat Herder"); err != nil {
 		t.Errorf(err.Error())
 	}
 }
 
 func TestAI_RespondWithAction_PlaysSpell(t *testing.T) {
-	ai := NewAI("ai")
+	p1 := NewAI("p1")
 
 	players := newPlayers(3)
-	players["ai"].Hand = newTestCards("ai", "hand", []string{"Awkward conversation"})
+	players["p1"].Hand = newTestCards("p1", "hand", []string{"Awkward conversation"})
 
 	msg := newTestMainResponseMessage(players)
 
-	action := ai.RespondWithAction(msg)
+	action := p1.RespondWithAction(msg)
 	if err := assertResponse(t, action, "playCard", "Awkward conversation"); err != nil {
 		t.Errorf(err.Error())
 	}
 }
 
 func TestAI_RespondWithAction_PlaysHeal(t *testing.T) {
-	ai := NewAI("ai")
+	p1 := NewAI("p1")
 
 	players := newPlayers(3)
-	players["ai"].Hand = newTestCards("ai", "hand", []string{"Green smelly liquid"})
+	players["p1"].Hand = newTestCards("p1", "hand", []string{"Green smelly liquid"})
 
 	msg := newTestMainResponseMessage(players)
 
-	action := ai.RespondWithAction(msg)
+	action := p1.RespondWithAction(msg)
 	if err := assertResponse(t, action, "playCard", "Green smelly liquid"); err != nil {
 		t.Errorf(err.Error())
 	}
 }
 
 func TestAI_RespondWithAction_HealTargetsOwnAvatar(t *testing.T) {
-	ai := NewAI("ai")
+	p1 := NewAI("p1")
 	players := newPlayers(0)
 
 	msg := NewResponseMessage(
 		"targeting",
-		"ai",
+		"p1",
 		players,
 		[]string{},
 		[]*Engagement{},
-		newTestCard("ai", "hand", "Green smelly liquid"),
+		newTestCard("p1", "hand", "Green smelly liquid"),
 	)
 
-	action := ai.RespondWithAction(msg)
-	if err := assertResponse(t, action, "target", "p1_avatar"); err != nil {
+	action := p1.RespondWithAction(msg)
+	avatar := players["p1"].Avatar
+	if err := assertResponse(t, action, "target", avatar.Id); err != nil {
 		t.Errorf(err.Error())
 	}
 }
 
 func TestAI_RespondWithAction_SpellTargetsCreature(t *testing.T) {
-	ai := NewAI("ai")
+	p1 := NewAI("p1")
 	players := newPlayers(0)
 
 	msg := NewResponseMessage(
 		"targeting",
-		"ai",
+		"p1",
 		players,
 		[]string{},
 		[]*Engagement{},
-		newTestCard("ai", "hand", "Awkward conversation"),
+		newTestCard("p1", "hand", "Awkward conversation"),
 	)
 
-	action := ai.RespondWithAction(msg)
+	action := p1.RespondWithAction(msg)
 	if err := assertResponse(t, action, "target", "Dodgy Fella"); err != nil {
 		t.Errorf(err.Error())
 	}
 }
 
 func TestAI_RespondWithAction_SpellTargetsAvatar(t *testing.T) {
-	ai := NewAI("ai")
+	p1 := NewAI("p1")
 	players := newPlayers(0)
 
 	msg := NewResponseMessage(
 		"targeting",
-		"ai",
+		"p1",
 		players,
 		[]string{},
 		[]*Engagement{},
-		newTestCard("ai", "hand", "Goo-to-the-face"),
+		newTestCard("p1", "hand", "Goo-to-the-face"),
 	)
 
-	action := ai.RespondWithAction(msg)
-	if err := assertResponse(t, action, "target", "p2_avatar"); err != nil {
+	action := p1.RespondWithAction(msg)
+	avatar := players["p2"].Avatar
+	if err := assertResponse(t, action, "target", avatar.Id); err != nil {
 		t.Errorf(err.Error())
 	}
 }
 
 func TestAI_RespondWithAction_AssignsAttacker(t *testing.T) {
-	ai := NewAI("ai")
+	p1 := NewAI("p1")
 	players := newPlayers(0)
 
 	msg := newTestMainResponseMessage(players)
 
-	action := ai.RespondWithAction(msg)
+	action := p1.RespondWithAction(msg)
 	if err := assertResponse(t, action, "target", "Dodgy Fella"); err != nil {
 		t.Errorf(err.Error())
 	}
 }
 
 func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
-	ai := NewAI("ai")
+	p1 := NewAI("p1")
 	players := newPlayers(0)
 
 	msg := newTestResponseMessage(
 		"attackers",
 		players,
-		[]*Engagement{NewEngagement(newTestCard("ai", "board", "Dodgy Fella"), players["ai"].Avatar)},
+		[]*Engagement{NewEngagement(newTestCard("p1", "board", "Dodgy Fella"), players["p1"].Avatar)},
 	)
 
-	action := ai.RespondWithAction(msg)
+	action := p1.RespondWithAction(msg)
 	if action == nil {
 		t.Errorf("action is nil")
 		return
@@ -180,12 +172,12 @@ func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
 
 func TestAI_RespondWithAction_AssignsBlocker(t *testing.T) {
 	players := newPlayersExpensiveCreatureEmptyHand()
-	attacker := newTestCard("ai2", "board", "Dodgy Fella")
-	engagements := []*Engagement{NewEngagement(attacker, players["ai"].Avatar)}
+	attacker := newTestCard("p2", "board", "Dodgy Fella")
+	engagements := []*Engagement{NewEngagement(attacker, players["p1"].Avatar)}
 	msg := newTestResponseMessage("blockers", players, engagements)
 
-	ai := NewAI("ai")
-	action := ai.RespondWithAction(msg)
+	p1 := NewAI("p1")
+	action := p1.RespondWithAction(msg)
 	if err := assertResponse(t, action, "target", "Hungry Goat Herder"); err != nil {
 		t.Errorf(err.Error())
 	}
@@ -193,27 +185,27 @@ func TestAI_RespondWithAction_AssignsBlocker(t *testing.T) {
 
 func TestAI_RespondWithAction_AssignsBlockTarget(t *testing.T) {
 	players := newPlayersExpensiveCreatureEmptyHand()
-	attacker := newTestCard("ai2", "board", "Dodgy Fella")
-	engagements := []*Engagement{NewEngagement(attacker, players["ai"].Avatar)}
+	attacker := newTestCard("p2", "board", "Dodgy Fella")
+	engagements := []*Engagement{NewEngagement(attacker, players["p1"].Avatar)}
 
 	msg := NewResponseMessage(
 		"blockTarget",
-		"ai",
+		"p1",
 		players,
 		[]string{},
 		engagements,
-		newTestCard("ai", "board", "Hungry Goat Herder"),
+		newTestCard("p1", "board", "Hungry Goat Herder"),
 	)
 
-	ai := NewAI("ai")
-	action := ai.RespondWithAction(msg)
+	p1 := NewAI("p1")
+	action := p1.RespondWithAction(msg)
 	if err := assertResponse(t, action, "target", "Dodgy Fella"); err != nil {
 		t.Errorf(err.Error())
 	}
 }
 
 func TestAI_RespondWithAction_EndsTurnWhenNoBlockers(t *testing.T) {
-	yourBoard := newTestCards("ai2", "board", []string{"Dodgy Fella"})
+	yourBoard := newTestCards("p2", "board", []string{"Dodgy Fella"})
 
 	players := newPlayersWithBoard(
 		[]*Card{},
@@ -223,11 +215,11 @@ func TestAI_RespondWithAction_EndsTurnWhenNoBlockers(t *testing.T) {
 
 	attacker := yourBoard[0]
 
-	engagements := []*Engagement{NewEngagement(attacker, players["ai"].Avatar)}
+	engagements := []*Engagement{NewEngagement(attacker, players["p1"].Avatar)}
 	msg := newTestResponseMessage("blockers", players, engagements)
 
-	ai := NewAI("ai")
-	action := ai.RespondWithAction(msg)
+	p1 := NewAI("p1")
+	action := p1.RespondWithAction(msg)
 	if action.Action != "endTurn" {
 		t.Errorf("action.Action %v expected endTurn (%v)", action.Action, action.Card)
 	}
@@ -237,44 +229,44 @@ func TestAI_RespondWithAction_EndsTurnWhenNoBlockers(t *testing.T) {
 
 func newPlayersExpensiveCreatureEmptyHand() map[string]*Player {
 	return newPlayersWithBoard(
-		newTestCards("ai", "board", []string{"Hungry Goat Herder"}),
-		newTestCards("ai2", "board", []string{"Dodgy Fella"}),
+		newTestCards("p1", "board", []string{"Hungry Goat Herder"}),
+		newTestCards("p2", "board", []string{"Dodgy Fella"}),
 		0,
 	)
 }
 
 func newPlayers(mana int) map[string]*Player {
 	return newPlayersWithBoard(
-		newTestCards("ai", "board", []string{"Dodgy Fella"}),
-		newTestCards("ai2", "board", []string{"Dodgy Fella"}),
+		newTestCards("p1", "board", []string{"Dodgy Fella"}),
+		newTestCards("p2", "board", []string{"Dodgy Fella"}),
 		mana,
 	)
 }
 
 func newPlayersWithBoard(myBoard, yourBoard []*Card, mana int) map[string]*Player {
 	players := map[string]*Player{
-		"ai": NewPlayerWithState(
-			"ai",
-			newTestDeck("ai", p1DeckDef),
+		"p1": NewPlayerWithState(
+			"p1",
+			newTestDeck("p1", p1DeckDef),
 			NewEmptyHand(),
 			myBoard,
 		),
-		"ai2": NewPlayerWithState(
-			"ai2",
-			newTestDeck("ai2", p2DeckDef),
+		"p2": NewPlayerWithState(
+			"p2",
+			newTestDeck("p2", p2DeckDef),
 			NewEmptyHand(),
 			yourBoard,
 		),
 	}
 
-	players["ai"].AddMaxMana(mana)
-	players["ai"].ResetCurrentMana()
+	players["p1"].AddMaxMana(mana)
+	players["p1"].ResetCurrentMana()
 
 	return players
 }
 
 func newTestResponseMessage(state string, players map[string]*Player, engagements []*Engagement) *ResponseMessage {
-	return NewResponseMessage(state, "ai", players, []string{}, engagements, nil)
+	return NewResponseMessage(state, "p1", players, []string{}, engagements, nil)
 }
 
 func newTestMainResponseMessage(players map[string]*Player) *ResponseMessage {
@@ -301,7 +293,7 @@ func newTestCards(playerId, loc string, def []string) []*Card {
 	deck := []*Card{}
 
 	for _, n := range def {
-		proto := CardProtoByTitle(testRepo, n)
+		proto := CardProtoByTitle(StandardRepo(), n)
 		card := NewCard(proto, proto.Tags["title"], playerId)
 		card.Location = loc
 		deck = append(deck, card)
