@@ -29,3 +29,31 @@ func TestCardProto_BuffSelf(t *testing.T) {
 		t.Errorf("wrong toughness after our play: %v", creature.Attributes["power"])
 	}
 }
+
+func TestCardProto_SummonCreature(t *testing.T) {
+	game := NewTestGame()
+	game.CurrentCard = NewTestCard("School Bully", "p1")
+	ResolveCurrentCard(game, nil)
+
+	tokens := FilterCardsWithTitle(game.AllBoardCards(), "Dodgy Fella")
+	if len(tokens) != 2 {
+		t.Errorf("Failed to summon creatures: %v", tokens)
+	}
+}
+
+func TestCardProto_SummonCreatureDoesntRetrigger(t *testing.T) {
+	game := NewTestGame()
+	game.CurrentCard = NewTestCard("School Bully", "p1")
+	ResolveCurrentCard(game, nil)
+
+	game.CurrentCard = NewTestCard("Dodgy Fella", "p1")
+	ResolveCurrentCard(game, nil)
+
+	game.CurrentCard = NewTestCard("Dodgy Fella", "p2")
+	ResolveCurrentCard(game, nil)
+
+	tokens := FilterCardsWithTitle(game.AllBoardCards(), "Dodgy Fella")
+	if len(tokens) != 4 {
+		t.Errorf("Summoned the wrong number of creatures: %v", tokens)
+	}
+}

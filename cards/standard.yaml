@@ -51,6 +51,30 @@ cards:
       toughness: 2
     abilities:
       - <<: *creature_attack
+  empty_flask:
+    tags:
+      color: white
+      title: "Empty Flask"
+      type: creature
+      description: "Fill me up, or i Kill You."
+    attributes:
+      cost: 4
+      power: 5
+      toughness: 3
+    abilities:
+      - <<: *creature_attack
+  lord_zembaio:
+    tags:
+      color: white
+      title: "Lord Zembaio"
+      type: creature
+      description: "Today, I shall get out of bed!"
+    attributes:
+      cost: 6
+      power: 2
+      toughness: 9
+    abilities:
+      - <<: *creature_attack
   ser_vira:
     tags:
       color: white
@@ -75,3 +99,23 @@ cards:
         mod_factor: 1
         mod_attr: not_used
         behaviour: modifySelf
+  school_bully:
+    tags:
+      color: white
+      title: "School Bully"
+      type: creature
+      description: "Summons 2 companions"
+    attributes:
+      cost: 3
+      power: 2
+      toughness: 2
+    abilities:
+      - <<: *creature_attack
+      - trigger: enterPlay
+        trigger_conditions: []
+        target: self
+        target_conditions: []
+        attribute: not_used
+        mod_factor: 1
+        mod_attr: not_used
+        behaviour: summonCreature

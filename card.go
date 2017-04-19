@@ -71,6 +71,12 @@ func FirstCardWithType(s []*Card, cardType string) *Card {
 	return nil
 }
 
+func FilterCardsWithTitle(s []*Card, t string) []*Card {
+	return FilterCards(s, func(c *Card) bool {
+		return c.Tags["title"] == t
+	})
+}
+
 func FilterCards(vs []*Card, f func(*Card) bool) []*Card {
 	vsf := make([]*Card, 0)
 	for _, v := range vs {

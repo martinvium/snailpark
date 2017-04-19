@@ -70,19 +70,6 @@ func NewDrawCardsAbility() *Ability {
 	}
 }
 
-func NewSummonCreaturesAbility() *Ability {
-	return &Ability{
-		"enterPlay",
-		NewEmptyTriggerConditions(),
-		"self",
-		NewEmptyTargetConditions(),
-		"not_used",
-		positiveModFactor,
-		"not_used",
-		"summonCreature",
-	}
-}
-
 func NewAttackAbility() *Ability {
 	return &Ability{
 		"activated",
