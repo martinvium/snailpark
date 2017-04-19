@@ -212,3 +212,27 @@ cards:
         mod_factor: 1
         mod_attr: power
         behaviour: modifyTarget
+  make_lemonade:
+    tags:
+      color: white
+      title: "Make lemonade"
+      type: spell
+      description: "Add 2 power to all creatures on your board until end of turn."
+      effectExpireTrigger: endTurn
+    attributes:
+      cost: 2
+      power: 2
+    abilities:
+      - trigger: enterPlay
+        target: all
+        target_conditions:
+        - attribute: type
+          any_of: [creature]
+        - attribute: player
+          any_of: [me]
+        - attribute: location
+          any_of: [board]
+        attribute: power
+        mod_factor: 1
+        mod_attr: power
+        behaviour: modifyTarget

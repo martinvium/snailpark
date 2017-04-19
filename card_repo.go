@@ -44,7 +44,7 @@ func StandardRepo() []*CardProto {
 		LoadCardProtoById("standard", "awkward_conversation"),
 		LoadCardProtoById("standard", "green_smelly_liquid"),
 		LoadCardProtoById("standard", "creatine_powder"),
-		NewSpellProto("Make lemonade", 2, "Add 2 power to each creature on your board.", 2, NewBuffBoardAbility("power")),
+		LoadCardProtoById("standard", "make_lemonade"),
 		NewSpellProto("More draw", 2, "Draw 2 cards", 2, NewDrawCardsAbility()),
 		NewSpellProto("Ramp", 2, "Permanently add 2 mana to your mana pool", 2, NewAddManaAbility()),
 		NewAvatarProto("The Bald One", 30),
