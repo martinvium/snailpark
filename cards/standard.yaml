@@ -22,6 +22,7 @@ cards:
       type: avatar
       description: "When this card dies, the opponent player wins!"
     attributes:
+      # power: 0
       toughness: 30
   dodgy_fella:
     tags:

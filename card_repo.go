@@ -47,8 +47,8 @@ func LoadCardProtoSet(set string) []*CardProto {
 	}
 
 	var protos = []*CardProto{}
-	for _, c := range file.CardProtos {
-		protos = append(protos, c)
+	for _, p := range file.CardProtos {
+		protos = append(protos, p)
 	}
 
 	return protos
