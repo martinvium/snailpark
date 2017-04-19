@@ -165,3 +165,26 @@ cards:
         mod_factor: -1
         mod_attr: power
         behaviour: modifyTarget
+  green_smelly_liquid:
+    tags:
+      color: white
+      title: "Green smelly liquid"
+      type: spell
+      description: "Heal your self for 5 -- But it taste awful!"
+    attributes:
+      cost: 2
+      power: 5
+    abilities:
+      - trigger: enterPlay
+        target: target
+        target_conditions:
+        - attribute: type
+          any_of: [avatar]
+        - attribute: player
+          any_of: [me]
+        - attribute: location
+          any_of: [board]
+        attribute: toughness
+        mod_factor: 1
+        mod_attr: power
+        behaviour: modifyTarget

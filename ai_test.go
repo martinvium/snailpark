@@ -12,7 +12,7 @@ var testRepo = []*CardProto{
 	NewCreatureProto("p1_expensive_creature", 3, "", 3, 2, nil),
 	LoadCardProtoById("standard", "awkward_conversation"),
 	LoadCardProtoById("standard", "goo_to_the_face"),
-	NewSpellProto("p1_heal", 1, "", 5, NewPlayerHealAbility()),
+	LoadCardProtoById("standard", "green_smelly_liquid"),
 	NewAvatarProto("p1_avatar", 30),
 
 	// P2
@@ -25,7 +25,7 @@ var p1DeckDef = []string{
 	"p1_expensive_creature",
 	"Awkward conversation",
 	"Goo-to-the-face",
-	"p1_heal",
+	"Green smelly liquid",
 	"p1_avatar",
 }
 
@@ -82,12 +82,12 @@ func TestAI_RespondWithAction_PlaysHeal(t *testing.T) {
 	ai := NewAI("ai")
 
 	players := newPlayers(3)
-	players["ai"].Hand = newTestCards("ai", "hand", []string{"p1_heal"})
+	players["ai"].Hand = newTestCards("ai", "hand", []string{"Green smelly liquid"})
 
 	msg := newTestMainResponseMessage(players)
 
 	action := ai.RespondWithAction(msg)
-	if err := assertResponse(t, action, "playCard", "p1_heal"); err != nil {
+	if err := assertResponse(t, action, "playCard", "Green smelly liquid"); err != nil {
 		t.Errorf(err.Error())
 	}
 }
@@ -102,7 +102,7 @@ func TestAI_RespondWithAction_HealTargetsOwnAvatar(t *testing.T) {
 		players,
 		[]string{},
 		[]*Engagement{},
-		newTestCard("ai", "hand", "p1_heal"),
+		newTestCard("ai", "hand", "Green smelly liquid"),
 	)
 
 	action := ai.RespondWithAction(msg)
