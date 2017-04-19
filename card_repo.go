@@ -36,7 +36,6 @@ func StandardRepo() []*CardProto {
 		LoadCardProtoById("standard", "dodgy_fella"),
 		LoadCardProtoById("standard", "pugnent_cheese"),
 		LoadCardProtoById("standard", "hungry_goat_herder"),
-		// TODO: triggers abilit when first played, but not when later played... something is wrong...
 		LoadCardProtoById("standard", "ser_vira"),
 		NewCreatureProto("School Bully", 3, "Summons 2 companions", 2, 2, NewSummonCreaturesAbility()),
 		NewCreatureProto("Empty Flask", 4, "Fill me up, or i Kill You.", 5, 3, nil),

@@ -95,6 +95,11 @@ func NewRandomCreatureCard(power int, toughness int, playerId string) *Card {
 	return c
 }
 
+func NewTestCard(title string, playerId string) *Card {
+	proto := CardProtoByTitle(StandardRepo(), title)
+	return NewCard(proto, NewUUID(), playerId)
+}
+
 func (c *Card) String() string {
 	return fmt.Sprintf("Card(%v, %v)", c.Tags["title"], c.PlayerId)
 }

@@ -63,7 +63,7 @@ cards:
       toughness: 2
     abilities:
       - <<: *creature_attack
-      - trigger: enterPlay
+      - trigger: cardPlayed
         trigger_conditions:
           - attribute: type
             any_of: [creature]

@@ -22,6 +22,21 @@ func NewGame(players map[string]*Player) *Game {
 	}
 }
 
+func NewTestGame() *Game {
+	players := map[string]*Player{
+		"p1": NewPlayer("p1"),
+		"p2": NewPlayer("p2"),
+	}
+
+	return &Game{
+		players,
+		players["p1"],
+		NewStateMachine(),
+		[]*Engagement{},
+		nil,
+	}
+}
+
 func (g *Game) SetStateMachineDeps(msgSender MessageSender) {
 	g.State.SetGame(g)
 	g.State.SetMessageSender(msgSender)
