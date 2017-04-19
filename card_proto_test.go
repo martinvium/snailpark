@@ -57,3 +57,17 @@ func TestCardProto_SummonCreatureDoesntRetrigger(t *testing.T) {
 		t.Errorf("Summoned the wrong number of creatures: %v", tokens)
 	}
 }
+
+func TestCardProto_AvatarSpellLeavesBoard(t *testing.T) {
+	game := NewTestGame()
+	game.CurrentCard = NewTestCard("Goo-to-the-face", "p1")
+	ResolveCurrentCard(game, game.Players["p2"].Avatar)
+
+	if game.Players["p2"].Avatar.Attributes["toughness"] != 25 {
+		t.Errorf("Spell did not deal correct damage")
+	}
+
+	if len(game.AllBoardCards()) != 2 {
+		t.Errorf("Spell still on board: %v", game.AllBoardCards())
+	}
+}

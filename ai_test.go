@@ -11,7 +11,7 @@ var testRepo = []*CardProto{
 	NewCreatureProto("p1_creature", 1, "", 1, 2, nil),
 	NewCreatureProto("p1_expensive_creature", 3, "", 3, 2, nil),
 	NewSpellProto("p1_spell", 1, "", 5, NewDamageAbility()),
-	NewSpellProto("p1_avatar_spell", 1, "", 5, NewPlayerDamageAbility()),
+	LoadCardProtoById("standard", "goo_to_the_face"),
 	NewSpellProto("p1_heal", 1, "", 5, NewPlayerHealAbility()),
 	NewAvatarProto("p1_avatar", 30),
 
@@ -24,7 +24,7 @@ var p1DeckDef = []string{
 	"p1_creature",
 	"p1_expensive_creature",
 	"p1_spell",
-	"p1_avatar_spell",
+	"Goo-to-the-face",
 	"p1_heal",
 	"p1_avatar",
 }
@@ -140,7 +140,7 @@ func TestAI_RespondWithAction_SpellTargetsAvatar(t *testing.T) {
 		players,
 		[]string{},
 		[]*Engagement{},
-		newTestCard("ai", "hand", "p1_avatar_spell"),
+		newTestCard("ai", "hand", "Goo-to-the-face"),
 	)
 
 	action := ai.RespondWithAction(msg)

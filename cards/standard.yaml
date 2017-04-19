@@ -119,3 +119,26 @@ cards:
         mod_factor: 1
         mod_attr: not_used
         behaviour: summonCreature
+  goo_to_the_face:
+    tags:
+      color: white
+      title: "Goo-to-the-face"
+      type: spell
+      description: "Deal 5 damage to target player -- That's not nice."
+    attributes:
+      cost: 3
+      power: 5
+    abilities:
+      - trigger: enterPlay
+        target: target
+        target_conditions:
+        - attribute: type
+          any_of: [avatar]
+        - attribute: player
+          any_of: [you]
+        - attribute: location
+          any_of: [board]
+        attribute: toughness
+        mod_factor: -1
+        mod_attr: power
+        behaviour: modifyTarget

@@ -151,3 +151,7 @@ func (c *Card) ModifyAttribute(attribute string, modifier int) {
 		c.Attributes[attribute] = modifier
 	}
 }
+
+func (c *Card) StaysOnBoard() bool {
+	return c.Tags["type"] != "spell"
+}

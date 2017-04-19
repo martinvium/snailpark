@@ -40,7 +40,7 @@ func StandardRepo() []*CardProto {
 		LoadCardProtoById("standard", "school_bully"),
 		LoadCardProtoById("standard", "empty_flask"),
 		LoadCardProtoById("standard", "lord_zembaio"),
-		NewSpellProto("Goo-to-the-face", 3, "Deal 5 damage to target player -- That's not nice.", 5, NewPlayerDamageAbility()),
+		LoadCardProtoById("standard", "goo_to_the_face"),
 		NewSpellProto("Awkward conversation", 2, "Deal 3 damage to target creature or player", 3, NewDamageAbility()),
 		NewSpellProto("Green smelly liquid", 2, "Heal your self for 5 -- But it taste awful!", 5, NewPlayerHealAbility()),
 		NewSpellProtoVerbose(2, 3, NewBuffTargetAbility(), map[string]string{"title": "Creatine powder", "description": "Increase creatures power by 3 until end of turn", "effectExpireTrigger": "endTurn"}),
