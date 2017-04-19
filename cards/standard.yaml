@@ -188,3 +188,27 @@ cards:
         mod_factor: 1
         mod_attr: power
         behaviour: modifyTarget
+  creatine_powder:
+    tags:
+      color: white
+      title: "Creatine powder"
+      type: spell
+      description: "Increase creatures power by 3 until end of turn"
+      effectExpireTrigger: endTurn
+    attributes:
+      cost: 2
+      power: 3
+    abilities:
+      - trigger: enterPlay
+        target: target
+        target_conditions:
+        - attribute: type
+          any_of: [creature]
+        - attribute: player
+          any_of: [me]
+        - attribute: location
+          any_of: [board]
+        attribute: power
+        mod_factor: 1
+        mod_attr: power
+        behaviour: modifyTarget

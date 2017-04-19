@@ -19,11 +19,6 @@ type Ability struct {
 	EffectFactory     string       `yaml:"behaviour"`
 }
 
-func NewBuffTargetAbility() *Ability {
-	con := NewMyBoardConditions([]string{"creature"})
-	return NewAbility("target", con, "power", positiveModFactor, "power")
-}
-
 func NewBuffBoardAbility(attr string) *Ability {
 	con := NewMyBoardConditions([]string{"creature"})
 	return NewAbility("all", con, attr, positiveModFactor, "power")

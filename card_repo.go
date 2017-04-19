@@ -43,7 +43,7 @@ func StandardRepo() []*CardProto {
 		LoadCardProtoById("standard", "goo_to_the_face"),
 		LoadCardProtoById("standard", "awkward_conversation"),
 		LoadCardProtoById("standard", "green_smelly_liquid"),
-		NewSpellProtoVerbose(2, 3, NewBuffTargetAbility(), map[string]string{"title": "Creatine powder", "description": "Increase creatures power by 3 until end of turn", "effectExpireTrigger": "endTurn"}),
+		LoadCardProtoById("standard", "creatine_powder"),
 		NewSpellProto("Make lemonade", 2, "Add 2 power to each creature on your board.", 2, NewBuffBoardAbility("power")),
 		NewSpellProto("More draw", 2, "Draw 2 cards", 2, NewDrawCardsAbility()),
 		NewSpellProto("Ramp", 2, "Permanently add 2 mana to your mana pool", 2, NewAddManaAbility()),
