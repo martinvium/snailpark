@@ -142,3 +142,26 @@ cards:
         mod_factor: -1
         mod_attr: power
         behaviour: modifyTarget
+  awkward_conversation:
+    tags:
+      color: white
+      title: "Awkward conversation"
+      type: spell
+      description: "Deal 3 damage to target creature or player"
+    attributes:
+      cost: 2
+      power: 3
+    abilities:
+      - trigger: enterPlay
+        target: target
+        target_conditions:
+        - attribute: type
+          any_of: [avatar, creature]
+        - attribute: player
+          any_of: [you]
+        - attribute: location
+          any_of: [board]
+        attribute: toughness
+        mod_factor: -1
+        mod_attr: power
+        behaviour: modifyTarget

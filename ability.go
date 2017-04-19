@@ -19,11 +19,6 @@ type Ability struct {
 	EffectFactory     string       `yaml:"behaviour"`
 }
 
-func NewDamageAbility() *Ability {
-	con := NewYourBoardConditions([]string{"creature", "avatar"})
-	return NewAbility("target", con, "toughness", negativeModFactor, "power")
-}
-
 func NewPlayerHealAbility() *Ability {
 	con := NewMyBoardConditions([]string{"avatar"})
 	return NewAbility("target", con, "toughness", positiveModFactor, "power")

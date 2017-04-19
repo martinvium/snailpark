@@ -10,7 +10,7 @@ var testRepo = []*CardProto{
 	// P1
 	NewCreatureProto("p1_creature", 1, "", 1, 2, nil),
 	NewCreatureProto("p1_expensive_creature", 3, "", 3, 2, nil),
-	NewSpellProto("p1_spell", 1, "", 5, NewDamageAbility()),
+	LoadCardProtoById("standard", "awkward_conversation"),
 	LoadCardProtoById("standard", "goo_to_the_face"),
 	NewSpellProto("p1_heal", 1, "", 5, NewPlayerHealAbility()),
 	NewAvatarProto("p1_avatar", 30),
@@ -23,7 +23,7 @@ var testRepo = []*CardProto{
 var p1DeckDef = []string{
 	"p1_creature",
 	"p1_expensive_creature",
-	"p1_spell",
+	"Awkward conversation",
 	"Goo-to-the-face",
 	"p1_heal",
 	"p1_avatar",
@@ -68,12 +68,12 @@ func TestAI_RespondWithAction_PlaysSpell(t *testing.T) {
 	ai := NewAI("ai")
 
 	players := newPlayers(3)
-	players["ai"].Hand = newTestCards("ai", "hand", []string{"p1_spell"})
+	players["ai"].Hand = newTestCards("ai", "hand", []string{"Awkward conversation"})
 
 	msg := newTestMainResponseMessage(players)
 
 	action := ai.RespondWithAction(msg)
-	if err := assertResponse(t, action, "playCard", "p1_spell"); err != nil {
+	if err := assertResponse(t, action, "playCard", "Awkward conversation"); err != nil {
 		t.Errorf(err.Error())
 	}
 }
@@ -121,7 +121,7 @@ func TestAI_RespondWithAction_SpellTargetsCreature(t *testing.T) {
 		players,
 		[]string{},
 		[]*Engagement{},
-		newTestCard("ai", "hand", "p1_spell"),
+		newTestCard("ai", "hand", "Awkward conversation"),
 	)
 
 	action := ai.RespondWithAction(msg)
