@@ -16,3 +16,6 @@ snailpark
 
 # Govendor
 vendor/*/
+
+# Node modules
+node_modules/

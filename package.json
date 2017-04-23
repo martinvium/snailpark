@@ -1,0 +1,13 @@
+{
+  "name": "snailpark",
+  "version": "0.1.0",
+  "description": "collectible card game",
+  "main": "index.html",
+  "repository": "git@github.com:martinvium/snailpark.git",
+  "author": "Martin Vium <martin.vium@gmail.com>",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "angular": "1.6.4",
+    "angular-websocket": "2.0.1"
+  }
+}
