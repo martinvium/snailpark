@@ -3,10 +3,9 @@ angular.module('snailpark', [])
     $scope.greetMe = 'World';
   }]);
 
-// NOTE: triggers error
-// angular.element(function() {
-//   angular.bootstrap(document, ['snailpark']);
-// });
+angular.element(function() {
+  angular.bootstrap(document, ['snailpark']);
+});
 
 
 
