@@ -3,23 +3,37 @@ angular.module('snailpark', [])
     $scope.greetMe = 'World';
   }]);
 
+angular.module('snailpark')
+  .directive('cardList', function() {
+    return {
+      scope: {
+        cards: '='
+      },
+      restrict : 'EA',
+      controller: function() {},
+      controllerAs: 'ctrl',
+      transclude: true,
+      bindToController: true,
+      template: '<li ng-repeat="card in ctrl.cards"><card data-set="card"/></li>'
+    }
+  });
+
+angular.module('snailpark')
+  .directive('card', function() {
+    return {
+      scope: {
+        card: '=set',
+        onClick: '&'
+      },
+      replace: true,
+      controller: function() {},
+      controllerAs: 'ctrl',
+      bindToController: true,
+      restrict: 'EA',
+      templateUrl: 'card-full.html'
+    }
+  });
+
 angular.element(function() {
   angular.bootstrap(document, ['snailpark']);
 });
-
-
-
-// app.directive('card', function() {
-//   return {
-//     scope: {
-//       item: '=set',
-//       onClick: '&'
-//     },
-//     replace: true,
-//     controller: function() {},
-//     controllerAs: 'ctrl',
-//     bindToController: true,
-//     restrict: 'EA',
-//     template: '<input type="checkbox" ng-click="ctrl.onClick({item: ctrl.item})" ng-checked="ctrl.item.active" /> '
-//   }
-// });
