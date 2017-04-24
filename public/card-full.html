@@ -1,5 +1,5 @@
 <div ng-class="{'card-back': ctrl.card.anonymous}" class="card {{ ctrl.card.tags.color }}" data-id="{{ ctrl.card.id }}">
-  <div ng-if="!ctrl.card.anonymous">
+  <div ng-if="!ctrl.card.anonymous" ng-click="ctrl.clickCard({ id: ctrl.card.id })">
     <div class="header">
       <div class="title pull-left">{{ ctrl.card.tags.title }}</div>
       <div class="cost pull-right">{{ ctrl.card.attributes.cost }}</div>

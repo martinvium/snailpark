@@ -37,7 +37,7 @@
           <card-list data-cards="data.player.board"></card-list>
         </div>
         <div class="hand cf">
-          <card-list data-cards="data.player.hand"></card-list>
+          <card-list data-cards="data.player.hand" click-card="playCard(id)"></card-list>
         </div>
         <energy-indicator title="Your" data-current="data.player.currentMana" data-max="data.player.maxMana"/></energy-indicator>
       </div>
