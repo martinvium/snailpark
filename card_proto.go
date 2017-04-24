@@ -17,30 +17,6 @@ func (p *CardProto) Valid() bool {
 	return false
 }
 
-func NewSpellProto(title string, cost int, desc string, power int, ability *Ability) *CardProto {
-	tags := map[string]string{}
-	tags["title"] = title
-	tags["description"] = desc
-	return NewSpellProtoVerbose(cost, power, ability, tags)
-}
-
-func NewSpellProtoVerbose(cost int, power int, ability *Ability, tags map[string]string) *CardProto {
-	abilities := []*Ability{ability}
-
-	tags["color"] = "white"
-	tags["type"] = "spell"
-
-	return &CardProto{
-		tags,
-		map[string]int{
-			"cost":      cost,
-			"power":     power,
-			"toughness": 0,
-		},
-		abilities,
-	}
-}
-
 func CardProtoByTitle(repo []*CardProto, n string) *CardProto {
 	for _, p := range repo {
 		if p.Tags["title"] == n {
