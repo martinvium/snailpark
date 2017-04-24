@@ -10,12 +10,22 @@ angular.module('snailpark', ['ngWebSocket'])
     var dataStream = $websocket(url);
 
     var data = {
-      cards: []
+      player: {
+        hand: [],
+        board: []
+      },
+      enemy: {
+        hand: [],
+        board: []
+      }
     };
 
     dataStream.onMessage(function(message) {
       var msg = JSON.parse(message.data)
-      data.cards = msg.players["player"]["hand"];
+      data.player.hand = msg.players["player"]["hand"];
+      data.player.board = msg.players["player"]["board"];
+      data.enemy.hand = msg.players["ai"]["hand"];
+      data.enemy.board = msg.players["ai"]["board"];
     });
 
     var methods = {

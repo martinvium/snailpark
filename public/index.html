@@ -26,9 +26,11 @@
         </div>
 
         <ul class="hand cf">
-          <card-list data-cards="data.cards"/>
+          <card-list data-cards="data.enemy.hand"/>
         </ul>
-        <div class="board cf"></div>
+        <div class="board cf">
+          <card-list data-cards="data.enemy.board"/>
+        </div>
       </div>
 
       <div class="middle cf">
@@ -38,8 +40,12 @@
       </div>
 
       <div id="player">
-        <div class="board cf"></div>
-        <div class="hand cf"></div>
+        <div class="board cf">
+          <card-list data-cards="data.player.board"/>
+        </div>
+        <div class="hand cf">
+          <card-list data-cards="data.player.hand"/>
+        </div>
         <div class="mana">
           You (Mana:
           <label class="current"></label> of 

@@ -6,6 +6,12 @@ h2 {
   margin: 20px;
 }
 
+.cf {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
 .board {
   margin-bottom: 20px;
 }
