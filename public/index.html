@@ -23,7 +23,7 @@
           <card-list data-cards="data.enemy.hand"></card-list>
         </ul>
         <div class="board cf">
-          <card-list data-cards="data.enemy.board"></card-list>
+          <card-list data-cards="data.enemy.board" click-card="targetCard(id)"></card-list>
         </div>
       </div>
 
@@ -34,7 +34,7 @@
 
       <div id="player">
         <div class="board cf">
-          <card-list data-cards="data.player.board"></card-list>
+          <card-list data-cards="data.player.board" click-card="targetCard(id)"></card-list>
         </div>
         <div class="hand cf">
           <card-list data-cards="data.player.hand" click-card="playCard(id)"></card-list>

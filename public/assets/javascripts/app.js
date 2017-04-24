@@ -37,6 +37,10 @@ angular.module('snailpark', ['ngWebSocket'])
 
       playCard: function(id) {
         dataStream.send(JSON.stringify({ action: 'playCard', playerId: playerId, card: id }));
+      },
+
+      targetCard: function(id) {
+        dataStream.send(JSON.stringify({ action: 'target', playerId: playerId, card: id }));
       }
     };
 
@@ -47,6 +51,7 @@ angular.module('snailpark', ['ngWebSocket'])
     $scope.data = gameServer.data;
     $scope.next = gameServer.next
     $scope.playCard = gameServer.playCard
+    $scope.targetCard = gameServer.targetCard
   }]);
 
 angular.module('snailpark')
