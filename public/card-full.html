@@ -1,13 +1,13 @@
-<div class="card" data-id="{{ ctrl.card.id }}">
+<div class="card {{ ctrl.card.tags.color }}" data-id="{{ ctrl.card.id }}">
   <div class="header">
-    <div class="title pull-left">{{ ctrl.card.title }}</div>
-    <div class="cost pull-right">{{ ctrl.card.cost }}</div>
+    <div class="title pull-left">{{ ctrl.card.tags.title }}</div>
+    <div class="cost pull-right">{{ ctrl.card.attributes.cost }}</div>
     <div class="cf"></div>
   </div>
-  <!-- <div class="art"><img src="{{ ctrl.card.art_url }}"/></div> -->
-  <div class="type">{{ ctrl.card.type }}</div>
-  <div class="description">{{ ctrl.card.description }}</div>
+  <div class="art"><img src="/assets/images/{{ ctrl.card.tags.type }}.jpg"/></div>
+  <div class="type">{{ ctrl.card.tags.type }}</div>
+  <div class="description">{{ ctrl.card.tags.description }}</div>
   <div class="power-toughness pull-right">
-    <span class="power">{{ ctrl.card.power }}</span>/<span class="toughness">{{ ctrl.card.toughness }}</span>
+    <span class="power">{{ ctrl.card.attributes.power }}</span>/<span class="toughness">{{ ctrl.card.attributes.toughness }}</span>
   </div>
 </div>

@@ -9,14 +9,17 @@ angular.module('snailpark', ['ngWebSocket'])
 
     var dataStream = $websocket(url);
 
-    var collection = [];
+    var data = {
+      cards: []
+    };
 
     dataStream.onMessage(function(message) {
-      collection.push(JSON.parse(message.data));
+      var msg = JSON.parse(message.data)
+      data.cards = msg.players["player"]["hand"];
     });
 
     var methods = {
-      collection: collection,
+      data: data,
       start: function() {
         dataStream.send(JSON.stringify({ action: 'start', playerId: playerId }));
       }
@@ -26,14 +29,7 @@ angular.module('snailpark', ['ngWebSocket'])
   })
   .controller('BoardController', ['$scope', 'gameServer', function ($scope, gameServer) {
     gameServer.start();
-    // gameServer.collection.then(function(data) {
-    //   console.log(data);
-    // });
-
-    $scope.cards = [
-      { id: 'my-card', title: 'bla' },
-      { id: 'my-card2', title: 'bla2' }
-    ];
+    $scope.data = gameServer.data;
   }]);
 
 angular.module('snailpark')
@@ -63,7 +59,7 @@ angular.module('snailpark')
       controllerAs: 'ctrl',
       bindToController: true,
       restrict: 'EA',
-      templateUrl: 'card-full.html'
+      templateUrl: 'card-full.html?' + Date.now()
     }
   });
 
