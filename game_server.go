@@ -311,7 +311,8 @@ func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
 	)
 
 	// hide opponent cards
-	msg.Players[OtherPlayerId(client.PlayerId())].Hand = NewEmptyHand()
+	enemyId := OtherPlayerId(client.PlayerId())
+	msg.Players[enemyId].Hand = NewAnonymizedHand(msg.Players[enemyId].Hand)
 
 	client.SendResponse(msg)
 }
