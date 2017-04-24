@@ -18,18 +18,12 @@
 
     <div id="board" ng-controller="BoardController">
       <div id="ai">
-        <div class="mana">
-          Enemy AI (Mana:
-          <label class="current"></label> of 
-          <label class="max"></label>
-          )
-        </div>
-
+        <energy-indicator title="Enemy" data-current="data.enemy.currentMana" data-max="data.enemy.maxMana"></energy-indicator>
         <ul class="hand cf">
-          <card-list data-cards="data.enemy.hand"/>
+          <card-list data-cards="data.enemy.hand"></card-list>
         </ul>
         <div class="board cf">
-          <card-list data-cards="data.enemy.board"/>
+          <card-list data-cards="data.enemy.board"></card-list>
         </div>
       </div>
 
@@ -41,17 +35,12 @@
 
       <div id="player">
         <div class="board cf">
-          <card-list data-cards="data.player.board"/>
+          <card-list data-cards="data.player.board"></card-list>
         </div>
         <div class="hand cf">
-          <card-list data-cards="data.player.hand"/>
+          <card-list data-cards="data.player.hand"></card-list>
         </div>
-        <div class="mana">
-          You (Mana:
-          <label class="current"></label> of 
-          <label class="max"></label>
-          )
-        </div>
+        <energy-indicator title="Your" data-current="data.player.currentMana" data-max="data.player.maxMana"/></energy-indicator>
       </div>
     </div>
   </body>

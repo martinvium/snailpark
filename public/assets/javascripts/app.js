@@ -10,20 +10,16 @@ angular.module('snailpark', ['ngWebSocket'])
     var dataStream = $websocket(url);
 
     var data = {
-      player: {
-        hand: [],
-        board: []
-      },
-      enemy: {
-        hand: [],
-        board: []
-      }
+      player: {},
+      enemy:  {}
     };
 
     dataStream.onMessage(function(message) {
       var msg = JSON.parse(message.data)
+      data.player = msg.players["player"];
       data.player.hand = msg.players["player"]["hand"];
       data.player.board = msg.players["player"]["board"];
+      data.enemy = msg.players["ai"];
       data.enemy.hand = msg.players["ai"]["hand"];
       data.enemy.board = msg.players["ai"]["board"];
     });
@@ -73,6 +69,23 @@ angular.module('snailpark')
     }
   });
 
+angular.module('snailpark')
+  .directive('energyIndicator', function() {
+    return {
+      scope: {
+        current: '=',
+        max: '=',
+        title: '@'
+      },
+      restrict : 'EA',
+      controller: function() {},
+      controllerAs: 'ctrl',
+      transclude: true,
+      bindToController: true,
+      template: '<div class="mana">{{ ctrl.title }} energy: {{ ctrl.current }} of {{ ctrl.max }}</div>'
+    }
+  });
+        
 angular.element(function() {
   angular.bootstrap(document, ['snailpark']);
 });
