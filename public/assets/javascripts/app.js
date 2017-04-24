@@ -26,8 +26,13 @@ angular.module('snailpark', ['ngWebSocket'])
 
     var methods = {
       data: data,
+
       start: function() {
         dataStream.send(JSON.stringify({ action: 'start', playerId: playerId }));
+      },
+
+      next: function() {
+        dataStream.send(JSON.stringify({ action: 'endTurn', playerId: playerId }));
       }
     };
 
@@ -36,6 +41,10 @@ angular.module('snailpark', ['ngWebSocket'])
   .controller('BoardController', ['$scope', 'gameServer', function ($scope, gameServer) {
     gameServer.start();
     $scope.data = gameServer.data;
+
+    $scope.next = function() {
+      gameServer.next()
+    }
   }]);
 
 angular.module('snailpark')
@@ -85,7 +94,23 @@ angular.module('snailpark')
       template: '<div class="mana">{{ ctrl.title }} energy: {{ ctrl.current }} of {{ ctrl.max }}</div>'
     }
   });
-        
+
+angular.module('snailpark')
+  .directive('nextButton', function() {
+    return {
+      scope: {
+        state: '=',
+        next: '&'
+      },
+      restrict : 'EA',
+      controller: function() {},
+      controllerAs: 'ctrl',
+      transclude: true,
+      bindToController: true,
+      template: '<input type="button" id="end-turn" value="End turn" ng-click="ctrl.next()" class="btn pull-left"/><div id="state-help" class="pull-left"></div>'
+    }
+  });
+
 angular.element(function() {
   angular.bootstrap(document, ['snailpark']);
 });
