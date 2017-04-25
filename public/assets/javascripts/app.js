@@ -41,6 +41,11 @@ angular.module('snailpark', ['ngWebSocket'])
 
       targetCard: function(id) {
         dataStream.send(JSON.stringify({ action: 'target', playerId: playerId, card: id }));
+      },
+
+      ping: function() {
+        dataStream.send(JSON.stringify({ action: 'ping', playerId: playerId }));
+        setTimeout(this.ping.bind(this), 45 * 1000);
       }
     };
 
@@ -48,10 +53,13 @@ angular.module('snailpark', ['ngWebSocket'])
   })
   .controller('BoardController', ['$scope', 'gameServer', function ($scope, gameServer) {
     gameServer.start();
+
     $scope.data = gameServer.data;
     $scope.next = gameServer.next
     $scope.playCard = gameServer.playCard
     $scope.targetCard = gameServer.targetCard
+
+    gameServer.ping();
   }]);
 
 angular.module('snailpark')
