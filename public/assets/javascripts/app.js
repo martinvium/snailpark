@@ -10,12 +10,16 @@ angular.module('snailpark', ['ngWebSocket'])
     var dataStream = $websocket(url);
 
     var data = {
+      currentPlayerId: null,
+      state: null,
       player: {},
       enemy:  {}
     };
 
     dataStream.onMessage(function(message) {
       var msg = JSON.parse(message.data)
+      data.currentPlayerId = msg.currentPlayerId;
+      data.state = msg.state;
       data.player = msg.players["player"];
       data.player.hand = msg.players["player"]["hand"];
       data.player.board = msg.players["player"]["board"];
@@ -115,15 +119,43 @@ angular.module('snailpark')
   .directive('nextButton', function() {
     return {
       scope: {
+        currentPlayerId: '=',
         state: '=',
         next: '&'
       },
       restrict : 'EA',
       controller: function() {},
+      link: function(scope) {
+        scope.disabled = function() {
+          return scope.ctrl.currentPlayerId != "player";
+        }
+
+        scope.btnText = function() {
+          if(scope.ctrl.state == "blockers" || scope.ctrl.state == "blockTarget") {
+            return 'Begin combat';
+          } else {
+            return 'End turn';
+          }
+        }
+
+        scope.help = function() {
+          if(scope.ctrl.currentPlayerId === 'ai') {
+            return 'Your opponent is thinking...';
+          } else if(scope.ctrl.state == "main") {
+            return 'Play a card, or attack with your creatures by clicking on them...';
+          } else if(scope.ctrl.state == "targeting") {
+            return 'Pick a target...';
+          } else if(scope.ctrl.state == "blockers" || scope.ctrl.state == "blockTarget") {
+            return 'Opponent is attacking! Assign blockers and end turn when you are ready';
+          } else {
+            return '...';
+          }
+        }
+      },
       controllerAs: 'ctrl',
       transclude: true,
       bindToController: true,
-      template: '<input type="button" id="end-turn" value="End turn" ng-click="ctrl.next()" class="btn pull-left"/><div id="state-help" class="pull-left"></div>'
+      template: '<input type="button" id="end-turn" value="{{ btnText() }}" ng-click="ctrl.next()" ng-class="{ \'btn-disabled\': disabled() }" class="btn pull-left"/><div id="state-help" class="pull-left">{{ help() }}</div>'
     }
   });
 
