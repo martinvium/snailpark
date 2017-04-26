@@ -18,8 +18,21 @@ angular.module('snailpark', ['ngWebSocket'])
 
     dataStream.onMessage(function(message) {
       var msg = JSON.parse(message.data)
+
+      var filterAttackers = function(msg) {
+        var attackers = [];
+        for(var i in msg.engagements) {
+          var e = msg.engagements[i];
+          attackers.push(e.attacker);
+        }
+
+        return attackers;
+      }
+
       data.currentPlayerId = msg.currentPlayerId;
       data.state = msg.state;
+      data.attackers = filterAttackers(msg);
+      console.log(data.attackers);
       data.player = msg.players["player"];
       data.player.hand = msg.players["player"]["hand"];
       data.player.board = msg.players["player"]["board"];
@@ -91,6 +104,13 @@ angular.module('snailpark')
       },
       replace: true,
       controller: function() {},
+      link: function(scope) {
+        scope.attacking = function() {
+          var value = scope.ctrl.card.tags.attackTarget;
+          console.log(value);
+          return typeof value != 'undefined' && value != '';
+        }
+      },
       controllerAs: 'ctrl',
       bindToController: true,
       restrict: 'EA',

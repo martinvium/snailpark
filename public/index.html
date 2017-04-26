@@ -17,6 +17,11 @@
     </div>
 
     <div id="board" ng-controller="BoardController">
+      <div class="middle cf">
+        <div next-button next="next()" data-state="data.state" data-current-player-id="data.currentPlayerId"></div>
+        <div id="messages" style="display: none;"></div>
+      </div>
+
       <div id="ai">
         <energy-indicator title="Enemy" data-current="data.enemy.currentMana" data-max="data.enemy.maxMana"></energy-indicator>
         <ul class="hand cf">
@@ -27,9 +32,8 @@
         </div>
       </div>
 
-      <div class="middle cf">
-        <div next-button next="next()" data-state="data.state" data-current-player-id="data.currentPlayerId"></div>
-        <div id="messages" style="display: none;"></div>
+      <div class="attackers cf">
+        <card-list data-cards="data.attackers" click-card="targetCard(id)"></card-list>
       </div>
 
       <div id="player">

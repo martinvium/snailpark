@@ -252,6 +252,7 @@ func (g *GameServer) assignAttacker(msg *Message) {
 
 	log.Println("Assigned attacker:", msg.Card)
 
+	card.Tags["attackTarget"] = g.game.DefendingPlayer().Avatar.Id
 	g.game.Engagements = append(g.game.Engagements, NewEngagement(card, g.game.DefendingPlayer().Avatar))
 	g.game.State.Transition("attackers")
 }

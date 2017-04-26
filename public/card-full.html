@@ -1,4 +1,4 @@
-<div ng-class="{'card-back': ctrl.card.anonymous}" class="card {{ ctrl.card.tags.color }}" data-id="{{ ctrl.card.id }}">
+<div ng-class="{ 'card-back': ctrl.card.anonymous, 'attacking': attacking() }" class="card {{ ctrl.card.tags.color }}" data-id="{{ ctrl.card.id }}">
   <div ng-if="!ctrl.card.anonymous" ng-click="ctrl.clickCard({ id: ctrl.card.id })">
     <div class="header">
       <div class="title pull-left">{{ ctrl.card.tags.title }}</div>

@@ -70,6 +70,8 @@ func ResolveRemovedCards(g *Game) {
 
 func ResolveEngagement(g *Game, engagements []*Engagement) {
 	for _, e := range engagements {
+		e.Attacker.Tags["attackTarget"] = ""
+
 		if e.Blocker != nil {
 			fmt.Println("Engagement skipped, already blocked")
 			continue
