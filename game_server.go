@@ -223,9 +223,14 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 
 	log.Println("Assigned blocker target:", card)
 
-	for _, engagement := range g.game.Engagements {
-		if engagement.Attacker == card {
-			engagement.Blocker = g.game.CurrentCard
+	for _, e := range g.game.Engagements {
+		if e.Attacker == card {
+			e.Blocker = g.game.CurrentCard
+
+			a := ActivatedAbility(e.Attacker.Abilities)
+			if err := a.Apply(g.game, e.Attacker, g.game.CurrentCard); err != nil {
+				fmt.Println("ERROR:", err)
+			}
 		}
 	}
 

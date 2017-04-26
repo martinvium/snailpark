@@ -70,14 +70,13 @@ func ResolveRemovedCards(g *Game) {
 
 func ResolveEngagement(g *Game, engagements []*Engagement) {
 	for _, e := range engagements {
-		target := e.Target
 		if e.Blocker != nil {
-			fmt.Println("Blocker intercepted attacker before its target")
-			target = e.Blocker
+			fmt.Println("Engagement skipped, already blocked")
+			continue
 		}
 
 		a := ActivatedAbility(e.Attacker.Abilities)
-		if err := a.Apply(g, e.Attacker, target); err != nil {
+		if err := a.Apply(g, e.Attacker, e.Target); err != nil {
 			fmt.Println("ERROR:", err)
 		}
 	}
