@@ -64,24 +64,52 @@ h2 {
 }
 
 .card {
-  width: 150px;
-  height: 200px;
-  border: 5px solid black;
-  border-radius: 5px;
   font-family: Helvetica;
   font-size: .8em;
   text-align: left;
-  padding: 5px 10px;
+  /* padding: 5px 10px; */
   margin-right: 10px;
   display: inline-block;
   white-space: normal;
   vertical-align: top;
 }
 
-.board .attacking {
-  opacity: 0.5;
+.card .art {
+  /* margin: 0 auto; */
 }
 
+/* Hand */
+.hand .card .art {
+  width: 150px;
+  height: 78px;
+}
+
+.hand .card {
+  border: 4px solid black;
+  padding: 8px 7px;
+  width: 128px;
+  height: 176px;
+}
+
+/* Board */
+.board .card {
+  border: 2px solid black;
+  padding: 8px 5px;
+  width: 106px;
+  height: 160px;
+}
+
+.board .card .art {
+  width: 106px;
+  height: 150px;
+  background-position: -37px;
+}
+
+.board .card .title, .board .card .description, .board .card .type {
+  display: none;
+}
+
+/* Other */
 .card-back {
   background-color: #e74c3c;
   border-color: #c0392b;
@@ -95,15 +123,8 @@ h2 {
   margin: 0px 2px;
 }
 
-.card .art {
-  height: 78px;
-  background-color: white;
-  margin: 0px auto;
-
-  img {
-    width: 100%;
-    height: 100%;
-  }
+.board .attacking {
+  opacity: 0.5;
 }
 
 .card .description {
@@ -113,7 +134,16 @@ h2 {
 }
 
 .card .power-toughness {
+  font-size: 1.3em;
+  font-weight: bold;
+}
 
+.card .power {
+  color: blue;
+}
+
+.card .toughness {
+  color: red;
 }
 
 .card.orange {
