@@ -5,9 +5,10 @@ import "fmt"
 type Card struct {
 	proto CardProto
 
-	Id       string `json:"id"`
-	PlayerId string `json:"playerId"`
-	Location string `json:location` // board, hand, graveyard, library
+	Id        string `json:"id"`
+	PlayerId  string `json:"playerId"`
+	Location  string `json:"location"` // board, hand, graveyard, library
+	Anonymous bool   `json:"anonymous"`
 
 	Tags       map[string]string `json:"tags"`       // color, title, type
 	Attributes map[string]int    `json:"attributes"` // power, toughness, cost
@@ -33,6 +34,7 @@ func NewCard(proto *CardProto, id, playerId string) *Card {
 		id,
 		playerId,
 		DefaultLocation,
+		proto.Anonymous,
 		tags,
 		attributes,
 		proto.Abilities,

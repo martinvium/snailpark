@@ -223,9 +223,14 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 
 	log.Println("Assigned blocker target:", card)
 
-	for _, engagement := range g.game.Engagements {
-		if engagement.Attacker == card {
-			engagement.Blocker = g.game.CurrentCard
+	for _, e := range g.game.Engagements {
+		if e.Attacker == card {
+			e.Blocker = g.game.CurrentCard
+
+			a := ActivatedAbility(e.Attacker.Abilities)
+			if err := a.Apply(g.game, e.Attacker, g.game.CurrentCard); err != nil {
+				fmt.Println("ERROR:", err)
+			}
 		}
 	}
 
@@ -245,10 +250,14 @@ func (g *GameServer) assignAttacker(msg *Message) {
 		return
 	}
 
-	log.Println("Assigned attacker:", msg.Card)
-
-	g.game.Engagements = append(g.game.Engagements, NewEngagement(card, g.game.DefendingPlayer().Avatar))
-	g.game.State.Transition("attackers")
+	if AnyAssignedAttackerWithId(g.game.Engagements, card.Id) == false {
+		log.Println("Assigned attacker:", msg.Card)
+		card.Tags["attackTarget"] = g.game.DefendingPlayer().Avatar.Id
+		g.game.Engagements = append(g.game.Engagements, NewEngagement(card, g.game.DefendingPlayer().Avatar))
+		g.game.State.Transition("attackers")
+	} else {
+		log.Println("Invalid attacker already used:", card.Id)
+	}
 }
 
 func (g *GameServer) targetAbility(msg *Message) {
@@ -311,7 +320,8 @@ func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
 	)
 
 	// hide opponent cards
-	msg.Players[OtherPlayerId(client.PlayerId())].Hand = NewEmptyHand()
+	enemyId := OtherPlayerId(client.PlayerId())
+	msg.Players[enemyId].Hand = NewAnonymizedHand(msg.Players[enemyId].Hand)
 
 	client.SendResponse(msg)
 }

@@ -19,3 +19,13 @@ func AnyAssignedBlockerWithId(e []*Engagement, id string) bool {
 
 	return false
 }
+
+func AnyAssignedAttackerWithId(e []*Engagement, id string) bool {
+	for _, v := range e {
+		if v.Attacker != nil && v.Attacker.Id == id {
+			return true
+		}
+	}
+
+	return false
+}

@@ -1,73 +1,45 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Cardgame</title>
+    <title>Snailpark</title>
     <link rel="stylesheet" media="all" href="/assets/stylesheets/meyer.reset.css" />
     <link rel="stylesheet" media="all" href="/assets/stylesheets/clearfix.css" />
-    <link rel="stylesheet" media="all" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
     <link rel="stylesheet" media="all" href="/assets/stylesheets/application.css" />
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" crossorigin="anonymous"></script>
-    <script src="/assets/javascripts/application.js"></script>
+    <script src="/node_modules/angular/angular.js"></script>
+    <script src="/node_modules/angular-websocket/dist/angular-websocket.js"></script>
+    <script src="/assets/javascripts/app.js"></script>
   </head>
   <body>
-    <div class="arrow" style="pointer-events:none;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" class="box">
-        <path d="" stroke="red" stroke-width="15" class="prototype" />
-      </svg>
-    </div>
-
-    <div id="board">
-      <div id="ai">
-        <div class="mana">
-          Enemy AI (Mana:
-          <label class="current"></label> of 
-          <label class="max"></label>
-          )
-        </div>
-
-        <div class="hand cf"></div>
-        <div class="board cf"></div>
-
-        <div class="health">
-          Health:
-          <label class="current"></label>
-        </div>
-      </div>
+    <div id="board" ng-controller="BoardController" ng-class="{ 'targeting': data.targeting }" ng-cloak>
+      <modal-dialog data-state="data.state" data-player-avatar="data.player.avatar" new-game="newGame()"></modal-dialog>
 
       <div class="middle cf">
-        <input type="button" id="end-turn" value="End turn" class="btn pull-left"/>
-        <div id="state-help" class="pull-left"></div>
+        <div next-button next="next()" data-state="data.state" data-current-player-id="data.currentPlayerId"></div>
         <div id="messages" style="display: none;"></div>
       </div>
 
-      <div id="player">
-        <div class="health">
-          Health:
-          <label class="current"></label>
-        </div>
-        <div class="board cf"></div>
-        <div class="hand cf"></div>
-        <div class="mana">
-          You (Mana:
-          <label class="current"></label> of 
-          <label class="max"></label>
-          )
+      <div id="ai">
+        <energy-indicator title="Enemy" data-current="data.enemy.currentMana" data-max="data.enemy.maxMana"></energy-indicator>
+        <ul class="hand cf">
+          <card-list data-cards="data.enemy.hand"></card-list>
+        </ul>
+        <div class="board cf">
+          <card-list data-cards="data.enemy.board" click-card="targetCard(id)"></card-list>
         </div>
       </div>
-    </div>
 
-    <div class="card" id="card-prototype" style="display: none;">
-      <div class="header">
-        <div class="title pull-left">Title</div>
-        <div class="cost pull-right">Cost</div>
-        <div class="cf"></div>
+      <div class="attackers cf">
+        <card-list data-cards="data.attackers" click-card="targetCard(id)"></card-list>
       </div>
-      <div class="art"><img src=""/></div>
-      <div class="type">Type</div>
-      <div class="description">Description of mechanics and flavor text.</div>
-      <div class="power-toughness pull-right">
-        <span class="power">0</span>/<span class="toughness">0</span>
+
+      <div id="player">
+        <div class="board cf">
+          <card-list data-cards="data.player.board" click-card="targetCard(id)"></card-list>
+        </div>
+        <div class="hand cf">
+          <card-list data-cards="data.player.hand" click-card="playCard(id)"></card-list>
+        </div>
+        <energy-indicator title="Your" data-current="data.player.currentMana" data-max="data.player.maxMana"/></energy-indicator>
       </div>
     </div>
   </body>

@@ -56,6 +56,15 @@ func NewEmptyHand() []*Card {
 	return []*Card{}
 }
 
+func NewAnonymizedHand(h []*Card) []*Card {
+	anon := []*Card{}
+	for _, c := range h {
+		anon = append(anon, NewCard(AnonymousCardProto, "anon", c.PlayerId))
+	}
+
+	return anon
+}
+
 func NewEmptyBoard() []*Card {
 	return []*Card{}
 }

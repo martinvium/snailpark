@@ -14,5 +14,12 @@ snailpark
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 
+# Exported assets
+resources/*.png
+resources/*.pxm
+
 # Govendor
 vendor/*/
+
+# Node modules
+node_modules/

@@ -2,7 +2,10 @@ package main
 
 import "fmt"
 
+var AnonymousCardProto = &CardProto{Anonymous: true}
+
 type CardProto struct {
+	Anonymous  bool
 	Tags       map[string]string `json:"tags"`       // color, title, type
 	Attributes map[string]int    `json:"attributes"` // power, toughness, cost
 	Abilities  []*Ability        `json:"abilities"`
@@ -15,30 +18,6 @@ func (p *CardProto) Valid() bool {
 
 	fmt.Println("ERROR: Invalid card proto")
 	return false
-}
-
-func NewSpellProto(title string, cost int, desc string, power int, ability *Ability) *CardProto {
-	tags := map[string]string{}
-	tags["title"] = title
-	tags["description"] = desc
-	return NewSpellProtoVerbose(cost, power, ability, tags)
-}
-
-func NewSpellProtoVerbose(cost int, power int, ability *Ability, tags map[string]string) *CardProto {
-	abilities := []*Ability{ability}
-
-	tags["color"] = "white"
-	tags["type"] = "spell"
-
-	return &CardProto{
-		tags,
-		map[string]int{
-			"cost":      cost,
-			"power":     power,
-			"toughness": 0,
-		},
-		abilities,
-	}
 }
 
 func CardProtoByTitle(repo []*CardProto, n string) *CardProto {
