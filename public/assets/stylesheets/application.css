@@ -7,11 +7,6 @@ h2 {
   margin: 0px;
 }
 
-.board {
-  margin-bottom: 20px;
-  height: 220px;
-}
-
 .targeting {
   cursor: crosshair;
 }
@@ -21,15 +16,33 @@ h2 {
 }
 
 .attackers {
-  margin-bottom: 20px;
-  height: 220px;
+  background-color: #FFDF8A;
 }
 
 .cl {
-  height: 250px;
   text-align: center;
   vertical-align: top;
   white-space: nowrap;
+}
+
+.board-wrapper {
+  position: fixed;
+  top: 150px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.board {
+  margin: auto;
+  width: 1000px;
+  height: 750px;
+}
+
+.board .cl {
+  height: 27%;
+  margin-top: 3%;
+  margin-bottom: 3%;
 }
 
 .hand {
@@ -38,11 +51,11 @@ h2 {
   right: 20%;
 }
 
-#ai .hand {
+.ai .hand {
   top: -100px;
 }
 
-#player .hand {
+.player .hand {
   bottom: -100px;
 }
 
@@ -64,6 +77,15 @@ h2 {
 .card .art {
   /* margin: 0 auto; */
 }
+
+.board .card.attacking {
+  opacity: 0.5;
+}
+
+.board .attackers .card.attacking {
+  opacity: 1;
+}
+
 
 /* Hand */
 .hand .card .art {
@@ -108,14 +130,6 @@ h2 {
 
 .card .title, .cost {
   margin: 0px 2px;
-}
-
-.board .attacking {
-  opacity: 0.5;
-}
-
-.board.attackers .attacking {
-  opacity: 1;
 }
 
 .card .description {
@@ -261,4 +275,5 @@ html, body {
   height: 100%;
   overflow-x: hidden; 
   overflow-y: auto;
+  background-color: #EED4AE;
 }
