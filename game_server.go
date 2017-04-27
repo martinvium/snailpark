@@ -250,11 +250,14 @@ func (g *GameServer) assignAttacker(msg *Message) {
 		return
 	}
 
-	log.Println("Assigned attacker:", msg.Card)
-
-	card.Tags["attackTarget"] = g.game.DefendingPlayer().Avatar.Id
-	g.game.Engagements = append(g.game.Engagements, NewEngagement(card, g.game.DefendingPlayer().Avatar))
-	g.game.State.Transition("attackers")
+	if AnyAssignedAttackerWithId(g.game.Engagements, card.Id) == false {
+		log.Println("Assigned attacker:", msg.Card)
+		card.Tags["attackTarget"] = g.game.DefendingPlayer().Avatar.Id
+		g.game.Engagements = append(g.game.Engagements, NewEngagement(card, g.game.DefendingPlayer().Avatar))
+		g.game.State.Transition("attackers")
+	} else {
+		log.Println("Invalid attacker already used:", card.Id)
+	}
 }
 
 func (g *GameServer) targetAbility(msg *Message) {
