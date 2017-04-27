@@ -20,23 +20,23 @@
 
       <div id="ai">
         <energy-indicator title="Enemy" data-current="data.enemy.currentMana" data-max="data.enemy.maxMana"></energy-indicator>
-        <ul class="hand cf">
+        <ul class="hand cl">
           <card-list data-cards="data.enemy.hand"></card-list>
         </ul>
-        <div class="board cf">
+        <div class="board cl">
           <card-list data-cards="data.enemy.board" click-card="targetCard(id)"></card-list>
         </div>
       </div>
 
-      <div class="attackers cf">
+      <div class="board attackers cl">
         <card-list data-cards="data.attackers" click-card="targetCard(id)"></card-list>
       </div>
 
       <div id="player">
-        <div class="board cf">
+        <div class="board cl">
           <card-list data-cards="data.player.board" click-card="targetCard(id)"></card-list>
         </div>
-        <div class="hand cf">
+        <div class="hand cl">
           <card-list data-cards="data.player.hand" click-card="playCard(id)"></card-list>
         </div>
         <energy-indicator title="Your" data-current="data.player.currentMana" data-max="data.player.maxMana"/></energy-indicator>

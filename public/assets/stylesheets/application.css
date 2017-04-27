@@ -25,14 +25,17 @@ h2 {
   height: 220px;
 }
 
-.hand {
-  position: fixed;
-  left: 20%;
-  right: 20%;
+.cl {
   height: 250px;
   text-align: center;
   vertical-align: top;
   white-space: nowrap;
+}
+
+.hand {
+  position: fixed;
+  left: 20%;
+  right: 20%;
 }
 
 #ai .hand {
@@ -43,25 +46,8 @@ h2 {
   bottom: -100px;
 }
 
-.btn {
-  background-color: #4CAF50; /* Green */
-  border: none;
-  color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin-bottom: 20px;
-}
 
-.btn:focus {
-  outline: none;
-}
-
-.btn-disabled {
-  background-color: gray !important;
-}
+/* CARDS */
 
 .card {
   font-family: Helvetica;
@@ -72,6 +58,7 @@ h2 {
   display: inline-block;
   white-space: normal;
   vertical-align: top;
+  background-color: #FFCC66;
 }
 
 .card .art {
@@ -105,7 +92,7 @@ h2 {
   background-position: -37px;
 }
 
-.board .card .title, .board .card .description, .board .card .type {
+.board .card .title, .board .card .description, .board .card .type, .board .card .cost {
   display: none;
 }
 
@@ -127,6 +114,10 @@ h2 {
   opacity: 0.5;
 }
 
+.board.attackers .attacking {
+  opacity: 1;
+}
+
 .card .description {
   background-color: white;
   height: 78px;
@@ -139,26 +130,52 @@ h2 {
 }
 
 .card .power {
-  color: blue;
+  color: #3366FF;
 }
 
 .card .toughness {
-  color: red;
+  color: #DF2610;
 }
 
 .card.orange {
-  background-color: #ffbb99;
+  /* background-color: #ffbb99; */
 }
 .card.white {
-  background-color: #F0E8D0;
+  /* background-color: #F0E8D0; */
 }
 .card.gold {
   /* background-color: #FFD700; */
-  background: #f7b40c; /* Old browsers */
-  background: -moz-linear-gradient(top, #f7b40c 0%, #f1da36 100%); /* FF3.6-15 */
-  background: -webkit-linear-gradient(top, #f7b40c 0%,#f1da36 100%); /* Chrome10-25,Safari5.1-6 */
-  background: linear-gradient(to bottom, #f7b40c 0%,#f1da36 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  /* background: #f7b40c; /1* Old browsers *1/ */
+  /* background: -moz-linear-gradient(top, #f7b40c 0%, #f1da36 100%); /1* FF3.6-15 *1/ */
+  /* background: -webkit-linear-gradient(top, #f7b40c 0%,#f1da36 100%); /1* Chrome10-25,Safari5.1-6 *1/ */
+  /* background: linear-gradient(to bottom, #f7b40c 0%,#f1da36 100%); /1* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ *1/ */
 }
+
+
+/* BUTTON */
+
+.btn {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.btn:focus {
+  outline: none;
+}
+
+.btn-disabled {
+  background-color: gray !important;
+}
+
+
+/* MISC */
 
 .pull-left {
   float: left;
