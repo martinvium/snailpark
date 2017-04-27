@@ -10,13 +10,9 @@
     <script src="/assets/javascripts/app.js"></script>
   </head>
   <body>
-    <div class="arrow" style="pointer-events:none;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" class="box">
-        <path d="" stroke="red" stroke-width="15" class="prototype" />
-      </svg>
-    </div>
+    <div id="board" ng-controller="BoardController" ng-cloak>
+      <modal-dialog data-state="data.state" data-player-avatar="data.player.avatar" new-game="newGame()"></modal-dialog>
 
-    <div id="board" ng-controller="BoardController">
       <div class="middle cf">
         <div next-button next="next()" data-state="data.state" data-current-player-id="data.currentPlayerId"></div>
         <div id="messages" style="display: none;"></div>

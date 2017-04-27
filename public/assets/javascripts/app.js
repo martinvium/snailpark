@@ -32,7 +32,6 @@ angular.module('snailpark', ['ngWebSocket'])
       data.currentPlayerId = msg.currentPlayerId;
       data.state = msg.state;
       data.attackers = filterAttackers(msg);
-      console.log(data.attackers);
       data.player = msg.players["player"];
       data.player.hand = msg.players["player"]["hand"];
       data.player.board = msg.players["player"]["board"];
@@ -75,9 +74,12 @@ angular.module('snailpark', ['ngWebSocket'])
     $scope.next = gameServer.next
     $scope.playCard = gameServer.playCard
     $scope.targetCard = gameServer.targetCard
+    $scope.newGame = function() {
+      console.log('Not supported');
+    }
 
     gameServer.ping();
-  }]);
+  }])
 
 angular.module('snailpark')
   .directive('cardList', function() {
@@ -176,6 +178,32 @@ angular.module('snailpark')
       transclude: true,
       bindToController: true,
       template: '<input type="button" id="end-turn" value="{{ btnText() }}" ng-click="ctrl.next()" ng-class="{ \'btn-disabled\': disabled() }" class="btn pull-left"/><div id="state-help" class="pull-left">{{ help() }}</div>'
+    }
+  });
+
+angular.module('snailpark')
+  .directive('modalDialog', function() {
+    return {
+      scope: {
+        state: '=',
+        playerAvatar: '=',
+        newGame: '&'
+      },
+      restrict : 'EA',
+      controller: function() {},
+      controllerAs: 'ctrl',
+      link: function(scope) {
+        scope.content = function() {
+          if(scope.ctrl.playerAvatar["attributes"]["toughness"] <= 0) {
+            return 'You lost! :(';
+          } else {
+            return 'You won! :)';
+          }
+        }
+      },
+      transclude: true,
+      bindToController: true,
+      template: '<div id="myModal" ng-if="ctrl.state == \'finished\'" class="modal"><div class="modal-content">{{ content() }}</div></div>'
     }
   });
 
