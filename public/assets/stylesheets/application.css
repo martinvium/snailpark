@@ -17,6 +17,14 @@ h2 {
 
 .attackers {
   background-color: #FFDF8A;
+  position: relative;
+}
+.attackers .bg-text {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 1.4em;
+  color: #FEC04B;
 }
 
 .cl {
@@ -52,11 +60,11 @@ h2 {
 }
 
 .ai .hand {
-  top: -100px;
+  top: -250px;
 }
 
 .player .hand {
-  bottom: -100px;
+  bottom: -200px;
 }
 
 
@@ -74,10 +82,6 @@ h2 {
   background-color: #FFCC66;
 }
 
-.card .art {
-  /* margin: 0 auto; */
-}
-
 .board .card.attacking {
   opacity: 0.5;
 }
@@ -86,18 +90,17 @@ h2 {
   opacity: 1;
 }
 
-
 /* Hand */
 .hand .card .art {
-  width: 150px;
-  height: 78px;
+  width: 204px;
+  height: 150px;
 }
 
 .hand .card {
   border: 4px solid black;
-  padding: 8px 7px;
-  width: 128px;
-  height: 176px;
+  padding: 16px 14px;
+  width: 204px;
+  height: 320px;
 }
 
 /* Board */
@@ -168,8 +171,15 @@ h2 {
 
 /* BUTTON */
 
+#end-turn {
+  position: absolute;
+  right: 20px;
+  top: 45%;
+}
+
 .btn {
-  background-color: #4CAF50; /* Green */
+  /* background-color: #4CAF50; /1* Green *1/ */
+  background-color: #FF8000; /* Orange */
   border: none;
   color: white;
   padding: 15px 32px;
@@ -199,18 +209,10 @@ h2 {
   float: right;
 }
 
-#messages {
-  width: 50%;
-  margin: 10px auto;
-  color: white;
-  font-size: 1.4em;
-  padding: 25px 50px;
+.state-help {
+  margin: 0 auto;
+  font-size: 1.3em;
   text-align: center;
-}
-
-#state-help {
-  font-size: 1.2em;
-  padding: 15px;
   color: #555;
 }
 
@@ -231,12 +233,57 @@ h2 {
   margin-bottom: 20px;
 }
 
-.mana {
-  font-size: 1.4em;
-  margin-bottom: 10px;
+
+/* ENERGY */
+
+.energy {
+  width: 100px;
+  height: 208px;
+  padding-top: 80px;
 }
 
-/* Modal */
+.energy ul {
+  width: 100%;
+  height: 100%;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.energy li {
+  display: block;
+  width: 50px;
+  height: 20px;
+  background-color: green;
+  margin: 0 auto;
+  margin-bottom: 5px;
+}
+
+.energy li.current {
+  background-color: #00FF00;
+}
+
+.energy li.dead {
+  background-color: #4C4C4C;
+}
+
+.player .energy {
+  background-image: url('../images/energy_meter.png');
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  margin: auto 0;
+}
+
+.ai .energy {
+  background-image: url('../images/energy_meter_top.png');
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+
+/* MODAL */
 .modal {
     position: fixed; /* Stay in place */
     z-index: 1; /* Sit on top */

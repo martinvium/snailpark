@@ -13,13 +13,10 @@
     <div id="board" ng-controller="BoardController" ng-class="{ 'targeting': data.targeting }" ng-cloak>
       <modal-dialog data-state="data.state" data-player-avatar="data.player.avatar" new-game="newGame()"></modal-dialog>
 
-      <div class="middle cf">
-        <div next-button next="next()" data-state="data.state" data-current-player-id="data.currentPlayerId"></div>
-        <div id="messages" style="display: none;"></div>
-      </div>
+      <div next-button next="next()" data-state="data.state" data-current-player-id="data.currentPlayerId"></div>
 
       <div class="ai">
-        <energy-indicator title="Enemy" data-current="data.enemy.currentMana" data-max="data.enemy.maxMana"></energy-indicator>
+        <energy-indicator data-current="data.enemy.currentMana" data-max="data.enemy.maxMana"></energy-indicator>
 
         <ul class="hand cl">
           <card-list data-cards="data.enemy.hand"></card-list>
@@ -33,12 +30,15 @@
           </div>
 
           <div class="attackers cl">
+            <span class="bg-text">Attackers</span>
             <card-list data-cards="data.attackers" click-card="targetCard(id)"></card-list>
           </div>
 
           <div class="player cl">
             <card-list data-cards="data.player.board" click-card="targetCard(id)"></card-list>
           </div>
+
+          <div help-text data-state="data.state" data-current-player-id="data.currentPlayerId"></div>
         </div>
       </div>
 

@@ -132,7 +132,10 @@ app.directive('energyIndicator', function() {
     controllerAs: 'ctrl',
     transclude: true,
     bindToController: true,
-    template: '<div class="mana">{{ ctrl.title }} energy: {{ ctrl.current }} of {{ ctrl.max }}</div>'
+    link: function(scope) {
+      scope.range = [1, 2, 3, 4, 5, 6, 7];
+    },
+    template: '<div class="energy"><ul><li ng-repeat="i in range" ng-class="{ \'current\': i <= ctrl.current, \'dead\': i > ctrl.max }"></li></ul></div>'
   }
 });
 
@@ -157,7 +160,23 @@ app.directive('nextButton', function() {
           return 'End turn';
         }
       }
+    },
+    controllerAs: 'ctrl',
+    transclude: true,
+    bindToController: true,
+    template: '<input type="button" id="end-turn" value="{{ btnText() }}" ng-click="ctrl.next()" ng-class="{ \'btn-disabled\': disabled() }" class="btn pull-left"/>'
+  }
+});
 
+app.directive('helpText', function() {
+  return {
+    scope: {
+      currentPlayerId: '=',
+      state: '=',
+    },
+    restrict : 'EA',
+    controller: function() {},
+    link: function(scope) {
       scope.help = function() {
         if(scope.ctrl.currentPlayerId === 'ai') {
           return 'Your opponent is thinking...';
@@ -175,9 +194,10 @@ app.directive('nextButton', function() {
     controllerAs: 'ctrl',
     transclude: true,
     bindToController: true,
-    template: '<input type="button" id="end-turn" value="{{ btnText() }}" ng-click="ctrl.next()" ng-class="{ \'btn-disabled\': disabled() }" class="btn pull-left"/><div id="state-help" class="pull-left">{{ help() }}</div>'
+    template: '<div class="state-help">{{ help() }}</div>'
   }
 });
+
 
 app.directive('modalDialog', function() {
   return {
