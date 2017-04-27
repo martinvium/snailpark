@@ -95,7 +95,7 @@ app.directive('cardList', function() {
     controllerAs: 'ctrl',
     transclude: true,
     bindToController: true,
-    template: '<li ng-repeat="card in ctrl.cards" ><card data-set="card" click-card="ctrl.clickCard({ id: id })"></card></li>'
+    template: '<card ng-repeat="card in ctrl.cards" data-set="card" click-card="ctrl.clickCard({ id: id })"></card>'
   }
 });
 

@@ -3,13 +3,8 @@ h2 {
 }
 
 #board {
-  margin: 20px;
-}
-
-.cf {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
+  height: 100%;
+  margin: 0px;
 }
 
 .board {
@@ -31,7 +26,21 @@ h2 {
 }
 
 .hand {
-  margin-bottom: 20px;
+  position: fixed;
+  left: 20%;
+  right: 20%;
+  height: 250px;
+  text-align: center;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+#ai .hand {
+  top: -100px;
+}
+
+#player .hand {
+  bottom: -100px;
 }
 
 .btn {
@@ -61,10 +70,12 @@ h2 {
   border-radius: 5px;
   font-family: Helvetica;
   font-size: .8em;
+  text-align: left;
   padding: 5px 10px;
-  float: left;
   margin-right: 10px;
-
+  display: inline-block;
+  white-space: normal;
+  vertical-align: top;
 }
 
 .board .attacking {
@@ -198,5 +209,9 @@ h2 {
     cursor: pointer;
 }
 
-html, body { margin:0; padding:0; }
-svg { position:fixed; top:0; left:0; height:100%; width:100% }
+html, body {
+  margin:0; padding:0;
+  height: 100%;
+  overflow-x: hidden; 
+  overflow-y: auto;
+}
