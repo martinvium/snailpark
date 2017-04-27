@@ -32,6 +32,7 @@ app.factory('gameServer', function($websocket) {
 
     data.currentPlayerId = msg.currentPlayerId;
     data.state = msg.state;
+    data.targeting = ['targeting', 'blockTarget'].indexOf(data.state) !== -1;
     data.attackers = filterAttackers(msg);
     data.player = msg.players["player"];
     data.player.hand = msg.players["player"]["hand"];
@@ -109,7 +110,6 @@ app.directive('card', function() {
     link: function(scope) {
       scope.attacking = function() {
         var value = scope.ctrl.card.tags.attackTarget;
-        console.log(value);
         return typeof value != 'undefined' && value != '';
       }
     },

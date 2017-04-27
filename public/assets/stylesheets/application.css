@@ -17,6 +17,14 @@ h2 {
   height: 220px;
 }
 
+.targeting {
+  cursor: crosshair;
+}
+
+.playable.card {
+  cursor: pointer;
+}
+
 .attackers {
   margin-bottom: 20px;
   height: 220px;
