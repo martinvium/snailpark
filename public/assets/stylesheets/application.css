@@ -1,7 +1,3 @@
-h2 {
-  font-size: 1.4em;
-}
-
 #board {
   height: 100%;
   margin: 0px;
@@ -71,10 +67,9 @@ h2 {
 /* CARDS */
 
 .card {
-  font-family: Helvetica;
-  font-size: .8em;
+  font-size: .5em;
+  line-height: 1.5em;
   text-align: left;
-  /* padding: 5px 10px; */
   margin-right: 10px;
   display: inline-block;
   white-space: normal;
@@ -145,6 +140,7 @@ h2 {
 
 .card .cost {
   color: green;
+  font-size: 1.3em;
 }
 
 .card .description {
@@ -156,6 +152,7 @@ h2 {
   font-size: 1.3em;
   text-align: center;
   vertical-align: text-top;
+  margin-top: 4px;
 }
 
 .card .type {
@@ -233,6 +230,7 @@ h2 {
   font-size: 1.3em;
   text-align: center;
   color: #555;
+  font-size: 0.9em;
 }
 
 .yellow {
@@ -342,4 +340,11 @@ html, body {
   overflow-x: hidden; 
   overflow-y: auto;
   background-color: #EED4AE;
+  font-family: 'Press Start 2P', cursive;
+  line-height: 1em;
+}
+
+input {
+  font-family: 'Press Start 2P', cursive;
+  line-height: 1em;
 }
