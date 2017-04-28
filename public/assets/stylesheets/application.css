@@ -1,20 +1,6 @@
-h2 {
-  font-size: 1.4em;
-}
-
 #board {
-  margin: 20px;
-}
-
-.cf {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-}
-
-.board {
-  margin-bottom: 20px;
-  height: 220px;
+  height: 100%;
+  margin: 0px;
 }
 
 .targeting {
@@ -26,16 +12,190 @@ h2 {
 }
 
 .attackers {
-  margin-bottom: 20px;
-  height: 220px;
+  background-color: #FFDF8A;
+  position: relative;
+}
+.attackers .bg-text {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 1.4em;
+  color: #FEC04B;
+}
+
+.cl {
+  text-align: center;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.board-wrapper {
+  position: fixed;
+  top: 150px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.board {
+  margin: auto;
+  width: 1000px;
+  height: 750px;
+}
+
+.board .cl {
+  height: 27%;
+  margin-top: 3%;
+  margin-bottom: 3%;
 }
 
 .hand {
-  margin-bottom: 20px;
+  position: fixed;
+  left: 20%;
+  right: 20%;
+}
+
+.ai .hand {
+  top: -250px;
+}
+
+.player .hand {
+  bottom: -200px;
+}
+
+
+/* CARDS */
+
+.card {
+  font-size: .5em;
+  line-height: 1.5em;
+  text-align: left;
+  margin-right: 10px;
+  display: inline-block;
+  white-space: normal;
+  vertical-align: top;
+  background-color: #FFCC66;
+}
+
+.board .card.attacking {
+  opacity: 0.5;
+}
+
+.board .attackers .card.attacking {
+  opacity: 1;
+}
+
+.card .art {
+  width: 204px;
+  height: 150px;
+  background-position: -26px -22px;
+}
+
+.card {
+  border: 4px solid black;
+  padding: 16px 14px;
+  width: 204px;
+  height: 320px;
+}
+
+/* Board */
+.board .card {
+  border: 2px solid black;
+  padding: 8px 5px;
+  width: 106px;
+  height: 160px;
+}
+
+.board .card .art {
+  width: 106px;
+  height: 150px;
+  background-position: -75px -22px;
+}
+
+.board .card .title, .board .card .description, .board .card .type, .board .card .cost {
+  display: none;
+}
+
+/* Other */
+.card-details {
+  display: inline-block;
+  position: absolute;
+  left: 20px;
+  top: 30%;
+  z-index: 100;
+}
+
+.card-back {
+  background-color: #e74c3c;
+  border-color: #c0392b;
+}
+
+.card .header {
+  margin: 0px auto;
+}
+
+.card .title, .card .cost {
+  margin: 0px 2px 6px 2px;
+}
+
+.card .cost {
+  color: green;
+  font-size: 1.3em;
+}
+
+.card .description {
+  height: 125px;
+  padding: 10px 5px;
+}
+
+.card .power-toughness {
+  font-size: 1.3em;
+  text-align: center;
+  vertical-align: text-top;
+  margin-top: 4px;
+}
+
+.card .type {
+  display: inline-block;
+  margin: 0px auto 20px auto;
+}
+
+.card .power {
+  color: #3366FF;
+  font-weight: bold;
+}
+
+.card .toughness {
+  color: #DF2610;
+  font-weight: bold;
+}
+
+.card.orange {
+  /* background-color: #ffbb99; */
+}
+.card.white {
+  /* background-color: #F0E8D0; */
+}
+.card.gold {
+  /* background-color: #FFD700; */
+  /* background: #f7b40c; /1* Old browsers *1/ */
+  /* background: -moz-linear-gradient(top, #f7b40c 0%, #f1da36 100%); /1* FF3.6-15 *1/ */
+  /* background: -webkit-linear-gradient(top, #f7b40c 0%,#f1da36 100%); /1* Chrome10-25,Safari5.1-6 *1/ */
+  /* background: linear-gradient(to bottom, #f7b40c 0%,#f1da36 100%); /1* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ *1/ */
+}
+
+
+/* BUTTON */
+
+#end-turn {
+  position: absolute;
+  right: 20px;
+  top: 45%;
 }
 
 .btn {
-  background-color: #4CAF50; /* Green */
+  /* background-color: #4CAF50; /1* Green *1/ */
+  background-color: #FF8000; /* Orange */
   border: none;
   color: white;
   padding: 15px 32px;
@@ -54,70 +214,8 @@ h2 {
   background-color: gray !important;
 }
 
-.card {
-  width: 150px;
-  height: 200px;
-  border: 5px solid black;
-  border-radius: 5px;
-  font-family: Helvetica;
-  font-size: .8em;
-  padding: 5px 10px;
-  float: left;
-  margin-right: 10px;
 
-}
-
-.board .attacking {
-  opacity: 0.5;
-}
-
-.card-back {
-  background-color: #e74c3c;
-  border-color: #c0392b;
-}
-
-.card .header {
-  margin: 0px auto;
-}
-
-.card .title, .cost {
-  margin: 0px 2px;
-}
-
-.card .art {
-  height: 78px;
-  background-color: white;
-  margin: 0px auto;
-
-  img {
-    width: 100%;
-    height: 100%;
-  }
-}
-
-.card .description {
-  background-color: white;
-  height: 78px;
-  padding: 5px;
-}
-
-.card .power-toughness {
-
-}
-
-.card.orange {
-  background-color: #ffbb99;
-}
-.card.white {
-  background-color: #F0E8D0;
-}
-.card.gold {
-  /* background-color: #FFD700; */
-  background: #f7b40c; /* Old browsers */
-  background: -moz-linear-gradient(top, #f7b40c 0%, #f1da36 100%); /* FF3.6-15 */
-  background: -webkit-linear-gradient(top, #f7b40c 0%,#f1da36 100%); /* Chrome10-25,Safari5.1-6 */
-  background: linear-gradient(to bottom, #f7b40c 0%,#f1da36 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-}
+/* MISC */
 
 .pull-left {
   float: left;
@@ -127,19 +225,12 @@ h2 {
   float: right;
 }
 
-#messages {
-  width: 50%;
-  margin: 10px auto;
-  color: white;
-  font-size: 1.4em;
-  padding: 25px 50px;
+.state-help {
+  margin: 0 auto;
+  font-size: 1.3em;
   text-align: center;
-}
-
-#state-help {
-  font-size: 1.2em;
-  padding: 15px;
   color: #555;
+  font-size: 0.9em;
 }
 
 .yellow {
@@ -159,12 +250,57 @@ h2 {
   margin-bottom: 20px;
 }
 
-.mana {
-  font-size: 1.4em;
-  margin-bottom: 10px;
+
+/* ENERGY */
+
+.energy {
+  width: 100px;
+  height: 208px;
+  padding-top: 80px;
 }
 
-/* Modal */
+.energy ul {
+  width: 100%;
+  height: 100%;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.energy li {
+  display: block;
+  width: 50px;
+  height: 20px;
+  background-color: green;
+  margin: 0 auto;
+  margin-bottom: 5px;
+}
+
+.energy li.current {
+  background-color: #00FF00;
+}
+
+.energy li.dead {
+  background-color: #4C4C4C;
+}
+
+.player .energy {
+  background-image: url('../images/energy_meter.png');
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  margin: auto 0;
+}
+
+.ai .energy {
+  background-image: url('../images/energy_meter_top.png');
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+
+/* MODAL */
 .modal {
     position: fixed; /* Stay in place */
     z-index: 1; /* Sit on top */
@@ -198,5 +334,17 @@ h2 {
     cursor: pointer;
 }
 
-html, body { margin:0; padding:0; }
-svg { position:fixed; top:0; left:0; height:100%; width:100% }
+html, body {
+  margin:0; padding:0;
+  height: 100%;
+  overflow-x: hidden; 
+  overflow-y: auto;
+  background-color: #EED4AE;
+  font-family: 'Press Start 2P', cursive;
+  line-height: 1em;
+}
+
+input {
+  font-family: 'Press Start 2P', cursive;
+  line-height: 1em;
+}

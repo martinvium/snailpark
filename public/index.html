@@ -5,6 +5,7 @@
     <link rel="stylesheet" media="all" href="/assets/stylesheets/meyer.reset.css" />
     <link rel="stylesheet" media="all" href="/assets/stylesheets/clearfix.css" />
     <link rel="stylesheet" media="all" href="/assets/stylesheets/application.css" />
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
     <script src="/node_modules/angular/angular.js"></script>
     <script src="/node_modules/angular-websocket/dist/angular-websocket.js"></script>
     <script src="/assets/javascripts/app.js"></script>
@@ -13,32 +14,44 @@
     <div id="board" ng-controller="BoardController" ng-class="{ 'targeting': data.targeting }" ng-cloak>
       <modal-dialog data-state="data.state" data-player-avatar="data.player.avatar" new-game="newGame()"></modal-dialog>
 
-      <div class="middle cf">
-        <div next-button next="next()" data-state="data.state" data-current-player-id="data.currentPlayerId"></div>
-        <div id="messages" style="display: none;"></div>
+      <div next-button next="next()" data-state="data.state" data-current-player-id="data.currentPlayerId"></div>
+
+      <div class="card-details" ng-if="cardDetails.card != null">
+        <card data-set="cardDetails.card" ></card>
       </div>
 
-      <div id="ai">
-        <energy-indicator title="Enemy" data-current="data.enemy.currentMana" data-max="data.enemy.maxMana"></energy-indicator>
-        <ul class="hand cf">
-          <card-list data-cards="data.enemy.hand"></card-list>
+      <div class="ai">
+        <energy-indicator data-current="data.enemy.currentMana" data-max="data.enemy.maxMana"></energy-indicator>
+
+        <ul class="hand cl">
+          <card-list data-cards="data.enemy.hand" data-card-details="showCardDetails({ card: card })"></card-list>
         </ul>
-        <div class="board cf">
-          <card-list data-cards="data.enemy.board" click-card="targetCard(id)"></card-list>
+      </div>
+
+      <div class="board-wrapper">
+        <div class="board">
+          <div class="ai cl">
+            <card-list data-cards="data.enemy.board" data-card-details="showCardDetails({ card: card })" click-card="targetCard(id)"></card-list>
+          </div>
+
+          <div class="attackers cl">
+            <span class="bg-text">Attackers</span>
+            <card-list data-cards="data.attackers" data-card-details="showCardDetails({ card: card })" click-card="targetCard(id)"></card-list>
+          </div>
+
+          <div class="player cl">
+            <card-list data-cards="data.player.board" data-card-details="showCardDetails({ card: card })" click-card="targetCard(id)"></card-list>
+          </div>
+
+          <div help-text data-state="data.state" data-current-player-id="data.currentPlayerId"></div>
         </div>
       </div>
 
-      <div class="attackers cf">
-        <card-list data-cards="data.attackers" click-card="targetCard(id)"></card-list>
-      </div>
+      <div class="player">
+        <div class="hand cl">
+          <card-list data-cards="data.player.hand" data-card-details="showCardDetails({ card: card })" click-card="playCard(id)"></card-list>
+        </div>
 
-      <div id="player">
-        <div class="board cf">
-          <card-list data-cards="data.player.board" click-card="targetCard(id)"></card-list>
-        </div>
-        <div class="hand cf">
-          <card-list data-cards="data.player.hand" click-card="playCard(id)"></card-list>
-        </div>
         <energy-indicator title="Your" data-current="data.player.currentMana" data-max="data.player.maxMana"/></energy-indicator>
       </div>
     </div>

@@ -74,11 +74,18 @@ app.controller('BoardController', ['$scope', 'gameServer', function ($scope, gam
   gameServer.start();
 
   $scope.data = gameServer.data;
+  $scope.cardDetails = { card: null };
   $scope.next = gameServer.next
   $scope.playCard = gameServer.playCard
   $scope.targetCard = gameServer.targetCard
+
   $scope.newGame = function() {
     console.log('Not supported');
+  }
+
+  $scope.showCardDetails = function(args) {
+    $scope.cardDetails.card = args.card;
+    $scope.$apply();
   }
 
   gameServer.ping();
@@ -88,6 +95,7 @@ app.directive('cardList', function() {
   return {
     scope: {
       cards: '=',
+      cardDetails: '&',
       clickCard: '&'
     },
     restrict : 'EA',
@@ -95,7 +103,7 @@ app.directive('cardList', function() {
     controllerAs: 'ctrl',
     transclude: true,
     bindToController: true,
-    template: '<li ng-repeat="card in ctrl.cards" ><card data-set="card" click-card="ctrl.clickCard({ id: id })"></card></li>'
+    template: '<card ng-repeat="card in ctrl.cards" data-set="card" data-card-details="ctrl.cardDetails({card: card})" click-card="ctrl.clickCard({ id: id })"></card>'
   }
 });
 
@@ -103,14 +111,27 @@ app.directive('card', function() {
   return {
     scope: {
       card: '=set',
+      cardDetails: '&',
       clickCard: '&'
     },
     replace: true,
     controller: function() {},
-    link: function(scope) {
+    link: function(scope, element) {
       scope.attacking = function() {
         var value = scope.ctrl.card.tags.attackTarget;
         return typeof value != 'undefined' && value != '';
+      }
+
+      if(typeof scope.ctrl.cardDetails != 'undefined') {
+        element.on('mouseover', function(e) {
+          scope.ctrl.cardDetails({ card: scope.ctrl.card });
+        });
+
+        element.on('mouseout', function(e) {
+          scope.ctrl.cardDetails({ card: null });
+        });
+      } else {
+        console.log('no details for card');
       }
     },
     controllerAs: 'ctrl',
@@ -132,7 +153,10 @@ app.directive('energyIndicator', function() {
     controllerAs: 'ctrl',
     transclude: true,
     bindToController: true,
-    template: '<div class="mana">{{ ctrl.title }} energy: {{ ctrl.current }} of {{ ctrl.max }}</div>'
+    link: function(scope) {
+      scope.range = [1, 2, 3, 4, 5, 6, 7];
+    },
+    template: '<div class="energy"><ul><li ng-repeat="i in range" ng-class="{ \'current\': i <= ctrl.current, \'dead\': i > ctrl.max }"></li></ul></div>'
   }
 });
 
@@ -157,7 +181,23 @@ app.directive('nextButton', function() {
           return 'End turn';
         }
       }
+    },
+    controllerAs: 'ctrl',
+    transclude: true,
+    bindToController: true,
+    template: '<input type="button" id="end-turn" value="{{ btnText() }}" ng-click="ctrl.next()" ng-class="{ \'btn-disabled\': disabled() }" class="btn pull-left"/>'
+  }
+});
 
+app.directive('helpText', function() {
+  return {
+    scope: {
+      currentPlayerId: '=',
+      state: '=',
+    },
+    restrict : 'EA',
+    controller: function() {},
+    link: function(scope) {
       scope.help = function() {
         if(scope.ctrl.currentPlayerId === 'ai') {
           return 'Your opponent is thinking...';
@@ -175,9 +215,10 @@ app.directive('nextButton', function() {
     controllerAs: 'ctrl',
     transclude: true,
     bindToController: true,
-    template: '<input type="button" id="end-turn" value="{{ btnText() }}" ng-click="ctrl.next()" ng-class="{ \'btn-disabled\': disabled() }" class="btn pull-left"/><div id="state-help" class="pull-left">{{ help() }}</div>'
+    template: '<div class="state-help">{{ help() }}</div>'
   }
 });
+
 
 app.directive('modalDialog', function() {
   return {
