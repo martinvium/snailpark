@@ -15,27 +15,31 @@
 
       <div next-button next="next()" data-state="data.state" data-current-player-id="data.currentPlayerId"></div>
 
+      <div class="card-details" ng-if="cardDetails.card != null">
+        <card data-set="cardDetails.card" ></card>
+      </div>
+
       <div class="ai">
         <energy-indicator data-current="data.enemy.currentMana" data-max="data.enemy.maxMana"></energy-indicator>
 
         <ul class="hand cl">
-          <card-list data-cards="data.enemy.hand"></card-list>
+          <card-list data-cards="data.enemy.hand" data-card-details="showCardDetails({ card: card })"></card-list>
         </ul>
       </div>
 
       <div class="board-wrapper">
         <div class="board">
           <div class="ai cl">
-            <card-list data-cards="data.enemy.board" click-card="targetCard(id)"></card-list>
+            <card-list data-cards="data.enemy.board" data-card-details="showCardDetails({ card: card })" click-card="targetCard(id)"></card-list>
           </div>
 
           <div class="attackers cl">
             <span class="bg-text">Attackers</span>
-            <card-list data-cards="data.attackers" click-card="targetCard(id)"></card-list>
+            <card-list data-cards="data.attackers" data-card-details="showCardDetails({ card: card })" click-card="targetCard(id)"></card-list>
           </div>
 
           <div class="player cl">
-            <card-list data-cards="data.player.board" click-card="targetCard(id)"></card-list>
+            <card-list data-cards="data.player.board" data-card-details="showCardDetails({ card: card })" click-card="targetCard(id)"></card-list>
           </div>
 
           <div help-text data-state="data.state" data-current-player-id="data.currentPlayerId"></div>
@@ -44,7 +48,7 @@
 
       <div class="player">
         <div class="hand cl">
-          <card-list data-cards="data.player.hand" click-card="playCard(id)"></card-list>
+          <card-list data-cards="data.player.hand" data-card-details="showCardDetails({ card: card })" click-card="playCard(id)"></card-list>
         </div>
 
         <energy-indicator title="Your" data-current="data.player.currentMana" data-max="data.player.maxMana"/></energy-indicator>

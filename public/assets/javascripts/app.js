@@ -74,11 +74,18 @@ app.controller('BoardController', ['$scope', 'gameServer', function ($scope, gam
   gameServer.start();
 
   $scope.data = gameServer.data;
+  $scope.cardDetails = { card: null };
   $scope.next = gameServer.next
   $scope.playCard = gameServer.playCard
   $scope.targetCard = gameServer.targetCard
+
   $scope.newGame = function() {
     console.log('Not supported');
+  }
+
+  $scope.showCardDetails = function(args) {
+    $scope.cardDetails.card = args.card;
+    $scope.$apply();
   }
 
   gameServer.ping();
@@ -88,6 +95,7 @@ app.directive('cardList', function() {
   return {
     scope: {
       cards: '=',
+      cardDetails: '&',
       clickCard: '&'
     },
     restrict : 'EA',
@@ -95,7 +103,7 @@ app.directive('cardList', function() {
     controllerAs: 'ctrl',
     transclude: true,
     bindToController: true,
-    template: '<card ng-repeat="card in ctrl.cards" data-set="card" click-card="ctrl.clickCard({ id: id })"></card>'
+    template: '<card ng-repeat="card in ctrl.cards" data-set="card" data-card-details="ctrl.cardDetails({card: card})" click-card="ctrl.clickCard({ id: id })"></card>'
   }
 });
 
@@ -103,14 +111,27 @@ app.directive('card', function() {
   return {
     scope: {
       card: '=set',
+      cardDetails: '&',
       clickCard: '&'
     },
     replace: true,
     controller: function() {},
-    link: function(scope) {
+    link: function(scope, element) {
       scope.attacking = function() {
         var value = scope.ctrl.card.tags.attackTarget;
         return typeof value != 'undefined' && value != '';
+      }
+
+      if(typeof scope.ctrl.cardDetails != 'undefined') {
+        element.on('mouseover', function(e) {
+          scope.ctrl.cardDetails({ card: scope.ctrl.card });
+        });
+
+        element.on('mouseout', function(e) {
+          scope.ctrl.cardDetails({ card: null });
+        });
+      } else {
+        console.log('no details for card');
       }
     },
     controllerAs: 'ctrl',
