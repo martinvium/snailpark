@@ -139,27 +139,38 @@ h2 {
   margin: 0px auto;
 }
 
-.card .title, .cost {
-  margin: 0px 2px;
+.card .title, .card .cost {
+  margin: 0px 2px 6px 2px;
+}
+
+.card .cost {
+  color: green;
 }
 
 .card .description {
-  background-color: white;
-  height: 78px;
-  padding: 5px;
+  height: 125px;
+  padding: 10px 5px;
 }
 
 .card .power-toughness {
   font-size: 1.3em;
-  font-weight: bold;
+  text-align: center;
+  vertical-align: text-top;
+}
+
+.card .type {
+  display: inline-block;
+  margin: 0px auto 20px auto;
 }
 
 .card .power {
   color: #3366FF;
+  font-weight: bold;
 }
 
 .card .toughness {
   color: #DF2610;
+  font-weight: bold;
 }
 
 .card.orange {

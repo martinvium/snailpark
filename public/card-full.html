@@ -6,10 +6,10 @@
       <div class="cf"></div>
     </div>
     <div class="art" style="background-image: url('/assets/images/{{ ctrl.card.tags.type }}.png');"></div>
-    <div class="type">{{ ctrl.card.tags.type }}</div>
     <div class="description">{{ ctrl.card.tags.description }}</div>
     <div class="power-toughness" ng-if="ctrl.card.attributes.toughness">
       <span class="power pull-left">{{ ctrl.card.attributes.power }}</span>
+      <span class="type center">{{ ctrl.card.tags.type }}</span>
       <span class="toughness pull-right">{{ ctrl.card.attributes.toughness }}</span>
     </div>
   </div>
