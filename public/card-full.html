@@ -12,5 +12,6 @@
       <span class="type center">{{ ctrl.card.tags.type }}</span>
       <span class="toughness pull-right" ng-if="ctrl.card.attributes.toughness">{{ ctrl.card.attributes.toughness }}</span>
     </div>
+    <div class="baloon" ng-if="damage">-{{ damage }}</div>
   </div>
 </div>

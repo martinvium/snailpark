@@ -108,6 +108,7 @@ app.factory('gameServer', function($websocket) {
     },
 
     next: function() {
+      console.log('next');
       dataStream.send(JSON.stringify({ action: 'endTurn', playerId: playerId }));
     },
 
@@ -159,6 +160,7 @@ app.directive('card', function() {
   return {
     scope: {
       card: '=set',
+      damage: '=',
       cardDetails: '&',
       clickCard: '&'
     },
@@ -170,6 +172,19 @@ app.directive('card', function() {
         return typeof value != 'undefined' && value != '';
       }
 
+      // damage baloon
+      scope.$watch('ctrl.card.attributes.toughness', function(n, o) {
+        if(o > n) {
+          scope.damage = (o - n);
+
+          setTimeout(function() {
+            scope.damage = null;
+            scope.$apply();
+          }, 600);
+        }
+      });
+
+      // card details
       if(typeof scope.ctrl.cardDetails != 'undefined') {
         element.on('mouseover', function(e) {
           scope.ctrl.cardDetails({ card: scope.ctrl.card });
@@ -178,8 +193,6 @@ app.directive('card', function() {
         element.on('mouseout', function(e) {
           scope.ctrl.cardDetails({ card: null });
         });
-      } else {
-        console.log('no details for card');
       }
     },
     controllerAs: 'ctrl',
@@ -233,7 +246,7 @@ app.directive('nextButton', function() {
     controllerAs: 'ctrl',
     transclude: true,
     bindToController: true,
-    template: '<input type="button" id="end-turn" value="{{ btnText() }}" ng-click="ctrl.next()" ng-class="{ \'btn-disabled\': disabled() }" class="btn pull-left"/>'
+    template: '<input type="button" id="end-turn" value="{{ btnText() }}" ng-click="ctrl.next()" ng-class="{ \'btn-disabled\': disabled() }" class="btn"/>'
   }
 });
 
