@@ -6,6 +6,9 @@
   "repository": "git@github.com:martinvium/snailpark.git",
   "author": "Martin Vium <martin.vium@gmail.com>",
   "license": "UNLICENSED",
+  "engines": {
+    "node": "4.5.0"
+  },
   "dependencies": {
     "angular": "1.6.4",
     "angular-websocket": "2.0.1"
