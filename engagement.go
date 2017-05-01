@@ -1,12 +1,12 @@
 package main
 
 type Engagement struct {
-	Attacker *Card `json:"attacker"`
-	Blocker  *Card `json:"blocker"`
-	Target   *Card `json:"target"`
+	Attacker *Entity `json:"attacker"`
+	Blocker  *Entity `json:"blocker"`
+	Target   *Entity `json:"target"`
 }
 
-func NewEngagement(attacker *Card, target *Card) *Engagement {
+func NewEngagement(attacker *Entity, target *Entity) *Engagement {
 	return &Engagement{attacker, nil, target}
 }
 

@@ -14,21 +14,21 @@ type ResponseMessage struct {
 	Players         map[string]*ResponsePlayer `json:"players"`
 	Options         []string                   `json:"options"`
 	Engagements     []*Engagement              `json:"engagements"`
-	CurrentCard     *Card                      `json:"currentCard"`
+	CurrentCard     *Entity                    `json:"currentCard"`
 }
 
 type ResponsePlayer struct {
-	Id          string  `json:"id"`
-	CurrentMana int     `json:"currentMana"`
-	MaxMana     int     `json:"maxMana"`
-	Deck        []*Card `json:"deck"`
-	Hand        []*Card `json:"hand"`
-	HandSize    int     `json:"handSize"`
-	Board       []*Card `json:"board"`
-	Avatar      *Card   `json:"avatar"`
+	Id          string    `json:"id"`
+	CurrentMana int       `json:"currentMana"`
+	MaxMana     int       `json:"maxMana"`
+	Deck        []*Entity `json:"deck"`
+	Hand        []*Entity `json:"hand"`
+	HandSize    int       `json:"handSize"`
+	Board       []*Entity `json:"board"`
+	Avatar      *Entity   `json:"avatar"`
 }
 
-func NewResponseMessage(state string, playerId string, players map[string]*Player, options []string, engagements []*Engagement, currentCard *Card) *ResponseMessage {
+func NewResponseMessage(state string, playerId string, players map[string]*Player, options []string, engagements []*Engagement, currentCard *Entity) *ResponseMessage {
 	responsePlayers := newResponsePlayers(players)
 	return &ResponseMessage{state, playerId, responsePlayers, options, engagements, currentCard}
 }

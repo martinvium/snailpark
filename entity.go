@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-type Card struct {
+type Entity struct {
 	proto EntityProto
 
 	Id        string `json:"id"`
@@ -18,7 +18,7 @@ type Card struct {
 
 const DefaultLocation = "library"
 
-func NewCard(proto *EntityProto, id, playerId string) *Card {
+func NewEntity(proto *EntityProto, id, playerId string) *Entity {
 	tags := make(map[string]string)
 	for k, v := range proto.Tags {
 		tags[k] = v
@@ -29,7 +29,7 @@ func NewCard(proto *EntityProto, id, playerId string) *Card {
 		attributes[k] = v
 	}
 
-	return &Card{
+	return &Entity{
 		*proto,
 		id,
 		playerId,
@@ -42,7 +42,7 @@ func NewCard(proto *EntityProto, id, playerId string) *Card {
 	}
 }
 
-func DeleteCard(s []*Card, c *Card) []*Card {
+func DeleteCard(s []*Entity, c *Entity) []*Entity {
 	for i, v := range s {
 		if v.Id == c.Id {
 			s = append(s[:i], s[i+1:]...)
@@ -52,7 +52,7 @@ func DeleteCard(s []*Card, c *Card) []*Card {
 	return s
 }
 
-func FirstCardWithId(s []*Card, id string) *Card {
+func FirstCardWithId(s []*Entity, id string) *Entity {
 	for _, v := range s {
 		if v.Id == id {
 			return v
@@ -62,25 +62,25 @@ func FirstCardWithId(s []*Card, id string) *Card {
 	return nil
 }
 
-func FirstCardWithType(s []*Card, cardType string) *Card {
+func FirstCardWithType(s []*Entity, cardType string) *Entity {
 	for _, c := range s {
 		if c.Tags["type"] == cardType {
 			return c
 		}
 	}
 
-	fmt.Println("ERROR: No card of type", cardType, " in deck!")
+	fmt.Println("ERROR: No Entity of type", cardType, " in deck!")
 	return nil
 }
 
-func FilterCardsWithTitle(s []*Card, t string) []*Card {
-	return FilterCards(s, func(c *Card) bool {
+func FilterCardsWithTitle(s []*Entity, t string) []*Entity {
+	return FilterCards(s, func(c *Entity) bool {
 		return c.Tags["title"] == t
 	})
 }
 
-func FilterCards(vs []*Card, f func(*Card) bool) []*Card {
-	vsf := make([]*Card, 0)
+func FilterCards(vs []*Entity, f func(*Entity) bool) []*Entity {
+	vsf := make([]*Entity, 0)
 	for _, v := range vs {
 		if f(v) {
 			vsf = append(vsf, v)
@@ -89,7 +89,7 @@ func FilterCards(vs []*Card, f func(*Card) bool) []*Card {
 	return vsf
 }
 
-func MapCardIds(vs []*Card) []string {
+func MapCardIds(vs []*Entity) []string {
 	vsm := make([]string, len(vs))
 	for i, v := range vs {
 		vsm[i] = v.Id
@@ -97,26 +97,26 @@ func MapCardIds(vs []*Card) []string {
 	return vsm
 }
 
-func NewTestCard(title string, playerId string) *Card {
+func NewTestCard(title string, playerId string) *Entity {
 	proto := EntityProtoByTitle(StandardRepo(), title)
-	return NewCard(proto, NewUUID(), playerId)
+	return NewEntity(proto, NewUUID(), playerId)
 }
 
-func NewBoardTestCard(title string, playerId string) *Card {
+func NewBoardTestCard(title string, playerId string) *Entity {
 	c := NewTestCard(title, playerId)
 	c.Location = "board"
 	return c
 }
 
-func (c *Card) String() string {
-	return fmt.Sprintf("Card(%v, %v)", c.Tags["title"], c.PlayerId)
+func (c *Entity) String() string {
+	return fmt.Sprintf("Entity(%v, %v)", c.Tags["title"], c.PlayerId)
 }
 
-func (c *Card) CanAttack() bool {
+func (c *Entity) CanAttack() bool {
 	return ActivatedAbility(c.Abilities) != nil
 }
 
-func (c *Card) Removed() bool {
+func (c *Entity) Removed() bool {
 	if toughness, ok := c.Attributes["toughness"]; ok {
 		return toughness <= 0
 	}
@@ -124,13 +124,13 @@ func (c *Card) Removed() bool {
 	return false
 }
 
-func (c *Card) AddEffect(g *Game, e *Effect) {
+func (c *Entity) AddEffect(g *Game, e *Effect) {
 	fmt.Println("Addded and applied effect:", e)
 	c.Effects = append(c.Effects, e)
 	e.Apply(g, c)
 }
 
-func (c *Card) UpdateEffects(g *Game) {
+func (c *Entity) UpdateEffects(g *Game) {
 	attributes := make(map[string]int)
 	for k, v := range c.proto.Attributes {
 		attributes[k] = v
@@ -143,7 +143,7 @@ func (c *Card) UpdateEffects(g *Game) {
 	}
 }
 
-func (c *Card) ModifyAttribute(attribute string, modifier int) {
+func (c *Entity) ModifyAttribute(attribute string, modifier int) {
 	fmt.Println("Modified attribute", attribute, "by", modifier)
 	if _, ok := c.Attributes[attribute]; ok {
 		c.Attributes[attribute] += modifier
@@ -154,6 +154,6 @@ func (c *Card) ModifyAttribute(attribute string, modifier int) {
 	}
 }
 
-func (c *Card) StaysOnBoard() bool {
+func (c *Entity) StaysOnBoard() bool {
 	return c.Tags["type"] != "spell"
 }

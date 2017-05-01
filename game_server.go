@@ -119,7 +119,7 @@ func (g *GameServer) SendStateResponseAll() {
 }
 
 func (g *GameServer) SendOptionsResponse() {
-	cards := FilterCards(g.game.AllBoardCards(), func(target *Card) bool {
+	cards := FilterCards(g.game.AllBoardCards(), func(target *Entity) bool {
 		return g.validTargetForCurrentCard(target)
 	})
 
@@ -279,7 +279,7 @@ func (g *GameServer) targetAbility(msg *Message) {
 	g.game.State.Transition("main")
 }
 
-func (g *GameServer) validTargetForCurrentCard(target *Card) bool {
+func (g *GameServer) validTargetForCurrentCard(target *Entity) bool {
 	targetAbilities := FilterAbility(g.game.CurrentCard.Abilities, func(a *Ability) bool {
 		return a.Trigger == "enterPlay" && a.Target == "target"
 	})
@@ -289,7 +289,7 @@ func (g *GameServer) validTargetForCurrentCard(target *Card) bool {
 	})
 }
 
-func (g *GameServer) getCardOnBoard(id string) *Card {
+func (g *GameServer) getCardOnBoard(id string) *Entity {
 	for _, card := range g.game.AllBoardCards() {
 		if card.Id == id {
 			return card

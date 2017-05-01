@@ -2,23 +2,23 @@ package main
 
 import "math/rand"
 
-func NewStandardDeck(playerId string, def []string) []*Card {
+func NewStandardDeck(playerId string, def []string) []*Entity {
 	return NewCards(StandardRepo(), playerId, def)
 }
 
-func NewCards(repo []*EntityProto, playerId string, def []string) []*Card {
-	deck := []*Card{}
+func NewCards(repo []*EntityProto, playerId string, def []string) []*Entity {
+	deck := []*Entity{}
 
 	for _, n := range def {
 		proto := EntityProtoByTitle(repo, n)
-		card := NewCard(proto, NewUUID(), playerId)
+		card := NewEntity(proto, NewUUID(), playerId)
 		deck = append(deck, card)
 	}
 
 	return deck
 }
 
-func ShuffleCards(s []*Card) []*Card {
+func ShuffleCards(s []*Entity) []*Entity {
 	for i := range s {
 		j := rand.Intn(i + 1)
 		s[i], s[j] = s[j], s[i]
@@ -27,11 +27,11 @@ func ShuffleCards(s []*Card) []*Card {
 	return s
 }
 
-func NewPrototypeDeck(playerId string) []*Card {
+func NewPrototypeDeck(playerId string) []*Entity {
 	return NewStandardDeck(playerId, PrototypeDeckDef)
 }
 
-func NewZooDeck(playerId string) []*Card {
+func NewZooDeck(playerId string) []*Entity {
 	return NewStandardDeck(playerId, ZooDeckDef)
 }
 

@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func ResolveCurrentCard(g *Game, target *Card) {
+func ResolveCurrentCard(g *Game, target *Entity) {
 	card := g.CurrentCard
 	g.CurrentCard = nil
 
@@ -20,18 +20,18 @@ func ResolveCurrentCard(g *Game, target *Card) {
 	g.CurrentPlayer.PayCardCost(card)
 }
 
-func InvokeTrigger(g *Game, origin, target *Card, event string) {
+func InvokeTrigger(g *Game, origin, target *Entity, event string) {
 	InvokeAbilityTrigger(g, origin, target, event)
 	InvokeEffectTrigger(g, event)
 }
 
-func InvokeAbilityTrigger(g *Game, origin, target *Card, event string) {
+func InvokeAbilityTrigger(g *Game, origin, target *Entity, event string) {
 	for _, c := range OrderCardsByTimePlayed(g.AllBoardCards()) {
 		InvokeCardAbilityTrigger(g, c, origin, target, event)
 	}
 }
 
-func InvokeCardAbilityTrigger(g *Game, c, origin, target *Card, event string) {
+func InvokeCardAbilityTrigger(g *Game, c, origin, target *Entity, event string) {
 	for _, a := range c.Abilities {
 		if !a.ValidTrigger(event, c, origin) {
 			continue
