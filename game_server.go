@@ -119,11 +119,11 @@ func (g *GameServer) SendStateResponseAll() {
 }
 
 func (g *GameServer) SendOptionsResponse() {
-	cards := FilterCards(g.game.AllBoardCards(), func(target *Entity) bool {
+	cards := FilterEntities(g.game.AllBoardCards(), func(target *Entity) bool {
 		return g.validTargetForCurrentCard(target)
 	})
 
-	options := MapCardIds(cards)
+	options := MapEntityIds(cards)
 	log.Println("Options:", options)
 	g.sendBoardStateToClient(g.clients[g.game.CurrentPlayer.Id], options)
 }
@@ -163,7 +163,7 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 		return
 	}
 
-	g.game.CurrentCard = FirstCardWithId(g.game.CurrentPlayer.Hand, msg.Card)
+	g.game.CurrentCard = EntityById(g.game.CurrentPlayer.Hand, msg.Card)
 	g.game.State.Transition("playingCard")
 
 	requireTarget := AnyAbility(g.game.CurrentCard.Abilities, func(a *Ability) bool {
@@ -199,7 +199,7 @@ func (g *GameServer) handleTarget(msg *Message) {
 }
 
 func (g *GameServer) assignBlocker(msg *Message) {
-	card := FirstCardWithId(g.game.DefendingPlayer().Board, msg.Card)
+	card := EntityById(g.game.DefendingPlayer().Board, msg.Card)
 	if card == nil {
 		log.Println("ERROR: Invalid blocker:", msg.Card)
 		return
@@ -215,7 +215,7 @@ func (g *GameServer) assignBlocker(msg *Message) {
 }
 
 func (g *GameServer) assignBlockTarget(msg *Message) {
-	card := FirstCardWithId(g.game.CurrentPlayer.Board, msg.Card)
+	card := EntityById(g.game.CurrentPlayer.Board, msg.Card)
 	if card == nil {
 		log.Println("ERROR: Invalid blocker target:", msg.Card)
 		return
@@ -239,7 +239,7 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 }
 
 func (g *GameServer) assignAttacker(msg *Message) {
-	card := FirstCardWithId(g.game.CurrentPlayer.Board, msg.Card)
+	card := EntityById(g.game.CurrentPlayer.Board, msg.Card)
 	if card == nil {
 		log.Println("ERROR: Invalid attacker:", msg.Card)
 		return

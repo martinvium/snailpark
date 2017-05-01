@@ -60,7 +60,7 @@ func ResolveRemovedCards(g *Game) {
 	for _, player := range g.Players {
 		for _, card := range player.Board {
 			if card.Removed() {
-				player.Board = DeleteCard(player.Board, card)
+				player.Board = DeleteEntity(player.Board, card)
 				player.AddToGraveyard(card)
 				InvokeTrigger(g, card, nil, "enterGraveyard")
 			}

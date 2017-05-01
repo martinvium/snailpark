@@ -6,7 +6,7 @@ func TestEngagement_ResolveEngagement(t *testing.T) {
 	game := NewTestGame()
 
 	engagement := &Engagement{
-		Attacker: NewBoardTestCard("Dodgy Fella", "p1"),
+		Attacker: NewTestEntityOnBoard("Dodgy Fella", "p1"),
 		Target:   game.Players["p2"].Avatar,
 	}
 
@@ -25,8 +25,8 @@ func TestEngagement_SkipBlockedEngagements(t *testing.T) {
 	game := NewTestGame()
 
 	engagement := &Engagement{
-		Attacker: NewBoardTestCard("Dodgy Fella", "p1"),
-		Blocker:  NewBoardTestCard("Dodgy Fella", "p2"),
+		Attacker: NewTestEntityOnBoard("Dodgy Fella", "p1"),
+		Blocker:  NewTestEntityOnBoard("Dodgy Fella", "p2"),
 		Target:   game.Players["p2"].Avatar,
 	}
 

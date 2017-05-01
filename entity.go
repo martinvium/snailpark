@@ -42,9 +42,9 @@ func NewEntity(proto *EntityProto, id, playerId string) *Entity {
 	}
 }
 
-func DeleteCard(s []*Entity, c *Entity) []*Entity {
+func DeleteEntity(s []*Entity, e *Entity) []*Entity {
 	for i, v := range s {
-		if v.Id == c.Id {
+		if v.Id == e.Id {
 			s = append(s[:i], s[i+1:]...)
 		}
 	}
@@ -52,7 +52,7 @@ func DeleteCard(s []*Entity, c *Entity) []*Entity {
 	return s
 }
 
-func FirstCardWithId(s []*Entity, id string) *Entity {
+func EntityById(s []*Entity, id string) *Entity {
 	for _, v := range s {
 		if v.Id == id {
 			return v
@@ -62,10 +62,10 @@ func FirstCardWithId(s []*Entity, id string) *Entity {
 	return nil
 }
 
-func FirstCardWithType(s []*Entity, cardType string) *Entity {
-	for _, c := range s {
-		if c.Tags["type"] == cardType {
-			return c
+func FirstEntityByType(s []*Entity, cardType string) *Entity {
+	for _, e := range s {
+		if e.Tags["type"] == cardType {
+			return e
 		}
 	}
 
@@ -73,13 +73,13 @@ func FirstCardWithType(s []*Entity, cardType string) *Entity {
 	return nil
 }
 
-func FilterCardsWithTitle(s []*Entity, t string) []*Entity {
-	return FilterCards(s, func(c *Entity) bool {
-		return c.Tags["title"] == t
+func FilterEntityByTitle(s []*Entity, t string) []*Entity {
+	return FilterEntities(s, func(e *Entity) bool {
+		return e.Tags["title"] == t
 	})
 }
 
-func FilterCards(vs []*Entity, f func(*Entity) bool) []*Entity {
+func FilterEntities(vs []*Entity, f func(*Entity) bool) []*Entity {
 	vsf := make([]*Entity, 0)
 	for _, v := range vs {
 		if f(v) {
@@ -89,7 +89,7 @@ func FilterCards(vs []*Entity, f func(*Entity) bool) []*Entity {
 	return vsf
 }
 
-func MapCardIds(vs []*Entity) []string {
+func MapEntityIds(vs []*Entity) []string {
 	vsm := make([]string, len(vs))
 	for i, v := range vs {
 		vsm[i] = v.Id
@@ -97,63 +97,63 @@ func MapCardIds(vs []*Entity) []string {
 	return vsm
 }
 
-func NewTestCard(title string, playerId string) *Entity {
+func NewTestEntity(title string, playerId string) *Entity {
 	proto := EntityProtoByTitle(StandardRepo(), title)
 	return NewEntity(proto, NewUUID(), playerId)
 }
 
-func NewBoardTestCard(title string, playerId string) *Entity {
-	c := NewTestCard(title, playerId)
-	c.Location = "board"
-	return c
+func NewTestEntityOnBoard(title string, playerId string) *Entity {
+	e := NewTestEntity(title, playerId)
+	e.Location = "board"
+	return e
 }
 
-func (c *Entity) String() string {
-	return fmt.Sprintf("Entity(%v, %v)", c.Tags["title"], c.PlayerId)
+func (e *Entity) String() string {
+	return fmt.Sprintf("Entity(%v, %v)", e.Tags["title"], e.PlayerId)
 }
 
-func (c *Entity) CanAttack() bool {
-	return ActivatedAbility(c.Abilities) != nil
+func (e *Entity) CanAttack() bool {
+	return ActivatedAbility(e.Abilities) != nil
 }
 
-func (c *Entity) Removed() bool {
-	if toughness, ok := c.Attributes["toughness"]; ok {
+func (e *Entity) Removed() bool {
+	if toughness, ok := e.Attributes["toughness"]; ok {
 		return toughness <= 0
 	}
 
 	return false
 }
 
-func (c *Entity) AddEffect(g *Game, e *Effect) {
-	fmt.Println("Addded and applied effect:", e)
-	c.Effects = append(c.Effects, e)
-	e.Apply(g, c)
+func (e *Entity) AddEffect(g *Game, effect *Effect) {
+	fmt.Println("Addded and applied effect:", effect)
+	e.Effects = append(e.Effects, effect)
+	effect.Apply(g, e)
 }
 
-func (c *Entity) UpdateEffects(g *Game) {
+func (e *Entity) UpdateEffects(g *Game) {
 	attributes := make(map[string]int)
-	for k, v := range c.proto.Attributes {
+	for k, v := range e.proto.Attributes {
 		attributes[k] = v
 	}
 
-	c.Attributes = attributes
+	e.Attributes = attributes
 
-	for _, e := range c.Effects {
-		e.Apply(g, c)
+	for _, effect := range e.Effects {
+		effect.Apply(g, e)
 	}
 }
 
-func (c *Entity) ModifyAttribute(attribute string, modifier int) {
+func (e *Entity) ModifyAttribute(attribute string, modifier int) {
 	fmt.Println("Modified attribute", attribute, "by", modifier)
-	if _, ok := c.Attributes[attribute]; ok {
-		c.Attributes[attribute] += modifier
+	if _, ok := e.Attributes[attribute]; ok {
+		e.Attributes[attribute] += modifier
 	} else {
 		// not sure if problem...
 		fmt.Println("ERROR: modified attribute doesnt exist")
-		c.Attributes[attribute] = modifier
+		e.Attributes[attribute] = modifier
 	}
 }
 
-func (c *Entity) StaysOnBoard() bool {
-	return c.Tags["type"] != "spell"
+func (e *Entity) StaysOnBoard() bool {
+	return e.Tags["type"] != "spell"
 }

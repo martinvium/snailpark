@@ -28,9 +28,9 @@ func NewPlayer(id string) *Player {
 
 func NewPlayerWithState(id string, deck []*Entity, hand, board []*Entity) *Player {
 	// Move avatar from deck to board
-	avatar := FirstCardWithType(deck, "avatar")
+	avatar := FirstEntityByType(deck, "avatar")
 	if avatar != nil {
-		deck = DeleteCard(deck, avatar)
+		deck = DeleteEntity(deck, avatar)
 		avatar.Location = "board"
 		board = append(board, avatar)
 	} else {
@@ -114,11 +114,11 @@ func (p *Player) PayCardCost(c *Entity) {
 }
 
 func (p *Player) RemoveCardFromHand(c *Entity) {
-	p.Hand = DeleteCard(p.Hand, c)
+	p.Hand = DeleteEntity(p.Hand, c)
 }
 
 func (p *Player) CanPlayCard(cardId string) bool {
-	card := FirstCardWithId(p.Hand, cardId)
+	card := EntityById(p.Hand, cardId)
 
 	if card == nil {
 		log.Println("ERROR: Client trying to use invalid card:", cardId)
