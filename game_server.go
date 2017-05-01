@@ -323,19 +323,25 @@ func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
 		options,
 		g.game.Engagements,
 		g.game.CurrentCard,
+		anonymizeHiddenEntities(g.game.Entities, g.game.CurrentPlayer.Id),
 	)
-
-	// hide opponent cards
-	enemyId := OtherPlayerId(client.PlayerId())
-	msg.Players[enemyId].Hand = NewAnonymizedHand(msg.Players[enemyId].Hand)
 
 	client.SendResponse(msg)
 }
 
-func OtherPlayerId(playerId string) string {
-	if playerId == "player" {
-		return "ai"
-	} else {
-		return "player"
+func anonymizeHiddenEntities(s []*Entity, playerId string) []*Entity {
+	anonymized := []*Entity{}
+	for k, v := range s {
+		if v.Location != "board" {
+			continue
+		}
+
+		if v.Location == "hand" && v.PlayerId != playerId {
+			anonymized[k] = NewEntity(AnonymousEntityProto, "anon", playerId)
+		} else {
+			anonymized[k] = v
+		}
 	}
+
+	return anonymized
 }
