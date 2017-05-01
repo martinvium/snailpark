@@ -79,6 +79,18 @@ func FilterEntityByTitle(s []*Entity, t string) []*Entity {
 	})
 }
 
+func FilterEntityByLocation(s []*Entity, l string) []*Entity {
+	return FilterEntities(s, func(e *Entity) bool {
+		return e.Tags["location"] == l
+	})
+}
+
+func FilterEntityByPlayerAndLocation(s []*Entity, p, l string) []*Entity {
+	return FilterEntities(s, func(e *Entity) bool {
+		return e.PlayerId == p && e.Tags["location"] == l
+	})
+}
+
 func FilterEntities(vs []*Entity, f func(*Entity) bool) []*Entity {
 	vsf := make([]*Entity, 0)
 	for _, v := range vs {
