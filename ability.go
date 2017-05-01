@@ -19,7 +19,7 @@ type Ability struct {
 	EffectFactory     string       `yaml:"behaviour"`
 }
 
-func (a *Ability) ModificationAmount(c *Card) int {
+func (a *Ability) ModificationAmount(c *Entity) int {
 	if val, ok := c.Attributes[a.ModAttr]; ok {
 		return val * a.ModFactor
 	} else {
@@ -28,7 +28,7 @@ func (a *Ability) ModificationAmount(c *Card) int {
 	}
 }
 
-func (a *Ability) Apply(g *Game, c, target *Card) error {
+func (a *Ability) Apply(g *Game, c, target *Entity) error {
 	switch a.Target {
 	case "target":
 		return a.applyToTarget(g, c, target)
@@ -42,13 +42,13 @@ func (a *Ability) Apply(g *Game, c, target *Card) error {
 	}
 }
 
-func (a *Ability) applyToAllValidTargets(g *Game, c *Card) {
+func (a *Ability) applyToAllValidTargets(g *Game, c *Entity) {
 	for _, t := range g.AllBoardCards() {
 		a.applyToTarget(g, c, t)
 	}
 }
 
-func (a *Ability) applyToTarget(g *Game, c, target *Card) error {
+func (a *Ability) applyToTarget(g *Game, c, target *Entity) error {
 	if target == nil {
 		return errors.New("applyToTarget failed, target was nil")
 	}
@@ -64,7 +64,7 @@ func (a *Ability) applyToTarget(g *Game, c, target *Card) error {
 	return nil
 }
 
-func (a *Ability) TestApplyRemovesCard(c, target *Card) bool {
+func (a *Ability) TestApplyRemovesCard(c, target *Entity) bool {
 	if a.Attribute != "toughness" {
 		return false
 	}
@@ -90,7 +90,7 @@ func (a *Ability) RequiresTarget() bool {
 	return a.Trigger == "enterPlay" && a.Target == "target"
 }
 
-func (a *Ability) ValidTrigger(event string, card, origin *Card) bool {
+func (a *Ability) ValidTrigger(event string, card, origin *Entity) bool {
 	if event != a.Trigger {
 		return false
 	}
@@ -106,7 +106,7 @@ func (a *Ability) ValidTrigger(event string, card, origin *Card) bool {
 }
 
 // Conditions must all be valid, but each condition can have multiple OR values
-func (a *Ability) ValidTarget(card, target *Card) bool {
+func (a *Ability) ValidTarget(card, target *Entity) bool {
 	for _, c := range a.TargetConditions {
 		if c.Valid(card, target) == false {
 			fmt.Println("- Condition", c, "failed for target", target)

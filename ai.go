@@ -94,7 +94,7 @@ func (a *AI) targetSpell(msg *ResponseMessage) *Message {
 	return nil
 }
 
-func (a *AI) playCard(card *Card) *Message {
+func (a *AI) playCard(card *Entity) *Message {
 	return NewCardActionMessage(a.playerId, "playCard", card.Id)
 }
 
@@ -104,7 +104,7 @@ func (a *AI) respondDelayed(msg *Message) {
 	a.outCh <- msg
 }
 
-func (a *AI) firstAvailableAttacker(board []*Card, engagements []*Engagement) *Card {
+func (a *AI) firstAvailableAttacker(board []*Entity, engagements []*Engagement) *Entity {
 	for _, card := range board {
 		if !a.isAttacking(engagements, card) && card.CanAttack() {
 			return card
@@ -114,7 +114,7 @@ func (a *AI) firstAvailableAttacker(board []*Card, engagements []*Engagement) *C
 	return nil
 }
 
-func (a *AI) isAttacking(engagements []*Engagement, card *Card) bool {
+func (a *AI) isAttacking(engagements []*Engagement, card *Entity) bool {
 	for _, e := range engagements {
 		if card.Id == e.Attacker.Id {
 			return true

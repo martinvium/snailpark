@@ -7,8 +7,8 @@ type Game struct {
 	CurrentPlayer *Player
 	State         *StateMachine
 	Engagements   []*Engagement
-	CurrentCard   *Card
-	// Tags map[string]*Card
+	CurrentCard   *Entity
+	// Tags map[string]*Entity
 	// Could work with int by sorting, or grouping them?
 }
 
@@ -83,8 +83,8 @@ func (g *Game) Priority() *Player {
 	return g.CurrentPlayer
 }
 
-func (g *Game) AllBoardCards() []*Card {
-	cards := []*Card{}
+func (g *Game) AllBoardCards() []*Entity {
+	cards := []*Entity{}
 	for _, player := range g.Players {
 		for _, card := range player.Board {
 			cards = append(cards, card)
@@ -94,7 +94,7 @@ func (g *Game) AllBoardCards() []*Card {
 	return cards
 }
 
-func OrderCardsByTimePlayed(s []*Card) []*Card {
+func OrderCardsByTimePlayed(s []*Entity) []*Entity {
 	fmt.Println("WARN: OrderCardsByTimePlayed not implemented")
 	return s
 }

@@ -208,7 +208,7 @@ func TestAI_RespondWithAction_EndsTurnWhenNoBlockers(t *testing.T) {
 	yourBoard := newTestCards("p2", "board", []string{"Dodgy Fella"})
 
 	players := newPlayersWithBoard(
-		[]*Card{},
+		[]*Entity{},
 		yourBoard,
 		0,
 	)
@@ -243,7 +243,7 @@ func newPlayers(mana int) map[string]*Player {
 	)
 }
 
-func newPlayersWithBoard(myBoard, yourBoard []*Card, mana int) map[string]*Player {
+func newPlayersWithBoard(myBoard, yourBoard []*Entity, mana int) map[string]*Player {
 	players := map[string]*Player{
 		"p1": NewPlayerWithState(
 			"p1",
@@ -289,12 +289,12 @@ func assertResponse(t *testing.T, action *Message, expectedAction string, expect
 	return nil
 }
 
-func newTestCards(playerId, loc string, def []string) []*Card {
-	deck := []*Card{}
+func newTestCards(playerId, loc string, def []string) []*Entity {
+	deck := []*Entity{}
 
 	for _, n := range def {
-		proto := CardProtoByTitle(StandardRepo(), n)
-		card := NewCard(proto, proto.Tags["title"], playerId)
+		proto := EntityProtoByTitle(StandardRepo(), n)
+		card := NewEntity(proto, proto.Tags["title"], playerId)
 		card.Location = loc
 		deck = append(deck, card)
 	}
@@ -302,10 +302,10 @@ func newTestCards(playerId, loc string, def []string) []*Card {
 	return deck
 }
 
-func newTestCard(playerId, loc, name string) *Card {
+func newTestCard(playerId, loc, name string) *Entity {
 	return newTestCards(playerId, loc, []string{name})[0]
 }
 
-func newTestDeck(playerId string, def []string) []*Card {
+func newTestDeck(playerId string, def []string) []*Entity {
 	return newTestCards(playerId, "library", def)
 }
