@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestCardProto_BuffSelf(t *testing.T) {
+func TestEntityProto_BuffSelf(t *testing.T) {
 	game := NewTestGame()
 
 	creature := NewTestCard("Ser Vira", "p1")
@@ -30,7 +30,7 @@ func TestCardProto_BuffSelf(t *testing.T) {
 	}
 }
 
-func TestCardProto_SummonCreature(t *testing.T) {
+func TestEntityProto_SummonCreature(t *testing.T) {
 	game := NewTestGame()
 	game.CurrentCard = NewTestCard("School Bully", "p1")
 	ResolveCurrentCard(game, nil)
@@ -41,7 +41,7 @@ func TestCardProto_SummonCreature(t *testing.T) {
 	}
 }
 
-func TestCardProto_SummonCreatureDoesntRetrigger(t *testing.T) {
+func TestEntityProto_SummonCreatureDoesntRetrigger(t *testing.T) {
 	game := NewTestGame()
 	game.CurrentCard = NewTestCard("School Bully", "p1")
 	ResolveCurrentCard(game, nil)
@@ -58,7 +58,7 @@ func TestCardProto_SummonCreatureDoesntRetrigger(t *testing.T) {
 	}
 }
 
-func TestCardProto_AvatarSpellLeavesBoard(t *testing.T) {
+func TestEntityProto_AvatarSpellLeavesBoard(t *testing.T) {
 	game := NewTestGame()
 	game.CurrentCard = NewTestCard("Goo-to-the-face", "p1")
 	ResolveCurrentCard(game, game.Players["p2"].Avatar)

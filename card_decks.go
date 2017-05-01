@@ -6,11 +6,11 @@ func NewStandardDeck(playerId string, def []string) []*Card {
 	return NewCards(StandardRepo(), playerId, def)
 }
 
-func NewCards(repo []*CardProto, playerId string, def []string) []*Card {
+func NewCards(repo []*EntityProto, playerId string, def []string) []*Card {
 	deck := []*Card{}
 
 	for _, n := range def {
-		proto := CardProtoByTitle(repo, n)
+		proto := EntityProtoByTitle(repo, n)
 		card := NewCard(proto, NewUUID(), playerId)
 		deck = append(deck, card)
 	}

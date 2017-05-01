@@ -293,7 +293,7 @@ func newTestCards(playerId, loc string, def []string) []*Card {
 	deck := []*Card{}
 
 	for _, n := range def {
-		proto := CardProtoByTitle(StandardRepo(), n)
+		proto := EntityProtoByTitle(StandardRepo(), n)
 		card := NewCard(proto, proto.Tags["title"], playerId)
 		card.Location = loc
 		deck = append(deck, card)

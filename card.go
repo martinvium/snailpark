@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 type Card struct {
-	proto CardProto
+	proto EntityProto
 
 	Id        string `json:"id"`
 	PlayerId  string `json:"playerId"`
@@ -18,7 +18,7 @@ type Card struct {
 
 const DefaultLocation = "library"
 
-func NewCard(proto *CardProto, id, playerId string) *Card {
+func NewCard(proto *EntityProto, id, playerId string) *Card {
 	tags := make(map[string]string)
 	for k, v := range proto.Tags {
 		tags[k] = v
@@ -98,7 +98,7 @@ func MapCardIds(vs []*Card) []string {
 }
 
 func NewTestCard(title string, playerId string) *Card {
-	proto := CardProtoByTitle(StandardRepo(), title)
+	proto := EntityProtoByTitle(StandardRepo(), title)
 	return NewCard(proto, NewUUID(), playerId)
 }
 
