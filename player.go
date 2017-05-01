@@ -60,18 +60,6 @@ func AnyPlayer(vs map[string]*Player, f func(*Player) bool) bool {
 	return false
 }
 
-func (p *Player) AddToHand(num int) []*Entity {
-	cards := p.Deck[len(p.Deck)-num:] // Pick num cards from deck
-	p.Deck = p.Deck[:len(p.Deck)-num] // Remove them
-
-	for _, card := range cards {
-		card.Location = "hand"
-		p.Hand = append(p.Hand, card)
-	}
-
-	return cards
-}
-
 func (p *Player) AddToBoard(card *Entity) {
 	card.Location = "board"
 	p.Board = append(p.Board, card)

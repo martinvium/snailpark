@@ -89,6 +89,11 @@ func (g *Game) AllBoardCards() []*Entity {
 	}
 
 	return cards
+func (g *Game) DrawCards(playerId string, num int) {
+	deck := FilterEntityByPlayerAndLocation(g.Entities, playerId, "library")
+	for _, e := range deck[len(deck)-num:] {
+		e.Location = "hand"
+	}
 }
 
 func OrderCardsByTimePlayed(s []*Entity) []*Entity {

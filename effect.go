@@ -83,9 +83,7 @@ func ModifyBothEffectFactory(g *Game, a *Ability, c, target *Entity) {
 }
 
 func DrawCardEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	g.Players[target.PlayerId].AddToHand(
-		a.ModificationAmount(c),
-	)
+	g.DrawCards(target.PlayerId, a.ModificationAmount(c))
 }
 
 func AddManaEffectFactory(g *Game, a *Ability, c, target *Entity) {
