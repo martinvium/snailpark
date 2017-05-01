@@ -169,7 +169,7 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 		return
 	}
 
-	g.game.CurrentCard = EntityById(g.game.CurrentPlayer.Hand, msg.Card)
+	g.game.CurrentCard = EntityById(g.game.Entities, msg.Card)
 	g.game.State.Transition("playingCard")
 
 	requireTarget := AnyAbility(g.game.CurrentCard.Abilities, func(a *Ability) bool {
@@ -205,7 +205,7 @@ func (g *GameServer) handleTarget(msg *Message) {
 }
 
 func (g *GameServer) assignBlocker(msg *Message) {
-	card := EntityById(g.game.DefendingPlayer().Board, msg.Card)
+	card := EntityById(g.game.Entities, msg.Card)
 	if card == nil {
 		log.Println("ERROR: Invalid blocker:", msg.Card)
 		return
@@ -221,7 +221,7 @@ func (g *GameServer) assignBlocker(msg *Message) {
 }
 
 func (g *GameServer) assignBlockTarget(msg *Message) {
-	card := EntityById(g.game.CurrentPlayer.Board, msg.Card)
+	card := EntityById(g.game.Entities, msg.Card)
 	if card == nil {
 		log.Println("ERROR: Invalid blocker target:", msg.Card)
 		return
@@ -245,7 +245,7 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 }
 
 func (g *GameServer) assignAttacker(msg *Message) {
-	card := EntityById(g.game.CurrentPlayer.Board, msg.Card)
+	card := EntityById(g.game.Entities, msg.Card)
 	if card == nil {
 		log.Println("ERROR: Invalid attacker:", msg.Card)
 		return

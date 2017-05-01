@@ -81,14 +81,9 @@ func (g *Game) Priority() *Player {
 }
 
 func (g *Game) AllBoardCards() []*Entity {
-	cards := []*Entity{}
-	for _, player := range g.Players {
-		for _, card := range player.Board {
-			cards = append(cards, card)
-		}
-	}
+	return FilterEntityByLocation(g.Entities, "board")
+}
 
-	return cards
 func (g *Game) DrawCards(playerId string, num int) {
 	deck := FilterEntityByPlayerAndLocation(g.Entities, playerId, "library")
 	for _, e := range deck[len(deck)-num:] {
