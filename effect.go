@@ -99,12 +99,13 @@ func ModifySelfEffectFactory(g *Game, a *Ability, c, target *Entity) {
 }
 
 func SummonCreaturesEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	cards := NewDeck(TokenRepo(), c.PlayerId, []string{
+	entities := NewDeck(TokenRepo(), c.PlayerId, []string{
 		"Dodgy Fella",
 		"Dodgy Fella",
 	})
 
-	for _, c := range cards {
-		g.Players[c.PlayerId].AddToBoard(c)
+	for _, e := range entities {
+		e.Location = "board"
+		g.Entities = append(g.Entities, e)
 	}
 }

@@ -9,10 +9,11 @@ func ResolveCurrentCard(g *Game, target *Entity) {
 	InvokeTrigger(g, card, target, "cardPlayed")
 
 	if card.StaysOnBoard() {
-		g.CurrentPlayer.AddToBoard(card)
+		card.Location = "board"
+	} else {
+		card.Location = "graveyard"
 	}
 
-	g.CurrentPlayer.RemoveCardFromHand(card)
 	InvokeCardAbilityTrigger(g, card, card, target, "enterPlay")
 
 	ResolveRemovedCards(g)

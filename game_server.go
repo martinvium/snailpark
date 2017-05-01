@@ -164,12 +164,14 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 		return
 	}
 
-	if g.game.CurrentPlayer.CanPlayCard(msg.Card) == false {
-		log.Println("ERROR: Cannot play card:", msg.Card)
+	card := EntityById(g.game.Entities, msg.Card)
+
+	if CanPlayCard(g.game.CurrentPlayer, card) == false {
+		log.Println("ERROR: Cannot play card:", card)
 		return
 	}
 
-	g.game.CurrentCard = EntityById(g.game.Entities, msg.Card)
+	g.game.CurrentCard = card
 	g.game.State.Transition("playingCard")
 
 	requireTarget := AnyAbility(g.game.CurrentCard.Abilities, func(a *Ability) bool {
@@ -344,4 +346,14 @@ func anonymizeHiddenEntities(s []*Entity, playerId string) []*Entity {
 	}
 
 	return anonymized
+}
+
+func CanPlayCard(p *Player, e *Entity) bool {
+	if p.CurrentMana < e.Attributes["cost"] {
+		log.Println("ERROR: Client trying to use card without enough mana", p.CurrentMana, ":", e.Attributes["cost"])
+		return false
+	}
+
+	log.Println("Approved casting card because mana is good", p.CurrentMana, ":", e.Attributes["cost"])
+	return true
 }
