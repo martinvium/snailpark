@@ -3,10 +3,10 @@ package main
 import "math/rand"
 
 func NewStandardDeck(playerId string, def []string) []*Entity {
-	return NewCards(StandardRepo(), playerId, def)
+	return NewDeck(StandardRepo(), playerId, def)
 }
 
-func NewCards(repo []*EntityProto, playerId string, def []string) []*Entity {
+func NewDeck(repo []*EntityProto, playerId string, def []string) []*Entity {
 	deck := []*Entity{}
 
 	for _, n := range def {

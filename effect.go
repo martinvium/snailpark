@@ -101,7 +101,7 @@ func ModifySelfEffectFactory(g *Game, a *Ability, c, target *Entity) {
 }
 
 func SummonCreaturesEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	cards := NewCards(TokenRepo(), c.PlayerId, []string{
+	cards := NewDeck(TokenRepo(), c.PlayerId, []string{
 		"Dodgy Fella",
 		"Dodgy Fella",
 	})
