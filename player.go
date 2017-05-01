@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -10,44 +9,18 @@ type Player struct {
 	Id          string
 	CurrentMana int
 	MaxMana     int
-	Deck        []*Entity
-	Hand        []*Entity
-	Board       []*Entity
-	Graveyard   []*Entity
 	Avatar      *Entity
 }
 
-func NewPlayer(id string) *Player {
-	return NewPlayerWithState(
-		id,
-		NewPrototypeDeck(id),
-		NewEmptyHand(),
-		NewEmptyBoard(),
-	)
-}
-
-func NewPlayerWithState(id string, deck []*Entity, hand, board []*Entity) *Player {
-	// Move avatar from deck to board
+func NewPlayer(id string, deck []*Entity) *Player {
 	avatar := FirstEntityByType(deck, "avatar")
-	if avatar != nil {
-		deck = DeleteEntity(deck, avatar)
-		avatar.Location = "board"
-		board = append(board, avatar)
-	} else {
-		fmt.Println("ERROR: No avatar in deck")
-	}
-
-	deck = ShuffleCards(deck)
+	avatar.Location = "board"
 
 	return &Player{
 		false,
 		id,
 		0,
 		0,
-		deck,
-		hand,
-		board,
-		[]*Entity{},
 		avatar,
 	}
 }

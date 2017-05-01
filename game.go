@@ -8,33 +8,30 @@ type Game struct {
 	State         *StateMachine
 	Engagements   []*Engagement
 	CurrentCard   *Entity
-	// Tags map[string]*Entity
-	// Could work with int by sorting, or grouping them?
+	Entities      []*Entity
 }
 
-func NewGame(players map[string]*Player) *Game {
+func NewGame(players map[string]*Player, currentPlayerId string, entities []*Entity) *Game {
 	return &Game{
 		players,
-		players["player"], // currently always the player that starts
+		players[currentPlayerId], // currently always the player that starts
 		NewStateMachine(),
 		[]*Engagement{},
 		nil,
+		entities,
 	}
 }
 
 func NewTestGame() *Game {
+	p1_deck := NewPrototypeDeck("p1")
+	p2_deck := NewPrototypeDeck("p2")
+
 	players := map[string]*Player{
-		"p1": NewPlayer("p1"),
-		"p2": NewPlayer("p2"),
+		"p1": NewPlayer("p1", p1_deck),
+		"p2": NewPlayer("p2", p2_deck),
 	}
 
-	return &Game{
-		players,
-		players["p1"],
-		NewStateMachine(),
-		[]*Engagement{},
-		nil,
-	}
+	return NewGame(players, "p1", append(p1_deck, p2_deck...))
 }
 
 func (g *Game) SetStateMachineDeps(msgSender MessageSender) {
