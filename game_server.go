@@ -333,15 +333,13 @@ func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
 
 func anonymizeHiddenEntities(s []*Entity, playerId string) []*Entity {
 	anonymized := []*Entity{}
-	for k, v := range s {
-		if v.Location != "board" {
-			continue
-		}
-
+	for _, v := range s {
 		if v.Location == "hand" && v.PlayerId != playerId {
-			anonymized[k] = NewEntity(AnonymousEntityProto, "anon", playerId)
-		} else {
-			anonymized[k] = v
+			a := NewEntity(AnonymousEntityProto, "anon", v.PlayerId)
+			a.Location = "hand"
+			anonymized = append(anonymized, a)
+		} else if v.Location == "board" || v.Location == "hand" {
+			anonymized = append(anonymized, v)
 		}
 	}
 
