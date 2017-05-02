@@ -64,8 +64,8 @@ func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
 func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
 	fmt.Println("Nothing more to play, lets attack or end turn")
 
-	me := msg.Players[a.playerId]
-	card := a.firstAvailableAttacker(me.Board, msg.Engagements)
+	myBoard := FilterEntityByPlayerAndLocation(msg.Entities, a.playerId, "board")
+	card := a.firstAvailableAttacker(myBoard, msg.Engagements)
 	if card != nil {
 		return NewCardActionMessage(a.playerId, "target", card.Id)
 	} else {

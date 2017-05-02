@@ -15,22 +15,19 @@ type ResponseMessage struct {
 	Options         []string                   `json:"options"`
 	Engagements     []*Engagement              `json:"engagements"`
 	CurrentCard     *Entity                    `json:"currentCard"`
+	Entities        []*Entity                  `json:"entities"`
 }
 
 type ResponsePlayer struct {
-	Id          string    `json:"id"`
-	CurrentMana int       `json:"currentMana"`
-	MaxMana     int       `json:"maxMana"`
-	Deck        []*Entity `json:"deck"`
-	Hand        []*Entity `json:"hand"`
-	HandSize    int       `json:"handSize"`
-	Board       []*Entity `json:"board"`
-	Avatar      *Entity   `json:"avatar"`
+	Id          string  `json:"id"`
+	CurrentMana int     `json:"currentMana"`
+	MaxMana     int     `json:"maxMana"`
+	Avatar      *Entity `json:"avatar"`
 }
 
-func NewResponseMessage(state string, playerId string, players map[string]*Player, options []string, engagements []*Engagement, currentCard *Entity) *ResponseMessage {
+func NewResponseMessage(state string, playerId string, players map[string]*Player, options []string, engagements []*Engagement, currentCard *Entity, entities []*Entity) *ResponseMessage {
 	responsePlayers := newResponsePlayers(players)
-	return &ResponseMessage{state, playerId, responsePlayers, options, engagements, currentCard}
+	return &ResponseMessage{state, playerId, responsePlayers, options, engagements, currentCard, entities}
 }
 
 func NewActionMessage(playerId string, action string) *Message {
@@ -48,10 +45,6 @@ func newResponsePlayers(players map[string]*Player) map[string]*ResponsePlayer {
 			player.Id,
 			player.CurrentMana,
 			player.MaxMana,
-			player.Deck,
-			player.Hand,
-			len(player.Hand),
-			player.Board,
 			player.Avatar,
 		}
 	}

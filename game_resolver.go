@@ -9,10 +9,11 @@ func ResolveCurrentCard(g *Game, target *Entity) {
 	InvokeTrigger(g, card, target, "cardPlayed")
 
 	if card.StaysOnBoard() {
-		g.CurrentPlayer.AddToBoard(card)
+		card.Location = "board"
+	} else {
+		card.Location = "graveyard"
 	}
 
-	g.CurrentPlayer.RemoveCardFromHand(card)
 	InvokeCardAbilityTrigger(g, card, card, target, "enterPlay")
 
 	ResolveRemovedCards(g)
@@ -57,13 +58,10 @@ func InvokeEffectTrigger(g *Game, event string) {
 }
 
 func ResolveRemovedCards(g *Game) {
-	for _, player := range g.Players {
-		for _, card := range player.Board {
-			if card.Removed() {
-				player.Board = DeleteEntity(player.Board, card)
-				player.AddToGraveyard(card)
-				InvokeTrigger(g, card, nil, "enterGraveyard")
-			}
+	for _, e := range g.Entities {
+		if e.Removed() {
+			e.Location = "graveyard"
+			InvokeTrigger(g, e, nil, "enterGraveyard")
 		}
 	}
 }

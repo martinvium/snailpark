@@ -33,10 +33,16 @@ func NewGameServer() *GameServer {
 	clients[aiClient.PlayerId()] = aiClient
 
 	players := make(map[string]*Player)
-	players["ai"] = NewPlayer(aiPlayerId)
-	players["player"] = NewPlayer("player")
 
-	game := NewGame(players)
+	ai_deck := NewPrototypeDeck("ai")
+	ai_deck = ShuffleCards(ai_deck)
+	players["ai"] = NewPlayer(aiPlayerId, ai_deck)
+
+	player_deck := NewPrototypeDeck("player")
+	player_deck = ShuffleCards(player_deck)
+	players["player"] = NewPlayer("player", player_deck)
+
+	game := NewGame(players, "player", append(ai_deck, player_deck...))
 
 	gs := &GameServer{
 		clients,
@@ -158,12 +164,14 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 		return
 	}
 
-	if g.game.CurrentPlayer.CanPlayCard(msg.Card) == false {
-		log.Println("ERROR: Cannot play card:", msg.Card)
+	card := EntityById(g.game.Entities, msg.Card)
+
+	if CanPlayCard(g.game.CurrentPlayer, card) == false {
+		log.Println("ERROR: Cannot play card:", card)
 		return
 	}
 
-	g.game.CurrentCard = EntityById(g.game.CurrentPlayer.Hand, msg.Card)
+	g.game.CurrentCard = card
 	g.game.State.Transition("playingCard")
 
 	requireTarget := AnyAbility(g.game.CurrentCard.Abilities, func(a *Ability) bool {
@@ -199,7 +207,7 @@ func (g *GameServer) handleTarget(msg *Message) {
 }
 
 func (g *GameServer) assignBlocker(msg *Message) {
-	card := EntityById(g.game.DefendingPlayer().Board, msg.Card)
+	card := EntityById(g.game.Entities, msg.Card)
 	if card == nil {
 		log.Println("ERROR: Invalid blocker:", msg.Card)
 		return
@@ -215,7 +223,7 @@ func (g *GameServer) assignBlocker(msg *Message) {
 }
 
 func (g *GameServer) assignBlockTarget(msg *Message) {
-	card := EntityById(g.game.CurrentPlayer.Board, msg.Card)
+	card := EntityById(g.game.Entities, msg.Card)
 	if card == nil {
 		log.Println("ERROR: Invalid blocker target:", msg.Card)
 		return
@@ -239,7 +247,7 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 }
 
 func (g *GameServer) assignAttacker(msg *Message) {
-	card := EntityById(g.game.CurrentPlayer.Board, msg.Card)
+	card := EntityById(g.game.Entities, msg.Card)
 	if card == nil {
 		log.Println("ERROR: Invalid attacker:", msg.Card)
 		return
@@ -317,19 +325,33 @@ func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
 		options,
 		g.game.Engagements,
 		g.game.CurrentCard,
+		anonymizeHiddenEntities(g.game.Entities, client.PlayerId()),
 	)
-
-	// hide opponent cards
-	enemyId := OtherPlayerId(client.PlayerId())
-	msg.Players[enemyId].Hand = NewAnonymizedHand(msg.Players[enemyId].Hand)
 
 	client.SendResponse(msg)
 }
 
-func OtherPlayerId(playerId string) string {
-	if playerId == "player" {
-		return "ai"
-	} else {
-		return "player"
+func anonymizeHiddenEntities(s []*Entity, playerId string) []*Entity {
+	anonymized := []*Entity{}
+	for _, v := range s {
+		if v.Location == "hand" && v.PlayerId != playerId {
+			a := NewEntity(AnonymousEntityProto, "anon", v.PlayerId)
+			a.Location = "hand"
+			anonymized = append(anonymized, a)
+		} else if v.Location == "board" || v.Location == "hand" {
+			anonymized = append(anonymized, v)
+		}
 	}
+
+	return anonymized
+}
+
+func CanPlayCard(p *Player, e *Entity) bool {
+	if p.CurrentMana < e.Attributes["cost"] {
+		log.Println("ERROR: Client trying to use card without enough mana", p.CurrentMana, ":", e.Attributes["cost"])
+		return false
+	}
+
+	log.Println("Approved casting card because mana is good", p.CurrentMana, ":", e.Attributes["cost"])
+	return true
 }

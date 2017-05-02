@@ -82,14 +82,14 @@ func (s *StateMachine) transitionCallback() {
 
 func (s *StateMachine) toMulligan() {
 	for _, player := range s.game.Players {
-		player.AddToHand(4)
+		s.game.DrawCards(player.Id, 4)
 	}
 
 	s.Transition("upkeep")
 }
 
 func (s *StateMachine) toUpkeep() {
-	s.game.CurrentPlayer.AddToHand(1)
+	s.game.DrawCards(s.game.CurrentPlayer.Id, 1)
 	s.game.CurrentPlayer.AddMaxMana(1)
 	s.game.CurrentPlayer.ResetCurrentMana()
 	s.game.ClearAttackers()

@@ -16,8 +16,8 @@ var attributeFactors = map[string]int{
 var powerFactor = 3
 
 type AIScorer struct {
-	hand        []*Entity
-	board       []*Entity
+	playerId    string
+	entities    []*Entity
 	players     map[string]*ResponsePlayer // board state
 	playerMods  map[string]int             // e.g. player 1, ai -1
 	currentMana int
@@ -44,16 +44,16 @@ func NewAIScorer(playerId string, msg *ResponseMessage) *AIScorer {
 		playerMods[player.Id] = mod
 	}
 
-	hand := msg.Players[playerId].Hand
-	board := msg.Players[playerId].Board
 	currentMana := msg.Players[playerId].CurrentMana
 
-	return &AIScorer{hand, board, msg.Players, playerMods, currentMana}
+	return &AIScorer{playerId, msg.Entities, msg.Players, playerMods, currentMana}
 }
 
 func (s *AIScorer) BestPlayableCard() *Entity {
 	scores := []*Score{}
-	for _, card := range s.hand {
+
+	hand := FilterEntityByPlayerAndLocation(s.entities, s.playerId, "hand")
+	for _, card := range hand {
 		score := s.scoreCardForPlay(card)
 		scores = append(scores, score)
 	}
@@ -70,7 +70,8 @@ func (s *AIScorer) BestBlocker(engagements []*Engagement) *Entity {
 	}
 
 	scores := []*Score{}
-	for _, blocker := range s.board {
+	board := FilterEntityByPlayerAndLocation(s.entities, s.playerId, "board")
+	for _, blocker := range board {
 		a := ActivatedAbility(blocker.Abilities)
 		if a == nil {
 			// Not a creature
@@ -133,7 +134,7 @@ func (s *AIScorer) scoreCardForPlay(card *Entity) *Score {
 
 func (s *AIScorer) scoreCardForPlayByTarget(card *Entity, a *Ability) int {
 	score := 0
-	targets := s.allCardsOnBoard()
+	targets := FilterEntityByLocation(s.entities, "board")
 	scores := s.scoreTargets(card, a, targets)
 
 	switch a.Target {
@@ -155,20 +156,9 @@ func (s *AIScorer) scoreCardForPlayByTarget(card *Entity, a *Ability) int {
 }
 
 func (s *AIScorer) BestTargetByPowerRemoved(card *Entity, a *Ability) *Entity {
-	targets := s.allCardsOnBoard()
+	targets := FilterEntityByLocation(s.entities, "board")
 	scores := s.scoreTargets(card, a, targets)
 	return HighestScore(scores)
-}
-
-func (s *AIScorer) allCardsOnBoard() []*Entity {
-	targets := []*Entity{}
-	for _, player := range s.players {
-		for _, target := range player.Board {
-			targets = append(targets, target)
-		}
-	}
-
-	return targets
 }
 
 func HighestScore(scores []*Score) *Entity {
