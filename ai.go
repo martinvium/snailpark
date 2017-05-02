@@ -17,15 +17,27 @@ func NewAI(playerId string) *AI {
 	return &AI{outCh, playerId}
 }
 
-func (a *AI) Send(msg *ResponseMessage) {
-	action := a.RespondWithAction(msg)
+func (a *AI) Send(packet *ResponseMessage) {
+	action := a.RespondWithAction(packet)
 	if action != nil {
 		a.respondDelayed(action)
 	}
 }
 
-func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
-	log.Println("AI ack it received: ", msg)
+func (a *AI) RespondWithAction(packet *ResponseMessage) *Message {
+	log.Println("AI ack it received: ", packet)
+
+	// we dont yet support multiple message types
+	if packet.Type != "FULL_STATE" {
+		return nil
+	}
+
+	fmt.Println("packet", packet.Message)
+	msg, ok := packet.Message.(*FullStateResponse)
+	if ok == false {
+		fmt.Println("Unable to cast message to FullStateResponse")
+		return nil
+	}
 
 	if msg.CurrentPlayerId != a.playerId {
 		return nil
@@ -61,7 +73,7 @@ func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
 	return nil
 }
 
-func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
+func (a *AI) attackOrEndTurn(msg *FullStateResponse) *Message {
 	fmt.Println("Nothing more to play, lets attack or end turn")
 
 	myBoard := FilterEntityByPlayerAndLocation(msg.Entities, a.playerId, "board")
@@ -73,7 +85,7 @@ func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
 	}
 }
 
-func (a *AI) targetSpell(msg *ResponseMessage) *Message {
+func (a *AI) targetSpell(msg *FullStateResponse) *Message {
 	scorer := NewAIScorer(a.playerId, msg)
 
 	for _, ability := range msg.CurrentCard.Abilities {

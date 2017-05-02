@@ -32,7 +32,7 @@ func (s *Score) String() string {
 	return fmt.Sprintf("Score(%v, %v)", s.Score, s.Entity)
 }
 
-func NewAIScorer(playerId string, msg *ResponseMessage) *AIScorer {
+func NewAIScorer(playerId string, msg *FullStateResponse) *AIScorer {
 	playerMods := map[string]int{}
 	for _, player := range msg.Players {
 		mod := 1

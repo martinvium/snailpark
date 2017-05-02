@@ -18,7 +18,14 @@ app.factory('gameServer', function($websocket) {
   };
 
   dataStream.onMessage(function(message) {
-    var msg = JSON.parse(message.data)
+    var packet = JSON.parse(message.data)
+
+    if(packet.t != 'FULL_STATE') {
+      console.log('Only support FULL_STATE');
+      return;
+    }
+
+    var msg = packet.m;
 
     var filterAttackers = function(msg) {
       var attackers = [];
