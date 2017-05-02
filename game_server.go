@@ -325,7 +325,7 @@ func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
 		options,
 		g.game.Engagements,
 		g.game.CurrentCard,
-		anonymizeHiddenEntities(g.game.Entities, g.game.CurrentPlayer.Id),
+		anonymizeHiddenEntities(g.game.Entities, client.PlayerId()),
 	)
 
 	client.SendResponse(msg)
