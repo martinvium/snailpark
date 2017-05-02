@@ -34,11 +34,11 @@ func NewGameServer() *GameServer {
 
 	players := make(map[string]*Player)
 
-	ai_deck := NewPrototypeDeck("p1")
+	ai_deck := NewPrototypeDeck("ai")
 	ai_deck = ShuffleCards(ai_deck)
 	players["ai"] = NewPlayer(aiPlayerId, ai_deck)
 
-	player_deck := NewPrototypeDeck("p2")
+	player_deck := NewPrototypeDeck("player")
 	player_deck = ShuffleCards(player_deck)
 	players["player"] = NewPlayer("player", player_deck)
 
