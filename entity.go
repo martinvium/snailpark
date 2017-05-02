@@ -81,13 +81,13 @@ func FilterEntityByTitle(s []*Entity, t string) []*Entity {
 
 func FilterEntityByLocation(s []*Entity, l string) []*Entity {
 	return FilterEntities(s, func(e *Entity) bool {
-		return e.Tags["location"] == l
+		return e.Location == l
 	})
 }
 
 func FilterEntityByPlayerAndLocation(s []*Entity, p, l string) []*Entity {
 	return FilterEntities(s, func(e *Entity) bool {
-		return e.PlayerId == p && e.Tags["location"] == l
+		return e.PlayerId == p && e.Location == l
 	})
 }
 
@@ -121,7 +121,7 @@ func NewTestEntityOnBoard(title string, playerId string) *Entity {
 }
 
 func (e *Entity) String() string {
-	return fmt.Sprintf("Entity(%v, %v)", e.Tags["title"], e.PlayerId)
+	return fmt.Sprintf("Entity(%v, %v, @%v)", e.Tags["title"], e.PlayerId, e.Location)
 }
 
 func (e *Entity) CanAttack() bool {

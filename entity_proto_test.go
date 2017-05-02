@@ -7,26 +7,30 @@ import (
 func TestEntityProto_BuffSelf(t *testing.T) {
 	game := NewTestGame()
 
-	creature := NewTestEntity("Ser Vira", "p1")
-	game.CurrentCard = creature
+	c1 := NewTestEntity("Ser Vira", "p1")
+	c2 := NewTestEntity("Dodgy Fella", "p2")
+	c3 := NewTestEntity("Dodgy Fella", "p1")
+	game.Entities = append(game.Entities, []*Entity{c1, c2, c3}...)
+
+	game.CurrentCard = c1
 	ResolveCurrentCard(game, nil)
 
-	if creature.Attributes["power"] != 1 {
-		t.Errorf("wrong toughness before %v (%v)", creature.Attributes["power"], creature.Effects)
+	if c1.Attributes["power"] != 1 {
+		t.Errorf("wrong toughness before %v (%v)", c1.Attributes["power"], c1.Effects)
 	}
 
-	game.CurrentCard = NewTestEntity("Dodgy Fella", "p2")
+	game.CurrentCard = c2
 	ResolveCurrentCard(game, nil)
 
-	if creature.Attributes["power"] != 1 {
-		t.Errorf("wrong toughness efter enemy play: %v", creature.Attributes["power"])
+	if c1.Attributes["power"] != 1 {
+		t.Errorf("wrong toughness efter enemy play: %v", c1.Attributes["power"])
 	}
 
-	game.CurrentCard = NewTestEntity("Dodgy Fella", "p1")
+	game.CurrentCard = c3
 	ResolveCurrentCard(game, nil)
 
-	if creature.Attributes["power"] != 2 {
-		t.Errorf("wrong toughness after our play: %v", creature.Attributes["power"])
+	if c1.Attributes["power"] != 2 {
+		t.Errorf("wrong toughness after our play: %v", c1.Attributes["power"])
 	}
 }
 
@@ -43,13 +47,19 @@ func TestEntityProto_SummonCreature(t *testing.T) {
 
 func TestEntityProto_SummonCreatureDoesntRetrigger(t *testing.T) {
 	game := NewTestGame()
-	game.CurrentCard = NewTestEntity("School Bully", "p1")
+	e := NewTestEntity("School Bully", "p1")
+	game.Entities = append(game.Entities, e)
+	game.CurrentCard = e
 	ResolveCurrentCard(game, nil)
 
-	game.CurrentCard = NewTestEntity("Dodgy Fella", "p1")
+	e = NewTestEntity("Dodgy Fella", "p1")
+	game.Entities = append(game.Entities, e)
+	game.CurrentCard = e
 	ResolveCurrentCard(game, nil)
 
-	game.CurrentCard = NewTestEntity("Dodgy Fella", "p2")
+	e = NewTestEntity("Dodgy Fella", "p2")
+	game.Entities = append(game.Entities, e)
+	game.CurrentCard = e
 	ResolveCurrentCard(game, nil)
 
 	tokens := FilterEntityByTitle(game.AllBoardCards(), "Dodgy Fella")
