@@ -34,12 +34,9 @@ app.factory('gameServer', function($websocket) {
     data.state = msg.state;
     data.targeting = ['targeting', 'blockTarget'].indexOf(data.state) !== -1;
     data.attackers = filterAttackers(msg);
+    data.entities = msg.entities
     data.player = msg.players["player"];
-    data.player.hand = msg.players["player"]["hand"];
-    data.player.board = msg.players["player"]["board"];
     data.enemy = msg.players["ai"];
-    data.enemy.hand = msg.players["ai"]["hand"];
-    data.enemy.board = msg.players["ai"]["board"];
   });
 
   var methods = {
@@ -74,10 +71,36 @@ app.controller('BoardController', ['$scope', 'gameServer', function ($scope, gam
   gameServer.start();
 
   $scope.data = gameServer.data;
+  $scope.enemyId = 'ai';
+  $scope.playerId = 'player';
   $scope.cardDetails = { card: null };
   $scope.next = gameServer.next
   $scope.playCard = gameServer.playCard
   $scope.targetCard = gameServer.targetCard
+
+  $scope.$watch('data.entities', function(n) {
+    $scope.entities = {
+      ai: {
+        hand: filterPlayerAndLocation(gameServer.data.entities, 'ai', 'hand'),
+        board: filterPlayerAndLocation(gameServer.data.entities, 'ai', 'board'),
+      },
+      player: {
+        hand: filterPlayerAndLocation(gameServer.data.entities, 'player', 'hand'),
+        board: filterPlayerAndLocation(gameServer.data.entities, 'player', 'board')
+      }
+    }
+  });
+
+  function filterPlayerAndLocation(s, p, l) {
+    var filtered = [];
+    for(var i in s) {
+      if(s[i].playerId == p && s[i].location == l) {
+        filtered.push(s[i])
+      }
+    }
+
+    return filtered;
+  }
 
   $scope.newGame = function() {
     console.log('Not supported');
