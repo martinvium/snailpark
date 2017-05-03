@@ -21,10 +21,27 @@ cards:
       title: "The Bald One"
       type: avatar
       description: "When this card dies, the opponent player wins!"
+      effectExpireTrigger: endTurn
     attributes:
       toughness: 30
       energy: 0
       maxEnergy: 0
+    abilities:
+      - trigger: upkeep
+        trigger_conditions:
+          - attribute: player
+            any_of: [me]
+        target: self
+        behaviour: addMaxEnergy
+      - trigger: upkeep
+        trigger_conditions:
+          - attribute: player
+            any_of: [me]
+        target: self
+        attribute: energy
+        mod_factor: 1
+        mod_attr: maxEnergy
+        behaviour: modifyTarget
   dodgy_fella:
     tags:
       color: white

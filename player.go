@@ -55,11 +55,3 @@ func AnyPlayer(vs map[string]*Player, f func(*Player) bool) bool {
 func (p *Player) PayCardCost(c *Entity) {
 	p.Avatar.Attributes["energy"] -= c.Attributes["cost"]
 }
-
-func (p *Player) AddMaxEnergy(num int) {
-	p.Avatar.Attributes["maxEnergy"] += num
-}
-
-func (p *Player) RestoreEnergy() {
-	p.Avatar.Attributes["energy"] = p.Avatar.Attributes["maxEnergy"]
-}

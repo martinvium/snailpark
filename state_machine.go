@@ -96,8 +96,7 @@ func (s *StateMachine) toMulligan() {
 
 func (s *StateMachine) toUpkeep() {
 	s.game.DrawCards(s.game.CurrentPlayer.Id, 1)
-	s.game.CurrentPlayer.AddMaxEnergy(1)
-	s.game.CurrentPlayer.RestoreEnergy()
+	InvokeTrigger(s.game, s.game.CurrentPlayer.Avatar, nil, "upkeep")
 	s.game.ClearAttackers()
 	s.Transition("main")
 }

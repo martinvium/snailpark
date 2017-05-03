@@ -256,8 +256,7 @@ func newPlayersWithBoard(energy int) (map[string]*Player, []*Entity) {
 		"p2": NewPlayer("p2", p2_deck),
 	}
 
-	players["p1"].AddMaxEnergy(energy)
-	players["p1"].RestoreEnergy()
+	players["p1"].Avatar.Attributes["energy"] = energy
 
 	entities := append(p1_deck, p2_deck...)
 	return players, entities
