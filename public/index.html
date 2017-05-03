@@ -21,7 +21,7 @@
       </div>
 
       <div class="ai">
-        <energy-indicator data-current="data.enemy.currentMana" data-max="data.enemy.maxMana"></energy-indicator>
+        <energy-indicator data-current="data.enemy.avatar.attributes.energy" data-max="data.enemy.avatar.attributes.maxEnergy"></energy-indicator>
 
         <ul class="hand cl">
           <card-list data-cards="entities.ai.hand" data-card-details="showCardDetails({ card: card })"></card-list>
@@ -52,7 +52,7 @@
           <card-list data-cards="entities.player.hand" data-card-details="showCardDetails({ card: card })" click-card="playCard(id)"></card-list>
         </div>
 
-        <energy-indicator title="Your" data-current="data.player.currentMana" data-max="data.player.maxMana"/></energy-indicator>
+        <energy-indicator title="Your" data-current="data.player.avatar.attributes.energy" data-max="data.player.avatar.attributes.maxEnergy"/></energy-indicator>
       </div>
     </div>
   </body>

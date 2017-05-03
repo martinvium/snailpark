@@ -29,8 +29,8 @@ func NewEffectFactory(key string) EffectFactory {
 		return ModifyBothEffectFactory
 	case "modifySelf":
 		return ModifySelfEffectFactory
-	case "addMana":
-		return AddManaEffectFactory
+	case "addEnergy":
+		return AddEnergyEffectFactory
 	case "drawCard":
 		return DrawCardEffectFactory
 	case "summonCreature":
@@ -86,8 +86,8 @@ func DrawCardEffectFactory(g *Game, a *Ability, c, target *Entity) {
 	g.DrawCards(target.PlayerId, a.ModificationAmount(c))
 }
 
-func AddManaEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	g.Players[target.PlayerId].AddMaxMana(
+func AddEnergyEffectFactory(g *Game, a *Ability, c, target *Entity) {
+	g.Players[target.PlayerId].AddMaxEnergy(
 		a.ModificationAmount(c),
 	)
 }

@@ -347,11 +347,11 @@ func anonymizeHiddenEntities(s []*Entity, playerId string) []*Entity {
 }
 
 func CanPlayCard(p *Player, e *Entity) bool {
-	if p.CurrentMana < e.Attributes["cost"] {
-		log.Println("ERROR: Client trying to use card without enough mana", p.CurrentMana, ":", e.Attributes["cost"])
+	energy := p.Avatar.Attributes["energy"]
+	if energy < e.Attributes["cost"] {
+		log.Println("ERROR: Not enough energy:", energy, ":", e.Attributes["cost"])
 		return false
 	}
 
-	log.Println("Approved casting card because mana is good", p.CurrentMana, ":", e.Attributes["cost"])
 	return true
 }

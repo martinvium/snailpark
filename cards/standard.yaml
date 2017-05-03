@@ -22,8 +22,9 @@ cards:
       type: avatar
       description: "When this card dies, the opponent player wins!"
     attributes:
-      # power: 0
       toughness: 30
+      energy: 0
+      maxEnergy: 0
   dodgy_fella:
     tags:
       color: white
@@ -273,7 +274,7 @@ cards:
       color: white
       title: "Ramp"
       type: spell
-      description: "Permanently add 2 mana to your mana pool"
+      description: "Permanently add 2 to your energy pool"
     attributes:
       cost: 2
       power: 2
@@ -290,4 +291,4 @@ cards:
         attribute: not_used
         mod_factor: 1
         mod_attr: power
-        behaviour: addMana
+        behaviour: addEnergy
