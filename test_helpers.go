@@ -1,14 +1,5 @@
 package main
 
-type NullMessageSender struct {
-}
-
-func (n *NullMessageSender) SendStateResponseAll() {
-}
-
-func (n *NullMessageSender) SendOptionsResponse() {
-}
-
 func NewTestGame() *Game {
 	p1_deck := NewPrototypeDeck("p1")
 	p2_deck := NewPrototypeDeck("p2")
@@ -19,7 +10,7 @@ func NewTestGame() *Game {
 	}
 
 	game := NewGame(players, "p1", append(p1_deck, p2_deck...))
-	game.SetStateMachineDeps(&NullMessageSender{})
+	game.SetStateMachineDeps()
 
 	return game
 }
