@@ -1,72 +1,41 @@
 package main
 
-import (
-	"fmt"
-	"log"
-)
-
 type Player struct {
 	Ready       bool
 	Id          string
 	CurrentMana int
 	MaxMana     int
-	Deck        []*Card
-	Hand        []*Card
-	Board       []*Card
-	Graveyard   []*Card
-	Avatar      *Card
+	Avatar      *Entity
 }
 
-func NewPlayer(id string) *Player {
-	return NewPlayerWithState(
-		id,
-		NewPrototypeDeck(id),
-		NewEmptyHand(),
-		NewEmptyBoard(),
-	)
-}
-
-func NewPlayerWithState(id string, deck []*Card, hand, board []*Card) *Player {
-	// Move avatar from deck to board
-	avatar := FirstCardWithType(deck, "avatar")
-	if avatar != nil {
-		deck = DeleteCard(deck, avatar)
-		avatar.Location = "board"
-		board = append(board, avatar)
-	} else {
-		fmt.Println("ERROR: No avatar in deck")
-	}
-
-	deck = ShuffleCards(deck)
+func NewPlayer(id string, deck []*Entity) *Player {
+	avatar := FirstEntityByType(deck, "avatar")
+	avatar.Location = "board"
 
 	return &Player{
 		false,
 		id,
 		0,
 		0,
-		deck,
-		hand,
-		board,
-		[]*Card{},
 		avatar,
 	}
 }
 
-func NewEmptyHand() []*Card {
-	return []*Card{}
+func NewEmptyHand() []*Entity {
+	return []*Entity{}
 }
 
-func NewAnonymizedHand(h []*Card) []*Card {
-	anon := []*Card{}
+func NewAnonymizedHand(h []*Entity) []*Entity {
+	anon := []*Entity{}
 	for _, c := range h {
-		anon = append(anon, NewCard(AnonymousCardProto, "anon", c.PlayerId))
+		anon = append(anon, NewEntity(AnonymousEntityProto, "anon", c.PlayerId))
 	}
 
 	return anon
 }
 
-func NewEmptyBoard() []*Card {
-	return []*Card{}
+func NewEmptyBoard() []*Entity {
+	return []*Entity{}
 }
 
 func AllPlayers(vs map[string]*Player, f func(*Player) bool) bool {
@@ -87,51 +56,8 @@ func AnyPlayer(vs map[string]*Player, f func(*Player) bool) bool {
 	return false
 }
 
-func (p *Player) AddToHand(num int) []*Card {
-	cards := p.Deck[len(p.Deck)-num:] // Pick num cards from deck
-	p.Deck = p.Deck[:len(p.Deck)-num] // Remove them
-
-	for _, card := range cards {
-		card.Location = "hand"
-		p.Hand = append(p.Hand, card)
-	}
-
-	return cards
-}
-
-func (p *Player) AddToBoard(card *Card) {
-	card.Location = "board"
-	p.Board = append(p.Board, card)
-}
-
-func (p *Player) AddToGraveyard(card *Card) {
-	card.Location = "graveyard"
-	p.Graveyard = append(p.Graveyard, card)
-}
-
-func (p *Player) PayCardCost(c *Card) {
+func (p *Player) PayCardCost(c *Entity) {
 	p.CurrentMana -= c.Attributes["cost"]
-}
-
-func (p *Player) RemoveCardFromHand(c *Card) {
-	p.Hand = DeleteCard(p.Hand, c)
-}
-
-func (p *Player) CanPlayCard(cardId string) bool {
-	card := FirstCardWithId(p.Hand, cardId)
-
-	if card == nil {
-		log.Println("ERROR: Client trying to use invalid card:", cardId)
-		return false
-	}
-
-	if p.CurrentMana < card.Attributes["cost"] {
-		log.Println("ERROR: Client trying to use card without enough mana", p.CurrentMana, ":", card.Attributes["cost"])
-		return false
-	}
-
-	log.Println("Approved casting card because mana is good", p.CurrentMana, ":", card.Attributes["cost"])
-	return true
 }
 
 func (p *Player) AddMaxMana(num int) {

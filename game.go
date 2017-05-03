@@ -7,34 +7,31 @@ type Game struct {
 	CurrentPlayer *Player
 	State         *StateMachine
 	Engagements   []*Engagement
-	CurrentCard   *Card
-	// Tags map[string]*Card
-	// Could work with int by sorting, or grouping them?
+	CurrentCard   *Entity
+	Entities      []*Entity
 }
 
-func NewGame(players map[string]*Player) *Game {
+func NewGame(players map[string]*Player, currentPlayerId string, entities []*Entity) *Game {
 	return &Game{
 		players,
-		players["player"], // currently always the player that starts
+		players[currentPlayerId], // currently always the player that starts
 		NewStateMachine(),
 		[]*Engagement{},
 		nil,
+		entities,
 	}
 }
 
 func NewTestGame() *Game {
+	p1_deck := NewPrototypeDeck("p1")
+	p2_deck := NewPrototypeDeck("p2")
+
 	players := map[string]*Player{
-		"p1": NewPlayer("p1"),
-		"p2": NewPlayer("p2"),
+		"p1": NewPlayer("p1", p1_deck),
+		"p2": NewPlayer("p2", p2_deck),
 	}
 
-	return &Game{
-		players,
-		players["p1"],
-		NewStateMachine(),
-		[]*Engagement{},
-		nil,
-	}
+	return NewGame(players, "p1", append(p1_deck, p2_deck...))
 }
 
 func (g *Game) SetStateMachineDeps(msgSender MessageSender) {
@@ -83,18 +80,18 @@ func (g *Game) Priority() *Player {
 	return g.CurrentPlayer
 }
 
-func (g *Game) AllBoardCards() []*Card {
-	cards := []*Card{}
-	for _, player := range g.Players {
-		for _, card := range player.Board {
-			cards = append(cards, card)
-		}
-	}
-
-	return cards
+func (g *Game) AllBoardCards() []*Entity {
+	return FilterEntityByLocation(g.Entities, "board")
 }
 
-func OrderCardsByTimePlayed(s []*Card) []*Card {
+func (g *Game) DrawCards(playerId string, num int) {
+	deck := FilterEntityByPlayerAndLocation(g.Entities, playerId, "library")
+	for _, e := range deck[len(deck)-num:] {
+		e.Location = "hand"
+	}
+}
+
+func OrderCardsByTimePlayed(s []*Entity) []*Entity {
 	fmt.Println("WARN: OrderCardsByTimePlayed not implemented")
 	return s
 }

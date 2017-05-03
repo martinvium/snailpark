@@ -17,15 +17,27 @@ func NewAI(playerId string) *AI {
 	return &AI{outCh, playerId}
 }
 
-func (a *AI) Send(msg *ResponseMessage) {
-	action := a.RespondWithAction(msg)
+func (a *AI) Send(packet *ResponseMessage) {
+	action := a.RespondWithAction(packet)
 	if action != nil {
 		a.respondDelayed(action)
 	}
 }
 
-func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
-	log.Println("AI ack it received: ", msg)
+func (a *AI) RespondWithAction(packet *ResponseMessage) *Message {
+	log.Println("AI ack it received: ", packet)
+
+	// we dont yet support multiple message types
+	if packet.Type != "FULL_STATE" {
+		return nil
+	}
+
+	fmt.Println("packet", packet.Message)
+	msg, ok := packet.Message.(*FullStateResponse)
+	if ok == false {
+		fmt.Println("Unable to cast message to FullStateResponse")
+		return nil
+	}
 
 	if msg.CurrentPlayerId != a.playerId {
 		return nil
@@ -61,11 +73,11 @@ func (a *AI) RespondWithAction(msg *ResponseMessage) *Message {
 	return nil
 }
 
-func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
+func (a *AI) attackOrEndTurn(msg *FullStateResponse) *Message {
 	fmt.Println("Nothing more to play, lets attack or end turn")
 
-	me := msg.Players[a.playerId]
-	card := a.firstAvailableAttacker(me.Board, msg.Engagements)
+	myBoard := FilterEntityByPlayerAndLocation(msg.Entities, a.playerId, "board")
+	card := a.firstAvailableAttacker(myBoard, msg.Engagements)
 	if card != nil {
 		return NewCardActionMessage(a.playerId, "target", card.Id)
 	} else {
@@ -73,7 +85,7 @@ func (a *AI) attackOrEndTurn(msg *ResponseMessage) *Message {
 	}
 }
 
-func (a *AI) targetSpell(msg *ResponseMessage) *Message {
+func (a *AI) targetSpell(msg *FullStateResponse) *Message {
 	scorer := NewAIScorer(a.playerId, msg)
 
 	for _, ability := range msg.CurrentCard.Abilities {
@@ -94,7 +106,7 @@ func (a *AI) targetSpell(msg *ResponseMessage) *Message {
 	return nil
 }
 
-func (a *AI) playCard(card *Card) *Message {
+func (a *AI) playCard(card *Entity) *Message {
 	return NewCardActionMessage(a.playerId, "playCard", card.Id)
 }
 
@@ -104,7 +116,7 @@ func (a *AI) respondDelayed(msg *Message) {
 	a.outCh <- msg
 }
 
-func (a *AI) firstAvailableAttacker(board []*Card, engagements []*Engagement) *Card {
+func (a *AI) firstAvailableAttacker(board []*Entity, engagements []*Engagement) *Entity {
 	for _, card := range board {
 		if !a.isAttacking(engagements, card) && card.CanAttack() {
 			return card
@@ -114,7 +126,7 @@ func (a *AI) firstAvailableAttacker(board []*Card, engagements []*Engagement) *C
 	return nil
 }
 
-func (a *AI) isAttacking(engagements []*Engagement, card *Card) bool {
+func (a *AI) isAttacking(engagements []*Engagement, card *Entity) bool {
 	for _, e := range engagements {
 		if card.Id == e.Attacker.Id {
 			return true

@@ -7,7 +7,7 @@ type Condition struct {
 	AnyOf     []string `yaml:"any_of"`
 }
 
-func (c *Condition) Valid(card, target *Card) bool {
+func (c *Condition) Valid(card, target *Entity) bool {
 	switch c.Attribute {
 	case "type":
 		return c.Matches(target.Tags["type"])
@@ -21,7 +21,7 @@ func (c *Condition) Valid(card, target *Card) bool {
 	}
 }
 
-func (c *Condition) MatchesPlayer(card, target *Card) bool {
+func (c *Condition) MatchesPlayer(card, target *Entity) bool {
 	if target == nil {
 		fmt.Println("ERROR: expecting a target for matching player")
 		return false

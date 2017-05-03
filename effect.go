@@ -9,8 +9,8 @@ import "fmt"
 
 const NeverExpires = ""
 
-type EffectFactory func(*Game, *Ability, *Card, *Card)
-type EffectApplier func(*Game, *Ability, *Effect, *Card)
+type EffectFactory func(*Game, *Ability, *Entity, *Entity)
+type EffectApplier func(*Game, *Ability, *Effect, *Entity)
 
 type Effect struct {
 	Origin        *Ability
@@ -49,17 +49,17 @@ func NewEffect(a *Ability, applier EffectApplier, attr map[string]int, expireTri
 	return &Effect{Origin: a, Applier: applier, Attributes: attr, ExpireTrigger: expireTrigger}
 }
 
-func (e *Effect) Apply(g *Game, target *Card) {
+func (e *Effect) Apply(g *Game, target *Entity) {
 	e.Applier(g, e.Origin, e, target)
 }
 
-func AttributeEffectApplier(g *Game, a *Ability, e *Effect, target *Card) {
+func AttributeEffectApplier(g *Game, a *Ability, e *Effect, target *Entity) {
 	for k, _ := range e.Attributes {
 		target.ModifyAttribute(k, e.Attributes[k])
 	}
 }
 
-func ModifyTargetEffectFactory(g *Game, a *Ability, c, target *Card) {
+func ModifyTargetEffectFactory(g *Game, a *Ability, c, target *Entity) {
 	expireTrigger := NeverExpires
 	if v, ok := c.Tags["effectExpireTrigger"]; ok {
 		expireTrigger = v
@@ -74,7 +74,7 @@ func ModifyTargetEffectFactory(g *Game, a *Ability, c, target *Card) {
 	target.AddEffect(g, e)
 }
 
-func ModifyBothEffectFactory(g *Game, a *Ability, c, target *Card) {
+func ModifyBothEffectFactory(g *Game, a *Ability, c, target *Entity) {
 	ModifyTargetEffectFactory(g, a, c, target)
 
 	if ta := ActivatedAbility(target.Abilities); ta != nil {
@@ -82,31 +82,30 @@ func ModifyBothEffectFactory(g *Game, a *Ability, c, target *Card) {
 	}
 }
 
-func DrawCardEffectFactory(g *Game, a *Ability, c, target *Card) {
-	g.Players[target.PlayerId].AddToHand(
-		a.ModificationAmount(c),
-	)
+func DrawCardEffectFactory(g *Game, a *Ability, c, target *Entity) {
+	g.DrawCards(target.PlayerId, a.ModificationAmount(c))
 }
 
-func AddManaEffectFactory(g *Game, a *Ability, c, target *Card) {
+func AddManaEffectFactory(g *Game, a *Ability, c, target *Entity) {
 	g.Players[target.PlayerId].AddMaxMana(
 		a.ModificationAmount(c),
 	)
 }
 
-func ModifySelfEffectFactory(g *Game, a *Ability, c, target *Card) {
+func ModifySelfEffectFactory(g *Game, a *Ability, c, target *Entity) {
 	amount := 1
 	e := NewEffect(a, AttributeEffectApplier, map[string]int{a.Attribute: amount}, NeverExpires)
 	c.AddEffect(g, e)
 }
 
-func SummonCreaturesEffectFactory(g *Game, a *Ability, c, target *Card) {
-	cards := NewCards(TokenRepo(), c.PlayerId, []string{
+func SummonCreaturesEffectFactory(g *Game, a *Ability, c, target *Entity) {
+	entities := NewDeck(TokenRepo(), c.PlayerId, []string{
 		"Dodgy Fella",
 		"Dodgy Fella",
 	})
 
-	for _, c := range cards {
-		g.Players[c.PlayerId].AddToBoard(c)
+	for _, e := range entities {
+		e.Location = "board"
+		g.Entities = append(g.Entities, e)
 	}
 }

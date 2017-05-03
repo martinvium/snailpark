@@ -4,8 +4,8 @@ import "testing"
 
 func TestAbility_ApplyToTarget_Attack(t *testing.T) {
 	game := NewTestGame()
-	creature1 := NewBoardTestCard("Dodgy Fella", "p1")
-	creature2 := NewBoardTestCard("Dodgy Fella", "p2")
+	creature1 := NewTestEntityOnBoard("Dodgy Fella", "p1")
+	creature2 := NewTestEntityOnBoard("Dodgy Fella", "p2")
 
 	a := ActivatedAbility(creature1.Abilities)
 	a.Apply(game, creature1, creature2)
@@ -20,7 +20,7 @@ func TestAbility_ApplyToTarget_Attack(t *testing.T) {
 
 func TestAbility_ApplyToTarget_AttackAvatar(t *testing.T) {
 	game := NewTestGame()
-	creature1 := NewBoardTestCard("Dodgy Fella", "p1")
+	creature1 := NewTestEntityOnBoard("Dodgy Fella", "p1")
 	avatar := game.Players["p2"].Avatar
 
 	a := ActivatedAbility(creature1.Abilities)
