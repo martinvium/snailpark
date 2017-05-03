@@ -10,12 +10,16 @@ func NewDeck(repo []*EntityProto, playerId string, def []string) []*Entity {
 	deck := []*Entity{}
 
 	for _, n := range def {
-		proto := EntityProtoByTitle(repo, n)
-		card := NewEntity(proto, NewUUID(), playerId)
-		deck = append(deck, card)
+		deck = append(deck, NewEntityByTitle(repo, playerId, n))
 	}
 
 	return deck
+}
+
+func NewEntityByTitle(repo []*EntityProto, playerId, title string) *Entity {
+	proto := EntityProtoByTitle(repo, title)
+	e := NewEntity(proto, NewUUID(), playerId)
+	return e
 }
 
 func ShuffleCards(s []*Entity) []*Entity {
