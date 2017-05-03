@@ -21,7 +21,6 @@ cards:
       title: "The Bald One"
       type: avatar
       description: "When this card dies, the opponent player wins!"
-      effectExpireTrigger: endTurn
     attributes:
       toughness: 30
       energy: 0
@@ -41,7 +40,7 @@ cards:
         attribute: energy
         mod_factor: 1
         mod_attr: maxEnergy
-        behaviour: modifyTarget
+        behaviour: modifyTargetUntilEndOfTurn
   dodgy_fella:
     tags:
       color: white
@@ -221,7 +220,6 @@ cards:
       title: "Creatine powder"
       type: spell
       description: "Increase creatures power by 3 until end of turn"
-      effectExpireTrigger: endTurn
     attributes:
       cost: 2
       power: 3
@@ -238,14 +236,13 @@ cards:
         attribute: power
         mod_factor: 1
         mod_attr: power
-        behaviour: modifyTarget
+        behaviour: modifyTargetUntilEndOfTurn
   make_lemonade:
     tags:
       color: white
       title: "Make lemonade"
       type: spell
       description: "Add 2 power to all creatures on your board until end of turn."
-      effectExpireTrigger: endTurn
     attributes:
       cost: 2
       power: 2
@@ -262,7 +259,7 @@ cards:
         attribute: power
         mod_factor: 1
         mod_attr: power
-        behaviour: modifyTarget
+        behaviour: modifyTargetUntilEndOfTurn
   more_draw:
     tags:
       color: white

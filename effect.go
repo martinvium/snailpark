@@ -25,6 +25,8 @@ func NewEffectFactory(key string) EffectFactory {
 	switch key {
 	case "modifyTarget":
 		return ModifyTargetEffectFactory
+	case "modifyTargetUntilEndOfTurn":
+		return ModifyTargetUntilEndOfTurnEffectFactory
 	case "modifyBoth":
 		return ModifyBothEffectFactory
 	case "modifySelf":
@@ -64,16 +66,21 @@ func AttributeEffectApplier(g *Game, a *Ability, e *Effect, target *Entity) {
 }
 
 func ModifyTargetEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	expireTrigger := NeverExpires
-	if v, ok := c.Tags["effectExpireTrigger"]; ok {
-		expireTrigger = v
-	}
-
 	e := NewEffect(
 		a,
 		AttributeEffectApplier,
 		map[string]int{a.Attribute: a.ModificationAmount(c)},
-		expireTrigger,
+		NeverExpires,
+	)
+	target.AddEffect(g, e)
+}
+
+func ModifyTargetUntilEndOfTurnEffectFactory(g *Game, a *Ability, c, target *Entity) {
+	e := NewEffect(
+		a,
+		AttributeEffectApplier,
+		map[string]int{a.Attribute: a.ModificationAmount(c)},
+		"endTurn",
 	)
 	target.AddEffect(g, e)
 }
