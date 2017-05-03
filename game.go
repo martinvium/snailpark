@@ -28,10 +28,11 @@ func (g *Game) SetStateMachineDeps(msgSender MessageSender) {
 }
 
 func (g *Game) NextPlayer() {
-	if g.CurrentPlayer.Id == "player" {
-		g.CurrentPlayer = g.Players["ai"]
-	} else {
-		g.CurrentPlayer = g.Players["player"]
+	for _, p := range g.Players {
+		if p.Id != g.CurrentPlayer.Id {
+			g.CurrentPlayer = p
+			return
+		}
 	}
 }
 
