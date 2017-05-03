@@ -81,3 +81,61 @@ func TestEntityProto_AvatarSpellLeavesBoard(t *testing.T) {
 		t.Errorf("Spell still on board: %v", game.AllBoardCards())
 	}
 }
+
+func TestEntityProto_SpellTargetTwice(t *testing.T) {
+	game := NewTestGame()
+
+	creature := NewTestEntityOnBoard("Dodgy Fella", "p1")
+	game.Entities = append(game.Entities, creature)
+
+	if creature.Attributes["power"] != 1 {
+		t.Errorf("Wrong power for dude: %v", creature.Attributes["power"])
+	}
+
+	spell := NewTestEntity("Creatine powder", "p1")
+	game.Entities = append(game.Entities, spell)
+	game.CurrentCard = spell
+	ResolveCurrentCard(game, creature)
+
+	if creature.Attributes["power"] != 4 {
+		t.Errorf("Wrong power for dude: %v", creature.Attributes["power"])
+	}
+
+	spell = NewTestEntity("Creatine powder", "p1")
+	game.Entities = append(game.Entities, spell)
+	game.CurrentCard = spell
+	ResolveCurrentCard(game, creature)
+
+	if creature.Attributes["power"] != 7 {
+		t.Errorf("Wrong power for dude: %v", creature.Attributes["power"])
+	}
+
+	game.State.UnsafeForceTransition("end")
+
+	if creature.Attributes["power"] != 1 {
+		t.Errorf("Wrong power for dude: %v", creature.Attributes["power"])
+	}
+}
+
+func TestEntityProto_MultipleBuffsExpire(t *testing.T) {
+	game := NewTestGame()
+
+	game.Entities = append(game.Entities, []*Entity{
+		NewTestEntityOnBoard("Dodgy Fella", "p1"),
+		NewTestEntityOnBoard("Dodgy Fella", "p1"),
+		NewTestEntityOnBoard("Dodgy Fella", "p1"),
+	}...)
+
+	spell := NewTestEntity("Make lemonade", "p1")
+	game.Entities = append(game.Entities, spell)
+	game.CurrentCard = spell
+	ResolveCurrentCard(game, nil)
+
+	s := FilterEntityByPlayerAndLocation(game.Entities, "p1", "board")
+	dudes := FilterEntityByTitle(s, "Dodgy Fella")
+	for _, e := range dudes {
+		if e.Attributes["power"] != 3 {
+			t.Errorf("Wrong power for dude: %v", e.Attributes["power"])
+		}
+	}
+}

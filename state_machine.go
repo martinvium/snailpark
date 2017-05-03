@@ -45,6 +45,12 @@ func (s *StateMachine) Transition(newState string) {
 	}
 }
 
+func (s *StateMachine) UnsafeForceTransition(newState string) {
+	log.Println("Transition state", s.state, " => ", newState)
+	s.state = newState
+	s.transitionCallback()
+}
+
 func (s *StateMachine) validTransition(newState string) bool {
 	for _, state := range transitions[s.state] {
 		if state == newState {

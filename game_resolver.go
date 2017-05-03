@@ -47,9 +47,10 @@ func InvokeCardAbilityTrigger(g *Game, c, origin, target *Entity, event string) 
 
 func InvokeEffectTrigger(g *Game, event string) {
 	for _, c := range g.AllBoardCards() {
-		for i, e := range c.Effects {
-			if e.ExpireTrigger == event {
+		for i := 0; i < len(c.Effects); i++ {
+			if c.Effects[i].ExpireTrigger == event {
 				c.Effects = append(c.Effects[:i], c.Effects[i+1:]...)
+				i--
 			}
 		}
 

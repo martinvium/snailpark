@@ -109,17 +109,6 @@ func MapEntityIds(vs []*Entity) []string {
 	return vsm
 }
 
-func NewTestEntity(title string, playerId string) *Entity {
-	proto := EntityProtoByTitle(StandardRepo(), title)
-	return NewEntity(proto, NewUUID(), playerId)
-}
-
-func NewTestEntityOnBoard(title string, playerId string) *Entity {
-	e := NewTestEntity(title, playerId)
-	e.Location = "board"
-	return e
-}
-
 func (e *Entity) String() string {
 	return fmt.Sprintf("Entity(%v, %v, @%v)", e.Tags["title"], e.PlayerId, e.Location)
 }
