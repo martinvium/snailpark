@@ -22,8 +22,25 @@ cards:
       type: avatar
       description: "When this card dies, the opponent player wins!"
     attributes:
-      # power: 0
       toughness: 30
+      energy: 0
+      maxEnergy: 0
+    abilities:
+      - trigger: upkeep
+        trigger_conditions:
+          - attribute: player
+            any_of: [me]
+        target: self
+        behaviour: addMaxEnergy
+      - trigger: upkeep
+        trigger_conditions:
+          - attribute: player
+            any_of: [me]
+        target: self
+        attribute: energy
+        mod_factor: 1
+        mod_attr: maxEnergy
+        behaviour: modifyTargetUntilEndOfTurn
   dodgy_fella:
     tags:
       color: white
@@ -203,7 +220,6 @@ cards:
       title: "Creatine powder"
       type: spell
       description: "Increase creatures power by 3 until end of turn"
-      effectExpireTrigger: endTurn
     attributes:
       cost: 2
       power: 3
@@ -220,14 +236,13 @@ cards:
         attribute: power
         mod_factor: 1
         mod_attr: power
-        behaviour: modifyTarget
+        behaviour: modifyTargetUntilEndOfTurn
   make_lemonade:
     tags:
       color: white
       title: "Make lemonade"
       type: spell
       description: "Add 2 power to all creatures on your board until end of turn."
-      effectExpireTrigger: endTurn
     attributes:
       cost: 2
       power: 2
@@ -244,7 +259,7 @@ cards:
         attribute: power
         mod_factor: 1
         mod_attr: power
-        behaviour: modifyTarget
+        behaviour: modifyTargetUntilEndOfTurn
   more_draw:
     tags:
       color: white
@@ -273,7 +288,7 @@ cards:
       color: white
       title: "Ramp"
       type: spell
-      description: "Permanently add 2 mana to your mana pool"
+      description: "Permanently add 2 to your energy pool"
     attributes:
       cost: 2
       power: 2
@@ -290,4 +305,4 @@ cards:
         attribute: not_used
         mod_factor: 1
         mod_attr: power
-        behaviour: addMana
+        behaviour: addEnergy

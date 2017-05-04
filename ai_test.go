@@ -238,8 +238,8 @@ func newPlayersExpensiveCreatureEmptyHand() (map[string]*Player, []*Entity) {
 	return players, entities
 }
 
-func newPlayers(mana int) (map[string]*Player, []*Entity) {
-	players, entities := newPlayersWithBoard(mana)
+func newPlayers(energy int) (map[string]*Player, []*Entity) {
+	players, entities := newPlayersWithBoard(energy)
 
 	entities = append(entities, newTestCards("p1", "board", []string{"Dodgy Fella"})...)
 	entities = append(entities, newTestCards("p2", "board", []string{"Dodgy Fella"})...)
@@ -247,7 +247,7 @@ func newPlayers(mana int) (map[string]*Player, []*Entity) {
 	return players, entities
 }
 
-func newPlayersWithBoard(mana int) (map[string]*Player, []*Entity) {
+func newPlayersWithBoard(energy int) (map[string]*Player, []*Entity) {
 	p1_deck := newTestDeck("p1", p1DeckDef)
 	p2_deck := newTestDeck("p2", p2DeckDef)
 
@@ -256,8 +256,7 @@ func newPlayersWithBoard(mana int) (map[string]*Player, []*Entity) {
 		"p2": NewPlayer("p2", p2_deck),
 	}
 
-	players["p1"].AddMaxMana(mana)
-	players["p1"].ResetCurrentMana()
+	players["p1"].Avatar.Attributes["energy"] = energy
 
 	entities := append(p1_deck, p2_deck...)
 	return players, entities

@@ -59,7 +59,11 @@ func (a *Ability) applyToTarget(g *Game, c, target *Entity) error {
 
 	fmt.Println("Applying ability to target:", target)
 
-	NewEffectFactory(a.EffectFactory)(g, a, c, target)
+	if f := NewEffectFactory(a.EffectFactory); f != nil {
+		f(g, a, c, target)
+	} else {
+		fmt.Println("Unable to apply ability, could not create effect factory: %v", a.EffectFactory)
+	}
 
 	return nil
 }

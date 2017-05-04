@@ -9,11 +9,6 @@ import (
 
 const channelBufSize = 100
 
-type MessageSender interface {
-	SendStateResponseAll()
-	SendOptionsResponse()
-}
-
 type GameServer struct {
 	clients   map[string]Client
 	doneCh    chan bool
@@ -52,13 +47,9 @@ func NewGameServer() *GameServer {
 		game,
 	}
 
-	gs.SetStateMachineDeps()
+	gs.game.SetStateMachineDeps()
 
 	return gs
-}
-
-func (g *GameServer) SetStateMachineDeps() {
-	g.game.SetStateMachineDeps(g)
 }
 
 func (g *GameServer) SetClient(c *SocketClient) {
@@ -103,10 +94,13 @@ func (g *GameServer) ListenAndConsumeClientRequests() {
 }
 
 func (g *GameServer) processClientRequest(msg *Message) {
+	if msg.Action == "ping" {
+		// do nothing
+		return
+	}
+
 	if msg.Action == "start" {
 		g.handleStartAction(msg)
-	} else if msg.Action == "ping" {
-		// do nothing
 	} else if msg.Action == "playCard" {
 		g.handlePlayCardAction(msg)
 	} else if msg.Action == "endTurn" {
@@ -114,8 +108,11 @@ func (g *GameServer) processClientRequest(msg *Message) {
 	} else if msg.Action == "target" {
 		g.handleTarget(msg)
 	} else {
-		log.Println("No handler for client action!")
+		log.Println("ERROR: No handler for client action!")
+		return
 	}
+
+	g.SendStateResponseAll()
 }
 
 func (g *GameServer) SendStateResponseAll() {
@@ -124,21 +121,10 @@ func (g *GameServer) SendStateResponseAll() {
 	}
 }
 
-func (g *GameServer) SendOptionsResponse() {
-	cards := FilterEntities(g.game.AllBoardCards(), func(target *Entity) bool {
-		return g.validTargetForCurrentCard(target)
-	})
-
-	options := MapEntityIds(cards)
-	log.Println("Options:", options)
-	g.sendBoardStateToClient(g.clients[g.game.CurrentPlayer.Id], options)
-}
-
 // private
 
 func (g *GameServer) handleStartAction(msg *Message) {
 	if g.game.State.String() != "unstarted" {
-		g.SendStateResponseAll()
 		return
 	}
 
@@ -181,6 +167,7 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 	if requireTarget {
 		g.game.State.Transition("targeting")
 	} else {
+		fmt.Println("Playing card ", g.game.CurrentCard, "for cost", g.game.CurrentCard.Attributes["cost"])
 		ResolveCurrentCard(g.game, nil)
 		g.game.State.Transition("main")
 	}
@@ -347,11 +334,11 @@ func anonymizeHiddenEntities(s []*Entity, playerId string) []*Entity {
 }
 
 func CanPlayCard(p *Player, e *Entity) bool {
-	if p.CurrentMana < e.Attributes["cost"] {
-		log.Println("ERROR: Client trying to use card without enough mana", p.CurrentMana, ":", e.Attributes["cost"])
+	energy := p.Avatar.Attributes["energy"]
+	if energy < e.Attributes["cost"] {
+		log.Println("ERROR: Not enough energy:", energy, ":", e.Attributes["cost"])
 		return false
 	}
 
-	log.Println("Approved casting card because mana is good", p.CurrentMana, ":", e.Attributes["cost"])
 	return true
 }

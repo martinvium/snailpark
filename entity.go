@@ -145,9 +145,9 @@ func (e *Entity) UpdateEffects(g *Game) {
 }
 
 func (e *Entity) ModifyAttribute(attribute string, modifier int) {
-	fmt.Println("Modified attribute", attribute, "by", modifier)
 	if _, ok := e.Attributes[attribute]; ok {
 		e.Attributes[attribute] += modifier
+		fmt.Println("Modified attribute", attribute, "by", modifier, "=>", e.Attributes[attribute])
 	} else {
 		// not sure if problem...
 		fmt.Println("ERROR: modified attribute doesnt exist")

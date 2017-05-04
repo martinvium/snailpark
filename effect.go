@@ -25,12 +25,18 @@ func NewEffectFactory(key string) EffectFactory {
 	switch key {
 	case "modifyTarget":
 		return ModifyTargetEffectFactory
+	case "modifyTargetUntilEndOfTurn":
+		return ModifyTargetUntilEndOfTurnEffectFactory
 	case "modifyBoth":
 		return ModifyBothEffectFactory
 	case "modifySelf":
 		return ModifySelfEffectFactory
-	case "addMana":
-		return AddManaEffectFactory
+	case "addEnergy":
+		return AddModEnergyEffectFactory
+	case "addMaxEnergy":
+		return AddMaxEnergyEffectFactory
+	case "restoreEnergyToMax":
+		return RestoreEnergyToMaxEffectFactory
 	case "drawCard":
 		return DrawCardEffectFactory
 	case "summonCreature":
@@ -60,16 +66,21 @@ func AttributeEffectApplier(g *Game, a *Ability, e *Effect, target *Entity) {
 }
 
 func ModifyTargetEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	expireTrigger := NeverExpires
-	if v, ok := c.Tags["effectExpireTrigger"]; ok {
-		expireTrigger = v
-	}
-
 	e := NewEffect(
 		a,
 		AttributeEffectApplier,
 		map[string]int{a.Attribute: a.ModificationAmount(c)},
-		expireTrigger,
+		NeverExpires,
+	)
+	target.AddEffect(g, e)
+}
+
+func ModifyTargetUntilEndOfTurnEffectFactory(g *Game, a *Ability, c, target *Entity) {
+	e := NewEffect(
+		a,
+		AttributeEffectApplier,
+		map[string]int{a.Attribute: a.ModificationAmount(c)},
+		"endTurn",
 	)
 	target.AddEffect(g, e)
 }
@@ -86,10 +97,27 @@ func DrawCardEffectFactory(g *Game, a *Ability, c, target *Entity) {
 	g.DrawCards(target.PlayerId, a.ModificationAmount(c))
 }
 
-func AddManaEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	g.Players[target.PlayerId].AddMaxMana(
-		a.ModificationAmount(c),
+func AddModEnergyEffectFactory(g *Game, a *Ability, c, target *Entity) {
+	addMaxEnergyEffectHelper(g, a, c, target, a.ModificationAmount(c))
+}
+
+func AddMaxEnergyEffectFactory(g *Game, a *Ability, c, target *Entity) {
+	addMaxEnergyEffectHelper(g, a, c, target, 1)
+}
+
+func addMaxEnergyEffectHelper(g *Game, a *Ability, c, target *Entity, amount int) {
+	e := NewEffect(
+		a,
+		AttributeEffectApplier,
+		map[string]int{"maxEnergy": amount},
+		NeverExpires,
 	)
+
+	target.AddEffect(g, e)
+}
+
+func RestoreEnergyToMaxEffectFactory(g *Game, a *Ability, c, target *Entity) {
+	target.Attributes["energy"] = target.Attributes["maxEnergy"]
 }
 
 func ModifySelfEffectFactory(g *Game, a *Ability, c, target *Entity) {

@@ -22,9 +22,8 @@ func NewGame(players map[string]*Player, currentPlayerId string, entities []*Ent
 	}
 }
 
-func (g *Game) SetStateMachineDeps(msgSender MessageSender) {
+func (g *Game) SetStateMachineDeps() {
 	g.State.SetGame(g)
-	g.State.SetMessageSender(msgSender)
 }
 
 func (g *Game) NextPlayer() {

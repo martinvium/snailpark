@@ -9,18 +9,17 @@ var attributeFactors = map[string]int{
 	"cost":      1,
 	"toughness": -1,
 	"power":     -1,
-	"mana":      -2,
 	"draw":      -2,
 }
 
 var powerFactor = 3
 
 type AIScorer struct {
-	playerId    string
-	entities    []*Entity
-	players     map[string]*ResponsePlayer // board state
-	playerMods  map[string]int             // e.g. player 1, ai -1
-	currentMana int
+	playerId   string
+	entities   []*Entity
+	players    map[string]*ResponsePlayer // board state
+	playerMods map[string]int             // e.g. player 1, ai -1
+	energy     int
 }
 
 type Score struct {
@@ -44,9 +43,9 @@ func NewAIScorer(playerId string, msg *FullStateResponse) *AIScorer {
 		playerMods[player.Id] = mod
 	}
 
-	currentMana := msg.Players[playerId].CurrentMana
+	energy := msg.Players[playerId].Avatar.Attributes["energy"]
 
-	return &AIScorer{playerId, msg.Entities, msg.Players, playerMods, currentMana}
+	return &AIScorer{playerId, msg.Entities, msg.Players, playerMods, energy}
 }
 
 func (s *AIScorer) BestPlayableCard() *Entity {
@@ -116,7 +115,7 @@ func (s *AIScorer) BestBlockTarget(currentCard *Entity, engagements []*Engagemen
 func (s *AIScorer) scoreCardForPlay(card *Entity) *Score {
 	score := 0
 
-	if card.Attributes["cost"] > s.currentMana {
+	if card.Attributes["cost"] > s.energy {
 		return &Score{0, card}
 	}
 

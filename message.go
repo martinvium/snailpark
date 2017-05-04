@@ -52,10 +52,8 @@ type FullStateResponse struct {
 }
 
 type ResponsePlayer struct {
-	Id          string  `json:"id"`
-	CurrentMana int     `json:"currentMana"`
-	MaxMana     int     `json:"maxMana"`
-	Avatar      *Entity `json:"avatar"`
+	Id     string  `json:"id"`
+	Avatar *Entity `json:"avatar"`
 }
 
 func NewResponseMessage(state string, playerId string, players map[string]*Player, options []string, engagements []*Engagement, currentCard *Entity, entities []*Entity) *ResponseMessage {
@@ -88,8 +86,6 @@ func newResponsePlayers(players map[string]*Player) map[string]*ResponsePlayer {
 	for key, player := range players {
 		responsePlayers[key] = &ResponsePlayer{
 			player.Id,
-			player.CurrentMana,
-			player.MaxMana,
 			player.Avatar,
 		}
 	}
