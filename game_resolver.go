@@ -18,7 +18,16 @@ func ResolveCurrentCard(g *Game, target *Entity) {
 
 	ResolveRemovedCards(g)
 
-	g.CurrentPlayer.PayCardCost(card)
+	PayCardCost(g, g.CurrentPlayer, card)
+}
+
+func PayCardCost(g *Game, p *Player, c *Entity) {
+	p.Avatar.AddEffect(g, NewEffect(
+		nil,
+		AttributeEffectApplier,
+		map[string]int{"energy": -c.Attributes["cost"]},
+		"endTurn",
+	))
 }
 
 func InvokeTrigger(g *Game, origin, target *Entity, event string) {

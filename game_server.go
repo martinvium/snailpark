@@ -167,6 +167,7 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 	if requireTarget {
 		g.game.State.Transition("targeting")
 	} else {
+		fmt.Println("Playing card ", g.game.CurrentCard, "for cost", g.game.CurrentCard.Attributes["cost"])
 		ResolveCurrentCard(g.game, nil)
 		g.game.State.Transition("main")
 	}
