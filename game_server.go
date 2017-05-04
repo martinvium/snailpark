@@ -112,12 +112,20 @@ func (g *GameServer) processClientRequest(msg *Message) {
 		return
 	}
 
+	options := FindOptionsForPlayer(g.game, g.game.Priority().Id)
+
+	// Only send responses after all gameplay logic is done to avoid race conditions
 	g.SendStateResponseAll()
+	g.sendOptionsResponse(g.game.Priority(), options)
+}
+
+func (g *GameServer) sendOptionsResponse(p *Player, options map[string][]string) {
+	g.sendBoardStateToClient(g.clients[p.Id], options)
 }
 
 func (g *GameServer) SendStateResponseAll() {
 	for _, client := range g.clients {
-		g.sendBoardStateToClient(client, []string{})
+		g.sendBoardStateToClient(client, map[string][]string{})
 	}
 }
 
@@ -304,7 +312,7 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 	}
 }
 
-func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
+func (g *GameServer) sendBoardStateToClient(client Client, options map[string][]string) {
 	msg := NewResponseMessage(
 		g.game.State.String(),
 		g.game.Priority().Id,

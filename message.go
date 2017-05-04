@@ -38,14 +38,24 @@ type CreateGameResponse struct {
 }
 
 type OptionsResponse struct {
-	Options map[string]string
+	Mode    string // normal, targeting
+	Options []*OptionResponse
+}
+
+type OptionResponse struct {
+	EntityId string
+	Targets  []*TargetResponse
+}
+
+type TargetResponse struct {
+	EntityId string
 }
 
 type FullStateResponse struct {
 	State           string                     `json:"state"`
 	CurrentPlayerId string                     `json:"currentPlayerId"`
 	Players         map[string]*ResponsePlayer `json:"players"`
-	Options         []string                   `json:"options"`
+	Options         map[string][]string        `json:"options"`
 	Engagements     []*Engagement              `json:"engagements"`
 	CurrentCard     *Entity                    `json:"currentCard"`
 	Entities        []*Entity                  `json:"entities"`
@@ -56,7 +66,7 @@ type ResponsePlayer struct {
 	Avatar *Entity `json:"avatar"`
 }
 
-func NewResponseMessage(state string, playerId string, players map[string]*Player, options []string, engagements []*Engagement, currentCard *Entity, entities []*Entity) *ResponseMessage {
+func NewResponseMessage(state string, playerId string, players map[string]*Player, options map[string][]string, engagements []*Engagement, currentCard *Entity, entities []*Entity) *ResponseMessage {
 	responsePlayers := newResponsePlayers(players)
 	return &ResponseMessage{
 		Type:     "FULL_STATE",

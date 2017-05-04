@@ -24,7 +24,7 @@ func TestAI_RespondWithAction_IgnoreWhenEnemyTurn(t *testing.T) {
 	p1 := NewAI("p1")
 	players, entities := newPlayers(0)
 
-	msg := NewResponseMessage("main", "p2", players, []string{}, []*Engagement{}, nil, entities)
+	msg := NewResponseMessage("main", "p2", players, map[string][]string{}, []*Engagement{}, nil, entities)
 
 	action := p1.RespondWithAction(msg)
 	if action != nil {
@@ -86,7 +86,7 @@ func TestAI_RespondWithAction_HealTargetsOwnAvatar(t *testing.T) {
 		"targeting",
 		"p1",
 		players,
-		[]string{},
+		map[string][]string{},
 		[]*Engagement{},
 		newTestCard("p1", "hand", "Green smelly liquid"),
 		entities,
@@ -107,7 +107,7 @@ func TestAI_RespondWithAction_SpellTargetsCreature(t *testing.T) {
 		"targeting",
 		"p1",
 		players,
-		[]string{},
+		map[string][]string{},
 		[]*Engagement{},
 		newTestCard("p1", "hand", "Awkward conversation"),
 		entities,
@@ -127,7 +127,7 @@ func TestAI_RespondWithAction_SpellTargetsAvatar(t *testing.T) {
 		"targeting",
 		"p1",
 		players,
-		[]string{},
+		map[string][]string{},
 		[]*Engagement{},
 		newTestCard("p1", "hand", "Goo-to-the-face"),
 		entities,
@@ -196,7 +196,7 @@ func TestAI_RespondWithAction_AssignsBlockTarget(t *testing.T) {
 		"blockTarget",
 		"p1",
 		players,
-		[]string{},
+		map[string][]string{},
 		engagements,
 		newTestCard("p1", "board", "Hungry Goat Herder"),
 		entities,
@@ -263,7 +263,7 @@ func newPlayersWithBoard(energy int) (map[string]*Player, []*Entity) {
 }
 
 func newTestResponseMessage(state string, players map[string]*Player, engagements []*Engagement, entities []*Entity) *ResponseMessage {
-	return NewResponseMessage(state, "p1", players, []string{}, engagements, nil, entities)
+	return NewResponseMessage(state, "p1", players, map[string][]string{}, engagements, nil, entities)
 }
 
 func newTestMainResponseMessage(players map[string]*Player, e []*Entity) *ResponseMessage {
