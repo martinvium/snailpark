@@ -31,9 +31,17 @@ func (s *Score) String() string {
 	return fmt.Sprintf("Score(%v, %v)", s.Score, s.Entity)
 }
 
-func NewAIScorer(playerId string, msg *FullStateResponse) *AIScorer {
+func NewAIScorer(playerId string, entities []*Entity, players map[string]*ResponsePlayer) *AIScorer {
+	playerMods := playerModsFromPlayers(playerId, players)
+	avatar := PlayerAvatar(entities, playerId)
+	energy := avatar.Attributes["energy"]
+
+	return &AIScorer{playerId, entities, players, playerMods, energy}
+}
+
+func playerModsFromPlayers(playerId string, players map[string]*ResponsePlayer) map[string]int {
 	playerMods := map[string]int{}
-	for _, player := range msg.Players {
+	for _, player := range players {
 		mod := 1
 		if player.Id == playerId {
 			// power removed from our side of the board is generally bad (tm)
@@ -43,9 +51,7 @@ func NewAIScorer(playerId string, msg *FullStateResponse) *AIScorer {
 		playerMods[player.Id] = mod
 	}
 
-	energy := msg.Players[playerId].Avatar.Attributes["energy"]
-
-	return &AIScorer{playerId, msg.Entities, msg.Players, playerMods, energy}
+	return playerMods
 }
 
 func (s *AIScorer) BestPlayableCard() *Entity {

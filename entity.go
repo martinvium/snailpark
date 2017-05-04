@@ -73,6 +73,17 @@ func FirstEntityByType(s []*Entity, cardType string) *Entity {
 	return nil
 }
 
+func PlayerAvatar(s []*Entity, p string) *Entity {
+	for _, e := range s {
+		if e.PlayerId == p && e.Tags["type"] == "avatar" {
+			return e
+		}
+	}
+
+	fmt.Println("ERROR: Failed to find avatar for", p)
+	return nil
+}
+
 func FilterEntityByTitle(s []*Entity, t string) []*Entity {
 	return FilterEntities(s, func(e *Entity) bool {
 		return e.Tags["title"] == t

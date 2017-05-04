@@ -9,12 +9,14 @@ import (
 type AI struct {
 	outCh    chan *Message
 	playerId string
+	entities []*Entity
+	players  map[string]*ResponsePlayer
 }
 
 func NewAI(playerId string) *AI {
 	outCh := make(chan *Message, channelBufSize)
 	outCh <- NewActionMessage(playerId, "start")
-	return &AI{outCh, playerId}
+	return &AI{outCh: outCh, playerId: playerId}
 }
 
 func (a *AI) Send(packet *ResponseMessage) {
@@ -39,11 +41,15 @@ func (a *AI) RespondWithAction(packet *ResponseMessage) *Message {
 		return nil
 	}
 
+	// update board state
+	a.entities = msg.Entities
+	a.players = msg.Players
+
 	if msg.CurrentPlayerId != a.playerId {
 		return nil
 	}
 
-	scorer := NewAIScorer(a.playerId, msg)
+	scorer := NewAIScorer(a.playerId, a.entities, a.players)
 
 	switch msg.State {
 	case "main":
@@ -76,7 +82,7 @@ func (a *AI) RespondWithAction(packet *ResponseMessage) *Message {
 func (a *AI) attackOrEndTurn(msg *FullStateResponse) *Message {
 	fmt.Println("Nothing more to play, lets attack or end turn")
 
-	myBoard := FilterEntityByPlayerAndLocation(msg.Entities, a.playerId, "board")
+	myBoard := FilterEntityByPlayerAndLocation(a.entities, a.playerId, "board")
 	card := a.firstAvailableAttacker(myBoard, msg.Engagements)
 	if card != nil {
 		return NewCardActionMessage(a.playerId, "target", card.Id)
@@ -86,7 +92,7 @@ func (a *AI) attackOrEndTurn(msg *FullStateResponse) *Message {
 }
 
 func (a *AI) targetSpell(msg *FullStateResponse) *Message {
-	scorer := NewAIScorer(a.playerId, msg)
+	scorer := NewAIScorer(a.playerId, a.entities, a.players)
 
 	for _, ability := range msg.CurrentCard.Abilities {
 		if ability.Trigger != "enterPlay" {
