@@ -39,16 +39,7 @@ type CreateGameResponse struct {
 
 type OptionsResponse struct {
 	Mode    string // normal, targeting
-	Options []*OptionResponse
-}
-
-type OptionResponse struct {
-	EntityId string
-	Targets  []*TargetResponse
-}
-
-type TargetResponse struct {
-	EntityId string
+	Options map[string][]string
 }
 
 type FullStateResponse struct {
@@ -64,6 +55,17 @@ type FullStateResponse struct {
 type ResponsePlayer struct {
 	Id     string  `json:"id"`
 	Avatar *Entity `json:"avatar"`
+}
+
+func NewOptionsResponse(playerId string, options map[string][]string) *ResponseMessage {
+	return &ResponseMessage{
+		Type:     "OPTIONS",
+		PlayerId: playerId,
+		Message: &OptionsResponse{
+			Mode:    "normal",
+			Options: options,
+		},
+	}
 }
 
 func NewResponseMessage(state string, playerId string, players map[string]*Player, options map[string][]string, engagements []*Engagement, currentCard *Entity, entities []*Entity) *ResponseMessage {

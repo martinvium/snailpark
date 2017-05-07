@@ -120,12 +120,22 @@ func (g *GameServer) processClientRequest(msg *Message) {
 }
 
 func (g *GameServer) sendOptionsResponse(p *Player, options map[string][]string) {
-	g.sendBoardStateToClient(g.clients[p.Id], options)
+	g.clients[p.Id].SendResponse(NewOptionsResponse(p.Id, options))
 }
 
 func (g *GameServer) SendStateResponseAll() {
 	for _, client := range g.clients {
-		g.sendBoardStateToClient(client, map[string][]string{})
+		msg := NewResponseMessage(
+			g.game.State.String(),
+			g.game.Priority().Id,
+			g.game.Players,
+			map[string][]string{},
+			g.game.Engagements,
+			g.game.CurrentCard,
+			anonymizeHiddenEntities(g.game.Entities, client.PlayerId()),
+		)
+
+		client.SendResponse(msg)
 	}
 }
 
@@ -310,20 +320,6 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 		log.Println("Client", msg.PlayerId, " asks for combat")
 		g.game.State.Transition("combat")
 	}
-}
-
-func (g *GameServer) sendBoardStateToClient(client Client, options map[string][]string) {
-	msg := NewResponseMessage(
-		g.game.State.String(),
-		g.game.Priority().Id,
-		g.game.Players,
-		options,
-		g.game.Engagements,
-		g.game.CurrentCard,
-		anonymizeHiddenEntities(g.game.Entities, client.PlayerId()),
-	)
-
-	client.SendResponse(msg)
 }
 
 func anonymizeHiddenEntities(s []*Entity, playerId string) []*Entity {
