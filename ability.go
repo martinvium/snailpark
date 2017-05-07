@@ -140,13 +140,19 @@ func FilterAbility(vs []*Ability, f func(*Ability) bool) []*Ability {
 	return vsf
 }
 
-// we only support a single activated ability
-func ActivatedAbility(as []*Ability) *Ability {
-	for _, a := range as {
-		if a.Trigger == "activated" {
-			return a
+func FirstAbility(vs []*Ability, f func(*Ability) bool) *Ability {
+	for _, v := range vs {
+		if f(v) {
+			return v
 		}
 	}
 
 	return nil
+}
+
+// we only support a single activated ability
+func ActivatedAbility(as []*Ability) *Ability {
+	return FirstAbility(as, func(a *Ability) bool {
+		return a.Trigger == "activated"
+	})
 }

@@ -54,19 +54,41 @@ func findAttackOptions(g *Game, p string) map[string][]string {
 
 // TODO: Must have playable targets
 func findPlayOptions(g *Game, p string) map[string][]string {
-	s := FilterEntities(
-		FilterEntityByPlayerAndLocation(g.Entities, p, "hand"),
-		func(e *Entity) bool {
-			return g.Players[p].Avatar.Attributes["energy"] >= e.Attributes["cost"]
-		},
-	)
+	s := FilterEntityByPlayerAndLocation(g.Entities, p, "hand")
+
+	// filter out cards with too high cost
+	s = FilterEntities(s, func(e *Entity) bool {
+		return g.Players[p].Avatar.Attributes["energy"] >= e.Attributes["cost"]
+	})
+
+	// filter out targeting cards without a valid target
 
 	o := map[string][]string{}
 	for _, e := range s {
-		o[e.Id] = []string{}
+		o[e.Id] = playableCardTargets(g, e)
 	}
 
 	return o
+}
+
+func playableCardTargets(g *Game, e *Entity) []string {
+	a := FirstAbility(e.Abilities, func(a *Ability) bool {
+		return a.RequiresTarget()
+	})
+
+	// card does not require targets
+	if a == nil {
+		return []string{}
+	}
+
+	targets := []string{}
+	for _, t := range FilterEntityByLocation(g.Entities, "board") {
+		if a.ValidTarget(e, t) {
+			targets = append(targets, t.Id)
+		}
+	}
+
+	return targets
 }
 
 func findAvailableAttackers(entities []*Entity, p string) []*Entity {
