@@ -112,6 +112,12 @@ func (g *GameServer) processClientRequest(msg *Message) {
 		return
 	}
 
+	// kind of awkward, because we go from unstarted to main when the second player
+	// sends the start ping
+	if g.game.State.String() == "unstarted" {
+		return
+	}
+
 	options := FindOptionsForPlayer(g.game, g.game.Priority().Id)
 
 	// Only send responses after all gameplay logic is done to avoid race conditions
