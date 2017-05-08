@@ -66,13 +66,10 @@ func (s *AIScorer) BestPlayableCard() *Entity {
 	return HighestScore(scores)
 }
 
-func (s *AIScorer) BestBlocker(engagements []*Engagement) *Entity {
-	attackers := []*Entity{}
-	for _, eng := range engagements {
-		if eng.Blocker == nil {
-			attackers = append(attackers, eng.Attacker)
-		}
-	}
+func (s *AIScorer) BestBlocker() *Entity {
+	attackers := FilterEntities(s.entities, func(e *Entity) bool {
+		return e.Tags["attackTarget"] != ""
+	})
 
 	scores := []*Score{}
 	board := FilterEntityByPlayerAndLocation(s.entities, s.playerId, "board")
@@ -83,7 +80,7 @@ func (s *AIScorer) BestBlocker(engagements []*Engagement) *Entity {
 			continue
 		}
 
-		if AnyAssignedBlockerWithId(engagements, blocker.Id) {
+		if _, ok := blocker.Tags["blockTarget"]; ok {
 			continue
 		}
 
@@ -100,18 +97,15 @@ func (s *AIScorer) BestBlocker(engagements []*Engagement) *Entity {
 	return HighestScore(scores)
 }
 
-func (s *AIScorer) BestBlockTarget(currentCard *Entity, engagements []*Engagement) *Entity {
+func (s *AIScorer) BestBlockTarget(currentCard *Entity) *Entity {
 	if currentCard == nil {
 		fmt.Println("ERROR: Cannot find blockTarget without a currentCard")
 		return nil
 	}
 
-	attackers := []*Entity{}
-	for _, eng := range engagements {
-		if eng.Blocker == nil {
-			attackers = append(attackers, eng.Attacker)
-		}
-	}
+	attackers := FilterEntities(s.entities, func(e *Entity) bool {
+		return e.Tags["attackTarget"] != ""
+	})
 
 	a := ActivatedAbility(currentCard.Abilities)
 	scores := s.scoreTargets(currentCard, a, attackers)

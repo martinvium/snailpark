@@ -13,7 +13,6 @@ type AI struct {
 	players     map[string]*ResponsePlayer
 	state       string
 	currentCard *Entity
-	engagements []*Engagement
 }
 
 func NewAI(playerId string) *AI {
@@ -47,7 +46,6 @@ func (a *AI) UpdateState(packet *ResponseMessage) {
 	a.players = msg.Players
 	a.state = msg.State
 	a.currentCard = msg.CurrentCard
-	a.engagements = msg.Engagements
 }
 
 func (a *AI) RespondWithAction(packet *ResponseMessage) *Message {
@@ -70,13 +68,13 @@ func (a *AI) RespondWithAction(packet *ResponseMessage) *Message {
 	case "attackers":
 		return a.attackOrEndTurn()
 	case "blockers":
-		if card := scorer.BestBlocker(a.engagements); card != nil {
+		if card := scorer.BestBlocker(); card != nil {
 			return NewCardActionMessage(a.playerId, "target", card.Id)
 		} else {
 			return NewActionMessage(a.playerId, "endTurn")
 		}
 	case "blockTarget":
-		if card := scorer.BestBlockTarget(a.currentCard, a.engagements); card != nil {
+		if card := scorer.BestBlockTarget(a.currentCard); card != nil {
 			return NewCardActionMessage(a.playerId, "target", card.Id)
 		} else {
 			fmt.Println("ERROR: There should always be a block target")
@@ -92,7 +90,7 @@ func (a *AI) attackOrEndTurn() *Message {
 	fmt.Println("Nothing more to play, lets attack or end turn")
 
 	myBoard := FilterEntityByPlayerAndLocation(a.entities, a.playerId, "board")
-	card := a.firstAvailableAttacker(myBoard, a.engagements)
+	card := a.firstAvailableAttacker(myBoard)
 	if card != nil {
 		return NewCardActionMessage(a.playerId, "target", card.Id)
 	} else {
@@ -135,22 +133,13 @@ func (a *AI) ping() {
 	a.outCh <- NewActionMessage(a.playerId, "ping")
 }
 
-func (a *AI) firstAvailableAttacker(board []*Entity, engagements []*Engagement) *Entity {
-	for _, card := range board {
-		if !a.isAttacking(engagements, card) && card.CanAttack() {
-			return card
+func (a *AI) firstAvailableAttacker(board []*Entity) *Entity {
+	fmt.Println("board:", board)
+	for _, e := range board {
+		if e.Tags["attackTarget"] == "" && e.CanAttack() {
+			return e
 		}
 	}
 
 	return nil
-}
-
-func (a *AI) isAttacking(engagements []*Engagement, card *Entity) bool {
-	for _, e := range engagements {
-		if card.Id == e.Attacker.Id {
-			return true
-		}
-	}
-
-	return false
 }

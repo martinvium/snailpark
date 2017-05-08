@@ -24,7 +24,7 @@ func TestAI_RespondWithAction_IgnoreWhenEnemyTurn(t *testing.T) {
 	p1 := NewAI("p1")
 	players, entities := newPlayers(0)
 
-	msg := NewResponseMessage("main", "p2", players, map[string][]string{}, []*Engagement{}, nil, entities)
+	msg := NewResponseMessage("main", "p2", players, map[string][]string{}, nil, entities)
 
 	action := p1.RespondWithAction(msg)
 	if action != nil {
@@ -87,7 +87,6 @@ func TestAI_RespondWithAction_HealTargetsOwnAvatar(t *testing.T) {
 		"p1",
 		players,
 		map[string][]string{},
-		[]*Engagement{},
 		newTestCard("p1", "hand", "Green smelly liquid"),
 		entities,
 	))
@@ -109,7 +108,6 @@ func TestAI_RespondWithAction_SpellTargetsCreature(t *testing.T) {
 		"p1",
 		players,
 		map[string][]string{},
-		[]*Engagement{},
 		newTestCard("p1", "hand", "Awkward conversation"),
 		entities,
 	))
@@ -130,7 +128,6 @@ func TestAI_RespondWithAction_SpellTargetsAvatar(t *testing.T) {
 		"p1",
 		players,
 		map[string][]string{},
-		[]*Engagement{},
 		newTestCard("p1", "hand", "Goo-to-the-face"),
 		entities,
 	))
@@ -159,10 +156,13 @@ func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
 	p1 := NewAI("p1")
 	players, entities := newPlayers(0)
 
+	creatures := FilterEntityByPlayerAndLocation(entities, "p1", "board")
+	creature := FirstEntityByType(creatures, "creature")
+	creature.Tags["attackTarget"] = players["p1"].Avatar.Id
+
 	p1.UpdateState(newTestResponseMessage(
 		"attackers",
 		players,
-		[]*Engagement{NewEngagement(newTestCard("p1", "board", "Dodgy Fella"), players["p1"].Avatar)},
 		entities,
 	))
 
@@ -183,9 +183,10 @@ func TestAI_RespondWithAction_AssignsBlocker(t *testing.T) {
 
 	players, entities := newPlayersExpensiveCreatureEmptyHand()
 	attacker := newTestCard("p2", "board", "Dodgy Fella")
-	engagements := []*Engagement{NewEngagement(attacker, players["p1"].Avatar)}
+	attacker.Tags["attackTarget"] = players["p1"].Avatar.Id
+	entities = append(entities, attacker)
 
-	p1.UpdateState(newTestResponseMessage("blockers", players, engagements, entities))
+	p1.UpdateState(newTestResponseMessage("blockers", players, entities))
 	msg := NewOptionsResponse("p1", map[string][]string{})
 	action := p1.RespondWithAction(msg)
 	if err := assertResponse(t, action, "target", "Hungry Goat Herder"); err != nil {
@@ -198,14 +199,14 @@ func TestAI_RespondWithAction_AssignsBlockTarget(t *testing.T) {
 
 	players, entities := newPlayersExpensiveCreatureEmptyHand()
 	attacker := newTestCard("p2", "board", "Dodgy Fella")
-	engagements := []*Engagement{NewEngagement(attacker, players["p1"].Avatar)}
+	attacker.Tags["attackTarget"] = players["p1"].Avatar.Id
+	entities = append(entities, attacker)
 
 	p1.UpdateState(NewResponseMessage(
 		"blockTarget",
 		"p1",
 		players,
 		map[string][]string{},
-		engagements,
 		newTestCard("p1", "board", "Hungry Goat Herder"),
 		entities,
 	))
@@ -224,9 +225,10 @@ func TestAI_RespondWithAction_EndsTurnWhenNoBlockers(t *testing.T) {
 	players, entities := newPlayersWithBoard(0)
 	entities = append(entities, yourBoard...)
 	attacker := yourBoard[0]
-	engagements := []*Engagement{NewEngagement(attacker, players["p1"].Avatar)}
+	attacker.Tags["attackTarget"] = players["p1"].Avatar.Id
+	entities = append(entities, attacker)
 
-	p1.UpdateState(newTestResponseMessage("blockers", players, engagements, entities))
+	p1.UpdateState(newTestResponseMessage("blockers", players, entities))
 	msg := NewOptionsResponse("p1", map[string][]string{})
 	action := p1.RespondWithAction(msg)
 	if action.Action != "endTurn" {
@@ -269,12 +271,12 @@ func newPlayersWithBoard(energy int) (map[string]*Player, []*Entity) {
 	return players, entities
 }
 
-func newTestResponseMessage(state string, players map[string]*Player, engagements []*Engagement, entities []*Entity) *ResponseMessage {
-	return NewResponseMessage(state, "p1", players, map[string][]string{}, engagements, nil, entities)
+func newTestResponseMessage(state string, players map[string]*Player, entities []*Entity) *ResponseMessage {
+	return NewResponseMessage(state, "p1", players, map[string][]string{}, nil, entities)
 }
 
 func newTestMainResponseMessage(players map[string]*Player, e []*Entity) *ResponseMessage {
-	return newTestResponseMessage("main", players, []*Engagement{}, e)
+	return newTestResponseMessage("main", players, e)
 }
 
 func assertResponse(t *testing.T, action *Message, expectedAction string, expectedCardId string) error {

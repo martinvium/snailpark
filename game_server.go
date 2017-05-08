@@ -136,7 +136,6 @@ func (g *GameServer) SendStateResponseAll() {
 			g.game.Priority().Id,
 			g.game.Players,
 			map[string][]string{},
-			g.game.Engagements,
 			g.game.CurrentCard,
 			anonymizeHiddenEntities(g.game.Entities, client.PlayerId()),
 		)
@@ -224,33 +223,41 @@ func (g *GameServer) assignBlocker(msg *Message) {
 		return
 	}
 
-	if AnyAssignedBlockerWithId(g.game.Engagements, card.Id) == false {
-		log.Println("Current blocker:", msg.Card)
-		g.game.CurrentCard = card
-		g.game.State.Transition("blockTarget")
-	} else {
+	if _, ok := card.Tags["blockTarget"]; ok {
 		log.Println("ERROR: Blocker already assigned another target:", card)
+		return
 	}
+
+	log.Println("Current blocker:", msg.Card)
+	g.game.CurrentCard = card
+	g.game.State.Transition("blockTarget")
 }
 
 func (g *GameServer) assignBlockTarget(msg *Message) {
-	card := EntityById(g.game.Entities, msg.Card)
-	if card == nil {
+	attacker := EntityById(g.game.Entities, msg.Card)
+	blocker := g.game.CurrentCard
+
+	if attacker == nil {
 		log.Println("ERROR: Invalid blocker target:", msg.Card)
 		return
 	}
 
-	log.Println("Assigned blocker target:", card)
+	if _, ok := blocker.Tags["blockTarget"]; ok {
+		fmt.Println("ERROR: Already blocked")
+		return
+	}
 
-	for _, e := range g.game.Engagements {
-		if e.Attacker == card {
-			e.Blocker = g.game.CurrentCard
+	log.Println("Assigned blocker target:", attacker)
 
-			a := ActivatedAbility(e.Attacker.Abilities)
-			if err := a.Apply(g.game, e.Attacker, g.game.CurrentCard); err != nil {
-				fmt.Println("ERROR:", err)
-			}
-		}
+	if _, ok := attacker.Tags["attackTarget"]; !ok {
+		return
+	}
+
+	blocker.Tags["blockTarget"] = attacker.Id
+
+	a := ActivatedAbility(attacker.Abilities)
+	if err := a.Apply(g.game, attacker, blocker); err != nil {
+		fmt.Println("ERROR:", err)
 	}
 
 	g.game.CurrentCard = nil
@@ -269,14 +276,14 @@ func (g *GameServer) assignAttacker(msg *Message) {
 		return
 	}
 
-	if AnyAssignedAttackerWithId(g.game.Engagements, card.Id) == false {
-		log.Println("Assigned attacker:", msg.Card)
-		card.Tags["attackTarget"] = g.game.DefendingPlayer().Avatar.Id
-		g.game.Engagements = append(g.game.Engagements, NewEngagement(card, g.game.DefendingPlayer().Avatar))
-		g.game.State.Transition("attackers")
-	} else {
+	if _, ok := card.Tags["attackTarget"]; ok {
 		log.Println("Invalid attacker already used:", card.Id)
+		return
 	}
+
+	log.Println("Assigned attacker:", msg.Card)
+	card.Tags["attackTarget"] = g.game.DefendingPlayer().Avatar.Id
+	g.game.State.Transition("attackers")
 }
 
 func (g *GameServer) targetAbility(msg *Message) {

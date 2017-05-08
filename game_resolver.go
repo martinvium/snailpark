@@ -76,17 +76,25 @@ func ResolveRemovedCards(g *Game) {
 	}
 }
 
-func ResolveEngagement(g *Game, engagements []*Engagement) {
-	for _, e := range engagements {
-		e.Attacker.Tags["attackTarget"] = ""
-
-		if e.Blocker != nil {
-			fmt.Println("Engagement skipped, already blocked")
-			continue
+func UnresolvedAttackers(s []*Entity) []*Entity {
+	blockedAttackers := []string{}
+	for _, e := range s {
+		target, ok := e.Tags["blockTarget"]
+		if ok {
+			blockedAttackers = append(blockedAttackers, target)
 		}
+	}
 
-		a := ActivatedAbility(e.Attacker.Abilities)
-		if err := a.Apply(g, e.Attacker, e.Target); err != nil {
+	return FilterEntities(s, func(e *Entity) bool {
+		return e.Tags["attackTarget"] != "" && !IncludeString(blockedAttackers, e.Id)
+	})
+}
+
+func ResolveEngagement(g *Game) {
+	for _, e := range UnresolvedAttackers(g.Entities) {
+		target := EntityById(g.Entities, e.Tags["attackTarget"])
+		a := ActivatedAbility(e.Abilities)
+		if err := a.Apply(g, e, target); err != nil {
 			fmt.Println("ERROR:", err)
 		}
 	}

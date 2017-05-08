@@ -102,6 +102,15 @@ func FilterEntityByPlayerAndLocation(s []*Entity, p, l string) []*Entity {
 	})
 }
 
+func AnyEntity(vs []*Entity, f func(*Entity) bool) bool {
+	for _, v := range vs {
+		if f(v) {
+			return true
+		}
+	}
+	return false
+}
+
 func FilterEntities(vs []*Entity, f func(*Entity) bool) []*Entity {
 	vsf := make([]*Entity, 0)
 	for _, v := range vs {
