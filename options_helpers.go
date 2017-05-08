@@ -9,21 +9,24 @@ func FindOptionsForPlayer(g *Game, p string) map[string][]string {
 	}
 }
 
-// FIXME: Blockers are no longer actually assigned in engagement array
 func findBlockingOptionsForPlayer(g *Game, p string) map[string][]string {
-	a := []string{}
-	for _, e := range g.Engagements {
-		a = append(a, e.Attacker.Id)
+	attackers := FilterEntities(g.Entities, func(e *Entity) bool {
+		return e.Tags["attackTarget"] == ""
+	})
+
+	attackerIds := []string{}
+	for _, e := range attackers {
+		attackerIds = append(attackerIds, e.Id)
 	}
 
 	blockers := findAvailableAttackers(g.Entities, p)
 	blockers = FilterEntities(blockers, func(e *Entity) bool {
-		return !AnyAssignedBlockerWithId(g.Engagements, e.Id)
+		return e.Tags["blockTarget"] == ""
 	})
 
 	s := map[string][]string{}
 	for _, e := range blockers {
-		s[e.Id] = a
+		s[e.Id] = attackerIds
 	}
 
 	return s
@@ -41,7 +44,7 @@ func findPlayAndAttackOptionsForPlayer(g *Game, p string) map[string][]string {
 func findAttackOptions(g *Game, p string) map[string][]string {
 	attackers := findAvailableAttackers(g.Entities, p)
 	attackers = FilterEntities(attackers, func(e *Entity) bool {
-		return !AnyAssignedAttackerWithId(g.Engagements, e.Id)
+		return e.Tags["attackTarget"] != ""
 	})
 
 	s := map[string][]string{}

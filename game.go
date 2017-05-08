@@ -15,7 +15,6 @@ func NewGame(players map[string]*Player, currentPlayerId string, entities []*Ent
 		players,
 		players[currentPlayerId], // currently always the player that starts
 		NewStateMachine(),
-		[]*Engagement{},
 		nil,
 		entities,
 	}

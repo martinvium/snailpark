@@ -247,7 +247,7 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 		return
 	}
 
-	log.Println("Assigned blocker target:", card)
+	log.Println("Assigned blocker target:", attacker)
 
 	if _, ok := attacker.Tags["attackTarget"]; !ok {
 		return
