@@ -29,9 +29,10 @@ app.factory('gameServer', function($websocket) {
 
     var filterAttackers = function(msg) {
       var attackers = [];
-      for(var i in msg.engagements) {
-        var e = msg.engagements[i];
-        attackers.push(e.attacker);
+      for(var i in msg.entities) {
+        if (msg.entities[i].tags["attackTarget"]) {
+          attackers.push(msg.entities[i]);
+        }
       }
 
       return attackers;

@@ -6,7 +6,6 @@ type Game struct {
 	Players       map[string]*Player
 	CurrentPlayer *Player
 	State         *StateMachine
-	Engagements   []*Engagement
 	CurrentCard   *Entity
 	Entities      []*Entity
 }
@@ -41,12 +40,16 @@ func (g *Game) AnyPlayerDead() bool {
 	})
 }
 
-func (g *Game) AnyEngagements() bool {
-	return len(g.Engagements) > 0
-}
-
 func (g *Game) ClearAttackers() {
-	g.Engagements = []*Engagement{}
+	for _, e := range g.Entities {
+		if _, ok := e.Tags["blockTarget"]; ok {
+			delete(e.Tags, "blockTarget")
+		}
+
+		if _, ok := e.Tags["attackTarget"]; ok {
+			delete(e.Tags, "attackTarget")
+		}
+	}
 }
 
 func (g *Game) DefendingPlayer() *Player {

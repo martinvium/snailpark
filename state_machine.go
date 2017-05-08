@@ -101,7 +101,11 @@ func (s *StateMachine) toTargeting() {
 }
 
 func (s *StateMachine) toBlockers() {
-	if s.game.AnyEngagements() == false {
+	any_attackers := AnyEntity(s.game.Entities, func(e *Entity) bool {
+		return e.Tags["attackTarget"] != ""
+	})
+
+	if any_attackers == false {
 		s.Transition("combat")
 	}
 }
@@ -110,7 +114,7 @@ func (s *StateMachine) toAttackers() {
 }
 
 func (s *StateMachine) toCombat() {
-	ResolveEngagement(s.game, s.game.Engagements)
+	ResolveEngagement(s.game)
 	ResolveRemovedCards(s.game)
 
 	if s.game.AnyPlayerDead() {

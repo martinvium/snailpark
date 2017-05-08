@@ -66,7 +66,7 @@ func (s *AIScorer) BestPlayableCard() *Entity {
 	return HighestScore(scores)
 }
 
-func (s *AIScorer) BestBlocker(engagements []*Engagement) *Entity {
+func (s *AIScorer) BestBlocker(options map[string][]string) *Entity {
 	attackers := []*Entity{}
 	for _, eng := range engagements {
 		if eng.Blocker == nil {
@@ -83,7 +83,7 @@ func (s *AIScorer) BestBlocker(engagements []*Engagement) *Entity {
 			continue
 		}
 
-		if AnyAssignedBlockerWithId(engagements, blocker.Id) {
+		if AnyAssignedBlockerWithId(s.entities, blocker.Id) {
 			continue
 		}
 
