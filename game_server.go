@@ -118,6 +118,8 @@ func (g *GameServer) processClientRequest(msg *Message) {
 		return
 	}
 
+	g.game.UpdateGameEntity()
+
 	options := FindOptionsForPlayer(g.game, g.game.Priority().Id)
 
 	// Only send responses after all gameplay logic is done to avoid race conditions
@@ -132,11 +134,8 @@ func (g *GameServer) sendOptionsResponse(p *Player, options map[string][]string)
 func (g *GameServer) SendStateResponseAll() {
 	for _, client := range g.clients {
 		msg := NewResponseMessage(
-			g.game.State.String(),
 			g.game.Priority().Id,
 			g.game.Players,
-			map[string][]string{},
-			g.game.CurrentCard,
 			anonymizeHiddenEntities(g.game.Entities, client.PlayerId()),
 		)
 
@@ -342,7 +341,7 @@ func anonymizeHiddenEntities(s []*Entity, playerId string) []*Entity {
 			a := NewEntity(AnonymousEntityProto, "anon", v.PlayerId)
 			a.Location = "hand"
 			anonymized = append(anonymized, a)
-		} else if v.Location == "board" || v.Location == "hand" {
+		} else if v.Location == "board" || v.Location == "hand" || v.Location == "meta" {
 			anonymized = append(anonymized, v)
 		}
 	}

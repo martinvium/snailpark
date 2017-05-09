@@ -44,8 +44,10 @@ func (a *AI) UpdateState(packet *ResponseMessage) {
 
 	a.entities = msg.Entities
 	a.players = msg.Players
-	a.state = msg.State
-	a.currentCard = msg.CurrentCard
+
+	gameEntity := FirstEntityByType(msg.Entities, "game")
+	a.state = gameEntity.Tags["state"]
+	a.currentCard = EntityById(a.entities, gameEntity.Tags["currentCardId"])
 }
 
 func (a *AI) RespondWithAction(packet *ResponseMessage) *Message {

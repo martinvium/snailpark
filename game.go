@@ -11,6 +11,9 @@ type Game struct {
 }
 
 func NewGame(players map[string]*Player, currentPlayerId string, entities []*Entity) *Game {
+	gameEntity := NewGameEntity("unstarted", currentPlayerId)
+	entities = append(entities, gameEntity)
+
 	return &Game{
 		players,
 		players[currentPlayerId], // currently always the player that starts
@@ -20,17 +23,40 @@ func NewGame(players map[string]*Player, currentPlayerId string, entities []*Ent
 	}
 }
 
+func NewGameEntity(state, currentPlayerId string) *Entity {
+	e := NewEntityByTitle(StandardRepo(), "none", "Game")
+	e.Location = "meta"
+	return e
+}
+
 func (g *Game) SetStateMachineDeps() {
 	g.State.SetGame(g)
 }
 
-func (g *Game) NextPlayer() {
+func (g *Game) UpdateGameEntity() {
+	e := FirstEntityByType(g.Entities, "game")
+	e.Tags["state"] = g.State.String()
+	e.Tags["currentPlayerId"] = g.Priority().Id
+	if g.CurrentCard == nil {
+		e.Tags["currentCardId"] = ""
+	} else {
+		e.Tags["currentCardId"] = g.CurrentCard.Id
+	}
+}
+
+func (g *Game) DefendingPlayer() *Player {
 	for _, p := range g.Players {
 		if p.Id != g.CurrentPlayer.Id {
-			g.CurrentPlayer = p
-			return
+			return p
 		}
 	}
+
+	fmt.Println("ERROR: There should always be at least 2 players")
+	return nil
+}
+
+func (g *Game) NextPlayer() {
+	g.CurrentPlayer = g.DefendingPlayer()
 }
 
 func (g *Game) AnyPlayerDead() bool {
@@ -48,14 +74,6 @@ func (g *Game) ClearAttackers() {
 		if _, ok := e.Tags["attackTarget"]; ok {
 			delete(e.Tags, "attackTarget")
 		}
-	}
-}
-
-func (g *Game) DefendingPlayer() *Player {
-	if g.CurrentPlayer.Id == "player" {
-		return g.Players["ai"]
-	} else {
-		return g.Players["player"]
 	}
 }
 

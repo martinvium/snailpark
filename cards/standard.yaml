@@ -17,7 +17,11 @@ creature_attack: &creature_attack
 cards:
   game:
     tags:
+      title: "Game"
+      type: game
+      state: "unstarted"
       currentPlayerId: ""
+      currentCardId: ""
       winningPlayerId: ""
     attributes:
       remainingTime: 30
