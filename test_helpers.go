@@ -15,6 +15,26 @@ func NewTestGame() *Game {
 	return game
 }
 
+func NewTestGameWithEmptyBoard(state string) *Game {
+	game := NewTestGame()
+	game.State.UnsafeForceTransition(state)
+	return game
+}
+
+func NewTestGameWithOneCreatureEach(state string) *Game {
+	game := NewTestGameWithEmptyBoard(state)
+	game.Entities = append(game.Entities, NewTestEntityOnBoard("Dodgy Fella", "p1"))
+	game.Entities = append(game.Entities, NewTestEntityOnBoard("Dodgy Fella", "p2"))
+	return game
+}
+
+func NewTestGameWithExpensiveCreature(state string) *Game {
+	game := NewTestGameWithEmptyBoard(state)
+	game.Entities = append(game.Entities, NewTestEntityOnBoard("Hungry Goat Herder", "p1"))
+	game.Entities = append(game.Entities, NewTestEntityOnBoard("Dodgy Fella", "p2"))
+	return game
+}
+
 func NewTestEntity(title string, playerId string) *Entity {
 	proto := EntityProtoByTitle(StandardRepo(), title)
 	return NewEntity(proto, NewUUID(), playerId)

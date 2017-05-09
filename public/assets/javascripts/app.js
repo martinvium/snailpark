@@ -38,8 +38,17 @@ app.factory('gameServer', function($websocket) {
       return attackers;
     }
 
-    data.currentPlayerId = msg.currentPlayerId;
-    data.state = msg.state;
+    var findGameEntity = function(msg) {
+      for(var i in msg.entities) {
+        if(msg.entities[i].tags.type == "game") {
+          return msg.entities[i];
+        }
+      }
+    }
+
+    data.game = findGameEntity(msg);
+    data.currentPlayerId = data.game.tags.currentPlayerId;
+    data.state = data.game.tags.state;
     data.targeting = ['targeting', 'blockTarget'].indexOf(data.state) !== -1;
     data.attackers = filterAttackers(msg);
     data.entities = msg.entities

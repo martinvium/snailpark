@@ -43,12 +43,8 @@ type OptionsResponse struct {
 }
 
 type FullStateResponse struct {
-	State           string                     `json:"state"`
-	CurrentPlayerId string                     `json:"currentPlayerId"`
-	Players         map[string]*ResponsePlayer `json:"players"`
-	Options         map[string][]string        `json:"options"`
-	CurrentCard     *Entity                    `json:"currentCard"`
-	Entities        []*Entity                  `json:"entities"`
+	Players  map[string]*ResponsePlayer `json:"players"`
+	Entities []*Entity                  `json:"entities"`
 }
 
 type ResponsePlayer struct {
@@ -67,17 +63,13 @@ func NewOptionsResponse(playerId string, options map[string][]string) *ResponseM
 	}
 }
 
-func NewResponseMessage(state string, playerId string, players map[string]*Player, options map[string][]string, currentCard *Entity, entities []*Entity) *ResponseMessage {
+func NewResponseMessage(playerId string, players map[string]*Player, entities []*Entity) *ResponseMessage {
 	responsePlayers := newResponsePlayers(players)
 	return &ResponseMessage{
 		Type:     "FULL_STATE",
 		PlayerId: playerId,
 		Message: &FullStateResponse{
-			state,
-			playerId,
 			responsePlayers,
-			options,
-			currentCard,
 			entities,
 		},
 	}
