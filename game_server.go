@@ -196,6 +196,7 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 }
 
 func (g *GameServer) handleTarget(msg *Message) {
+	fmt.Println("Current state:", g.game.State.String())
 	if g.game.Priority().Id != msg.PlayerId {
 		log.Println("ERROR: Client calling action", msg.Action, "out of priority:", msg.PlayerId)
 		return
@@ -203,8 +204,6 @@ func (g *GameServer) handleTarget(msg *Message) {
 
 	switch g.game.State.String() {
 	case "main":
-		fallthrough
-	case "attackers":
 		g.assignAttacker(msg)
 	case "targeting":
 		g.targetAbility(msg)
@@ -282,7 +281,6 @@ func (g *GameServer) assignAttacker(msg *Message) {
 
 	log.Println("Assigned attacker:", msg.Card)
 	card.Tags["attackTarget"] = g.game.DefendingPlayer().Avatar.Id
-	g.game.State.Transition("attackers")
 }
 
 func (g *GameServer) targetAbility(msg *Message) {

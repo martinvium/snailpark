@@ -67,8 +67,6 @@ func (a *AI) RespondWithAction(packet *ResponseMessage) *Message {
 		} else {
 			return a.attackOrEndTurn()
 		}
-	case "attackers":
-		return a.attackOrEndTurn()
 	case "blockers":
 		if card := scorer.BestBlocker(); card != nil {
 			return NewCardActionMessage(a.playerId, "target", card.Id)

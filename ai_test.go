@@ -137,7 +137,7 @@ func TestAI_RespondWithAction_AssignsAttacker(t *testing.T) {
 
 func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
 	client := NewAI("p1")
-	game := NewTestGameWithOneCreatureEach("attackers")
+	game := NewTestGameWithOneCreatureEach("main")
 
 	creatures := FilterEntityByPlayerAndLocation(game.Entities, "p1", "board")
 	creature := FirstEntityByType(creatures, "creature")
