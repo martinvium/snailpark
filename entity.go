@@ -149,13 +149,12 @@ func (e *Entity) Removed() bool {
 	return false
 }
 
-// TODO: remove game dep
-func (e *Entity) AddEffect(g *Game, effect *Effect) {
+func (e *Entity) AddEffect(effect *Effect) {
 	fmt.Println("Addded effect:", effect)
 	e.Effects = append(e.Effects, effect)
 }
 
-func (e *Entity) UpdateEffects(g *Game) {
+func (e *Entity) UpdateEffects() {
 	attributes := make(map[string]int)
 	for k, v := range e.proto.Attributes {
 		attributes[k] = v
@@ -163,8 +162,10 @@ func (e *Entity) UpdateEffects(g *Game) {
 
 	e.Attributes = attributes
 
-	for _, effect := range e.Effects {
-		effect.Apply(e)
+	for _, eff := range e.Effects {
+		if eff.Expired == false {
+			eff.Applier(eff, e)
+		}
 	}
 }
 

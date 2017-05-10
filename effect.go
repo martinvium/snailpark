@@ -18,6 +18,7 @@ type Effect struct {
 	Tags          map[string]string
 	ExpireTrigger string
 	Applied       bool
+	Expired       bool
 }
 
 func NewEffectFactory(key string) EffectFactory {
@@ -47,7 +48,7 @@ func NewEffectFactory(key string) EffectFactory {
 }
 
 func (e *Effect) String() string {
-	return fmt.Sprintf("Effect(%v)", e.Attributes)
+	return fmt.Sprintf("Effect(%v, %v, %v)", e.Attributes, e.Expired, e.Applied)
 }
 
 func AttributeEffectApplier(e *Effect, target *Entity) {
@@ -69,7 +70,7 @@ func NewEffect(applier EffectApplier, attr map[string]int, expires string) *Effe
 }
 
 func ModifyTargetEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	target.AddEffect(g, NewAttrEffect(
+	target.AddEffect(NewAttrEffect(
 		a.Attribute,
 		a.ModificationAmount(c),
 		NeverExpires,
@@ -77,7 +78,7 @@ func ModifyTargetEffectFactory(g *Game, a *Ability, c, target *Entity) {
 }
 
 func ModifyTargetUntilEndOfTurnEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	target.AddEffect(g, NewAttrEffect(
+	target.AddEffect(NewAttrEffect(
 		a.Attribute,
 		a.ModificationAmount(c),
 		"endTurn",
@@ -105,7 +106,7 @@ func AddMaxEnergyEffectFactory(g *Game, a *Ability, c, target *Entity) {
 }
 
 func addMaxEnergyEffectHelper(g *Game, a *Ability, c, target *Entity, amount int) {
-	target.AddEffect(g, NewAttrEffect(
+	target.AddEffect(NewAttrEffect(
 		"maxEnergy",
 		amount,
 		NeverExpires,
@@ -117,7 +118,7 @@ func RestoreEnergyToMaxEffectFactory(g *Game, a *Ability, c, target *Entity) {
 }
 
 func ModifySelfEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	target.AddEffect(g, NewAttrEffect(
+	target.AddEffect(NewAttrEffect(
 		a.Attribute,
 		1, // TODO: This should not be hardcoded, should probably come from card
 		NeverExpires,

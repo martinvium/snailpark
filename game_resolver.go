@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func ResolveCurrentCard(g *Game, target *Entity) []ChangeAttrResponse {
+func ResolveCurrentCard(g *Game, target *Entity) {
 	card := g.CurrentCard
 	g.CurrentCard = nil
 
@@ -15,31 +15,38 @@ func ResolveCurrentCard(g *Game, target *Entity) []ChangeAttrResponse {
 	}
 
 	InvokeCardAbilityTrigger(g, card, card, target, "enterPlay")
-
-	changes := ResolveUpdatedEffects(g * Game)
-
-	ResolveRemovedCards(g)
-
 	PayCardCost(g, g.CurrentPlayer, card)
+}
 
+func ResolveUpdatedEffectsAndRemoveEntities(g *Game) []*ChangeAttrResponse {
+	changes := ResolveUpdatedEffects(g.Entities)
+	ResolveRemovedCards(g)
+	changes = append(changes, ResolveUpdatedEffects(g.Entities)...)
 	return changes
 }
 
-func ResolveUpdatedEffects(g *Game) []ChangeAttrResponse {
-	changes := []ChangeAttrResponse{}
-	for _, e := range g.Entities {
+func ResolveUpdatedEffects(s []*Entity) []*ChangeAttrResponse {
+	changes := []*ChangeAttrResponse{}
+
+	// Expired effects
+	for _, e := range s {
+		for i := 0; i < len(e.Effects); i++ {
+			if e.Effects[i].Expired {
+				e.UpdateEffects()
+				changes = append(changes, newAttrChangesForEffect(e, e.Effects[i])...)
+				e.Effects = append(e.Effects[:i], e.Effects[i+1:]...)
+				i--
+			}
+		}
+	}
+
+	// Applied effects
+	for _, e := range s {
 		for _, eff := range e.Effects {
 			if eff.Applied == false {
-				eff.Applier(eff, target)
+				eff.Applier(eff, e)
 				eff.Applied = true
-
-				for key, _ := range eff.Attributes {
-					changes = append(changes, &ChangeAttrResponse{
-						e.Id,
-						key,
-						e.Attributes[key],
-					})
-				}
+				changes = append(changes, newAttrChangesForEffect(e, eff)...)
 			}
 		}
 	}
@@ -47,8 +54,31 @@ func ResolveUpdatedEffects(g *Game) []ChangeAttrResponse {
 	return changes
 }
 
+func newAttrChangesForEffect(e *Entity, eff *Effect) []*ChangeAttrResponse {
+	changes := []*ChangeAttrResponse{}
+	for key, _ := range eff.Attributes {
+		changes = append(changes, &ChangeAttrResponse{
+			e.Id,
+			key,
+			e.Attributes[key],
+		})
+	}
+
+	return changes
+}
+
+func InvokeEffectExpirationTrigger(g *Game, event string) {
+	for _, e := range g.Entities {
+		for _, eff := range e.Effects {
+			if eff.ExpireTrigger == event {
+				eff.Expired = true
+			}
+		}
+	}
+}
+
 func PayCardCost(g *Game, p *Player, c *Entity) {
-	p.Avatar.AddEffect(g, NewAttrEffect(
+	p.Avatar.AddEffect(NewAttrEffect(
 		"energy",
 		-c.Attributes["cost"],
 		"endTurn",
@@ -57,7 +87,7 @@ func PayCardCost(g *Game, p *Player, c *Entity) {
 
 func InvokeTrigger(g *Game, origin, target *Entity, event string) {
 	InvokeAbilityTrigger(g, origin, target, event)
-	InvokeEffectTrigger(g, event)
+	InvokeEffectExpirationTrigger(g, event)
 }
 
 func InvokeAbilityTrigger(g *Game, origin, target *Entity, event string) {
@@ -76,19 +106,6 @@ func InvokeCardAbilityTrigger(g *Game, c, origin, target *Entity, event string) 
 		if err := a.Apply(g, c, target); err != nil {
 			fmt.Println("ERROR:", err)
 		}
-	}
-}
-
-func InvokeEffectTrigger(g *Game, event string) {
-	for _, c := range g.AllBoardCards() {
-		for i := 0; i < len(c.Effects); i++ {
-			if c.Effects[i].ExpireTrigger == event {
-				c.Effects = append(c.Effects[:i], c.Effects[i+1:]...)
-				i--
-			}
-		}
-
-		c.UpdateEffects(g)
 	}
 }
 

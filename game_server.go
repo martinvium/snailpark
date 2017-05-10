@@ -118,6 +118,13 @@ func (g *GameServer) processClientRequest(msg *Message) {
 		return
 	}
 
+	changes := ResolveUpdatedEffectsAndRemoveEntities(g.game)
+	g.sendAttrChangesAll(changes)
+
+	if g.game.AnyPlayerDead() {
+		g.game.State.Transition("finished")
+	}
+
 	g.game.UpdateGameEntity()
 
 	options := FindOptionsForPlayer(g.game, g.game.Priority().Id)
@@ -329,6 +336,23 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 	} else {
 		log.Println("Client", msg.PlayerId, " asks for combat")
 		g.game.State.Transition("combat")
+
+		ResolveEngagement(g.game)
+		g.game.State.Transition("end")
+	}
+}
+
+func (g *GameServer) sendAttrChangesAll(changes []*ChangeAttrResponse) {
+	for _, client := range g.clients {
+		for _, c := range changes {
+			msg := &ResponseMessage{
+				Type:     "CHANGE_ATTR",
+				PlayerId: g.game.Priority().Id,
+				Message:  c, // TODO: anonymize
+			}
+
+			client.SendResponse(msg)
+		}
 	}
 }
 

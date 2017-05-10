@@ -158,11 +158,11 @@ func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
 
 func TestAI_RespondWithAction_AssignsBlocker(t *testing.T) {
 	client := NewAI("p1")
-	game := NewTestGameWithExpensiveCreature("blockers")
-
+	game := NewTestGameWithExpensiveCreature("main")
 	attacker := newTestCard("p2", "board", "Dodgy Fella")
 	attacker.Tags["attackTarget"] = game.Players["p1"].Avatar.Id
 	game.Entities = append(game.Entities, attacker)
+	game.State.Transition("blockers")
 
 	expected_target := FirstEntityByType(FilterEntityByPlayerAndLocation(game.Entities, "p1", "board"), "creature")
 
@@ -195,15 +195,20 @@ func TestAI_RespondWithAction_AssignsBlockTarget(t *testing.T) {
 
 func TestAI_RespondWithAction_EndsTurnWhenNoBlockers(t *testing.T) {
 	client := NewAI("p1")
-	game := NewTestGameWithEmptyBoard("blockers")
-
+	game := NewTestGameWithEmptyBoard("main")
 	attacker := newTestCard("p2", "board", "Dodgy Fella")
 	attacker.Tags["attackTarget"] = game.Players["p1"].Avatar.Id
 	game.Entities = append(game.Entities, attacker)
+	game.State.Transition("blockers")
 
 	client.UpdateState(newTestFullStateMessage(game))
 	msg := NewOptionsResponse("p1", map[string][]string{})
 	action := client.RespondWithAction(msg)
+	if action == nil {
+		t.Errorf("AI action was nil")
+		return
+	}
+
 	if action.Action != "endTurn" {
 		t.Errorf("action.Action %v expected endTurn (%v)", action.Action, action.Card)
 	}
