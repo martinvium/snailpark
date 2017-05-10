@@ -149,10 +149,10 @@ func (e *Entity) Removed() bool {
 	return false
 }
 
+// TODO: remove game dep
 func (e *Entity) AddEffect(g *Game, effect *Effect) {
-	fmt.Println("Addded and applied effect:", effect)
+	fmt.Println("Addded effect:", effect)
 	e.Effects = append(e.Effects, effect)
-	effect.Apply(g, e)
 }
 
 func (e *Entity) UpdateEffects(g *Game) {
@@ -164,7 +164,7 @@ func (e *Entity) UpdateEffects(g *Game) {
 	e.Attributes = attributes
 
 	for _, effect := range e.Effects {
-		effect.Apply(g, e)
+		effect.Apply(e)
 	}
 }
 

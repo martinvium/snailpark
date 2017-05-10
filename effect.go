@@ -10,13 +10,14 @@ import "fmt"
 const NeverExpires = "never"
 
 type EffectFactory func(*Game, *Ability, *Entity, *Entity)
-type EffectApplier func(*Game, *Effect, *Entity)
+type EffectApplier func(*Effect, *Entity)
 
 type Effect struct {
 	Applier       EffectApplier
 	Attributes    map[string]int
 	Tags          map[string]string
 	ExpireTrigger string
+	Applied       bool
 }
 
 func NewEffectFactory(key string) EffectFactory {
@@ -49,7 +50,7 @@ func (e *Effect) String() string {
 	return fmt.Sprintf("Effect(%v)", e.Attributes)
 }
 
-func AttributeEffectApplier(g *Game, e *Effect, target *Entity) {
+func AttributeEffectApplier(e *Effect, target *Entity) {
 	for k, _ := range e.Attributes {
 		target.ModifyAttribute(k, e.Attributes[k])
 	}
@@ -65,10 +66,6 @@ func NewEffect(applier EffectApplier, attr map[string]int, expires string) *Effe
 		Attributes:    attr,
 		ExpireTrigger: expires,
 	}
-}
-
-func (e *Effect) Apply(g *Game, target *Entity) {
-	e.Applier(g, e, target)
 }
 
 func ModifyTargetEffectFactory(g *Game, a *Ability, c, target *Entity) {
