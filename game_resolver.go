@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func ResolveCurrentCard(g *Game, target *Entity) {
+func ResolveCurrentCard(g *Game, target *Entity) []ChangeAttrResponse {
 	card := g.CurrentCard
 	g.CurrentCard = nil
 
@@ -16,9 +16,35 @@ func ResolveCurrentCard(g *Game, target *Entity) {
 
 	InvokeCardAbilityTrigger(g, card, card, target, "enterPlay")
 
+	changes := ResolveUpdatedEffects(g * Game)
+
 	ResolveRemovedCards(g)
 
 	PayCardCost(g, g.CurrentPlayer, card)
+
+	return changes
+}
+
+func ResolveUpdatedEffects(g *Game) []ChangeAttrResponse {
+	changes := []ChangeAttrResponse{}
+	for _, e := range g.Entities {
+		for _, eff := range e.Effects {
+			if eff.Applied == false {
+				eff.Applier(eff, target)
+				eff.Applied = true
+
+				for key, _ := range eff.Attributes {
+					changes = append(changes, &ChangeAttrResponse{
+						e.Id,
+						key,
+						e.Attributes[key],
+					})
+				}
+			}
+		}
+	}
+
+	return changes
 }
 
 func PayCardCost(g *Game, p *Player, c *Entity) {
