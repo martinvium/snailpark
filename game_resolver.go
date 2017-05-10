@@ -9,9 +9,9 @@ func ResolveCurrentCard(g *Game, target *Entity) {
 	InvokeTrigger(g, card, target, "cardPlayed")
 
 	if card.StaysOnBoard() {
-		card.Location = "board"
+		card.Tags["location"] = "board"
 	} else {
-		card.Location = "graveyard"
+		card.Tags["location"] = "graveyard"
 	}
 
 	InvokeCardAbilityTrigger(g, card, card, target, "enterPlay")
@@ -70,7 +70,7 @@ func InvokeEffectTrigger(g *Game, event string) {
 func ResolveRemovedCards(g *Game) {
 	for _, e := range g.Entities {
 		if e.Removed() {
-			e.Location = "graveyard"
+			e.Tags["location"] = "graveyard"
 			InvokeTrigger(g, e, nil, "enterGraveyard")
 		}
 	}

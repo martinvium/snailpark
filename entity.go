@@ -7,10 +7,9 @@ type Entity struct {
 
 	Id        string `json:"id"`
 	PlayerId  string `json:"playerId"`
-	Location  string `json:"location"` // board, hand, graveyard, library
 	Anonymous bool   `json:"anonymous"`
 
-	Tags       map[string]string `json:"tags"`       // color, title, type
+	Tags       map[string]string `json:"tags"`       // color, title, type, location
 	Attributes map[string]int    `json:"attributes"` // power, toughness, cost
 	Abilities  []*Ability        `json:"-"`
 	Effects    []*Effect         `json:"-"`
@@ -24,6 +23,8 @@ func NewEntity(proto *EntityProto, id, playerId string) *Entity {
 		tags[k] = v
 	}
 
+	tags["location"] = DefaultLocation
+
 	attributes := make(map[string]int)
 	for k, v := range proto.Attributes {
 		attributes[k] = v
@@ -33,7 +34,6 @@ func NewEntity(proto *EntityProto, id, playerId string) *Entity {
 		*proto,
 		id,
 		playerId,
-		DefaultLocation,
 		proto.Anonymous,
 		tags,
 		attributes,
@@ -91,14 +91,18 @@ func FilterEntityByTitle(s []*Entity, t string) []*Entity {
 }
 
 func FilterEntityByLocation(s []*Entity, l string) []*Entity {
+	return FilterEntityByTag(s, "location", l)
+}
+
+func FilterEntityByTag(s []*Entity, k, v string) []*Entity {
 	return FilterEntities(s, func(e *Entity) bool {
-		return e.Location == l
+		return e.Tags[k] == v
 	})
 }
 
 func FilterEntityByPlayerAndLocation(s []*Entity, p, l string) []*Entity {
 	return FilterEntities(s, func(e *Entity) bool {
-		return e.PlayerId == p && e.Location == l
+		return e.PlayerId == p && e.Tags["location"] == l
 	})
 }
 
@@ -130,7 +134,7 @@ func MapEntityIds(vs []*Entity) []string {
 }
 
 func (e *Entity) String() string {
-	return fmt.Sprintf("Entity(%v, %v, @%v)", e.Tags["title"], e.PlayerId, e.Location)
+	return fmt.Sprintf("Entity(%v, %v, @%v)", e.Tags["title"], e.PlayerId, e.Tags["location"])
 }
 
 func (e *Entity) CanAttack() bool {

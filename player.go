@@ -8,7 +8,7 @@ type Player struct {
 
 func NewPlayer(id string, deck []*Entity) *Player {
 	avatar := FirstEntityByType(deck, "avatar")
-	avatar.Location = "board"
+	avatar.Tags["location"] = "board"
 
 	return &Player{
 		false,

@@ -42,6 +42,6 @@ func NewTestEntity(title string, playerId string) *Entity {
 
 func NewTestEntityOnBoard(title string, playerId string) *Entity {
 	e := NewTestEntity(title, playerId)
-	e.Location = "board"
+	e.Tags["location"] = "board"
 	return e
 }

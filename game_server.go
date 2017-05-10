@@ -335,11 +335,11 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 func anonymizeHiddenEntities(s []*Entity, playerId string) []*Entity {
 	anonymized := []*Entity{}
 	for _, v := range s {
-		if v.Location == "hand" && v.PlayerId != playerId {
+		if v.Tags["location"] == "hand" && v.PlayerId != playerId {
 			a := NewEntity(AnonymousEntityProto, "anon", v.PlayerId)
-			a.Location = "hand"
+			a.Tags["location"] = "hand"
 			anonymized = append(anonymized, a)
-		} else if v.Location == "board" || v.Location == "hand" || v.Location == "meta" {
+		} else if v.Tags["location"] == "board" || v.Tags["location"] == "hand" || v.Tags["location"] == "meta" {
 			anonymized = append(anonymized, v)
 		}
 	}

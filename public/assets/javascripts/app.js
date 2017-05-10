@@ -111,7 +111,7 @@ app.controller('BoardController', ['$scope', 'gameServer', function ($scope, gam
   function filterPlayerAndLocation(s, p, l) {
     var filtered = [];
     for(var i in s) {
-      if(s[i].playerId == p && s[i].location == l) {
+      if(s[i].playerId == p && s[i].tags['location'] == l) {
         filtered.push(s[i])
       }
     }

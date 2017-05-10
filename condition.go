@@ -14,7 +14,7 @@ func (c *Condition) Valid(card, target *Entity) bool {
 	case "player":
 		return c.MatchesPlayer(card, target)
 	case "location":
-		return c.Matches(target.Location)
+		return c.Matches(target.Tags["location"])
 	default:
 		fmt.Println("ERROR: Invalid condition:", c.Attribute)
 		return false

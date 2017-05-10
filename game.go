@@ -25,7 +25,7 @@ func NewGame(players map[string]*Player, currentPlayerId string, entities []*Ent
 
 func NewGameEntity(state, currentPlayerId string) *Entity {
 	e := NewEntityByTitle(StandardRepo(), "none", "Game")
-	e.Location = "meta"
+	e.Tags["location"] = "meta"
 	return e
 }
 
@@ -61,7 +61,7 @@ func (g *Game) NextPlayer() {
 
 func (g *Game) AnyPlayerDead() bool {
 	return AnyPlayer(g.Players, func(p *Player) bool {
-		return p.Avatar.Location != "board"
+		return p.Avatar.Tags["location"] != "board"
 	})
 }
 
@@ -95,7 +95,7 @@ func (g *Game) AllBoardCards() []*Entity {
 func (g *Game) DrawCards(playerId string, num int) {
 	deck := FilterEntityByPlayerAndLocation(g.Entities, playerId, "library")
 	for _, e := range deck[len(deck)-num:] {
-		e.Location = "hand"
+		e.Tags["location"] = "hand"
 	}
 }
 
