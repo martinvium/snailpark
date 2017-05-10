@@ -22,10 +22,9 @@ func ResolveCurrentCard(g *Game, target *Entity) {
 }
 
 func PayCardCost(g *Game, p *Player, c *Entity) {
-	p.Avatar.AddEffect(g, NewEffect(
-		nil,
-		AttributeEffectApplier,
-		map[string]int{"energy": -c.Attributes["cost"]},
+	p.Avatar.AddEffect(g, NewAttrEffect(
+		"energy",
+		-c.Attributes["cost"],
 		"endTurn",
 	))
 }

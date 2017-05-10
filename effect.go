@@ -7,18 +7,16 @@ import "fmt"
 // or abilities added. We can add those effects to the target card, and the
 // effect(s) can be applied, and reapplied unless instant.
 
-const NeverExpires = ""
+const NeverExpires = "never"
 
 type EffectFactory func(*Game, *Ability, *Entity, *Entity)
-type EffectApplier func(*Game, *Ability, *Effect, *Entity)
+type EffectApplier func(*Game, *Effect, *Entity)
 
 type Effect struct {
-	Origin        *Ability
 	Applier       EffectApplier
 	Attributes    map[string]int
 	Tags          map[string]string
-	ExpireTrigger string // cardResolved, "" == permanent?, endTurn, startTurn?
-	// ExpireConditions []*Condition // so we can make sure its the right player?
+	ExpireTrigger string
 }
 
 func NewEffectFactory(key string) EffectFactory {
@@ -51,38 +49,42 @@ func (e *Effect) String() string {
 	return fmt.Sprintf("Effect(%v)", e.Attributes)
 }
 
-func NewEffect(a *Ability, applier EffectApplier, attr map[string]int, expireTrigger string) *Effect {
-	return &Effect{Origin: a, Applier: applier, Attributes: attr, ExpireTrigger: expireTrigger}
-}
-
-func (e *Effect) Apply(g *Game, target *Entity) {
-	e.Applier(g, e.Origin, e, target)
-}
-
-func AttributeEffectApplier(g *Game, a *Ability, e *Effect, target *Entity) {
+func AttributeEffectApplier(g *Game, e *Effect, target *Entity) {
 	for k, _ := range e.Attributes {
 		target.ModifyAttribute(k, e.Attributes[k])
 	}
 }
 
+func NewAttrEffect(k string, v int, expires string) *Effect {
+	return NewEffect(AttributeEffectApplier, map[string]int{k: v}, expires)
+}
+
+func NewEffect(applier EffectApplier, attr map[string]int, expires string) *Effect {
+	return &Effect{
+		Applier:       applier,
+		Attributes:    attr,
+		ExpireTrigger: expires,
+	}
+}
+
+func (e *Effect) Apply(g *Game, target *Entity) {
+	e.Applier(g, e, target)
+}
+
 func ModifyTargetEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	e := NewEffect(
-		a,
-		AttributeEffectApplier,
-		map[string]int{a.Attribute: a.ModificationAmount(c)},
+	target.AddEffect(g, NewAttrEffect(
+		a.Attribute,
+		a.ModificationAmount(c),
 		NeverExpires,
-	)
-	target.AddEffect(g, e)
+	))
 }
 
 func ModifyTargetUntilEndOfTurnEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	e := NewEffect(
-		a,
-		AttributeEffectApplier,
-		map[string]int{a.Attribute: a.ModificationAmount(c)},
+	target.AddEffect(g, NewAttrEffect(
+		a.Attribute,
+		a.ModificationAmount(c),
 		"endTurn",
-	)
-	target.AddEffect(g, e)
+	))
 }
 
 func ModifyBothEffectFactory(g *Game, a *Ability, c, target *Entity) {
@@ -106,14 +108,11 @@ func AddMaxEnergyEffectFactory(g *Game, a *Ability, c, target *Entity) {
 }
 
 func addMaxEnergyEffectHelper(g *Game, a *Ability, c, target *Entity, amount int) {
-	e := NewEffect(
-		a,
-		AttributeEffectApplier,
-		map[string]int{"maxEnergy": amount},
+	target.AddEffect(g, NewAttrEffect(
+		"maxEnergy",
+		amount,
 		NeverExpires,
-	)
-
-	target.AddEffect(g, e)
+	))
 }
 
 func RestoreEnergyToMaxEffectFactory(g *Game, a *Ability, c, target *Entity) {
@@ -121,9 +120,11 @@ func RestoreEnergyToMaxEffectFactory(g *Game, a *Ability, c, target *Entity) {
 }
 
 func ModifySelfEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	amount := 1
-	e := NewEffect(a, AttributeEffectApplier, map[string]int{a.Attribute: amount}, NeverExpires)
-	c.AddEffect(g, e)
+	target.AddEffect(g, NewAttrEffect(
+		a.Attribute,
+		1, // TODO: This should not be hardcoded, should probably come from card
+		NeverExpires,
+	))
 }
 
 func SummonCreaturesEffectFactory(g *Game, a *Ability, c, target *Entity) {
