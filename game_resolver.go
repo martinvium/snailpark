@@ -18,6 +18,40 @@ func ResolveCurrentCard(g *Game, target *Entity) {
 	PayCardCost(g, g.CurrentPlayer, card)
 }
 
+type Event struct {
+	this, origin, target *Entity
+	event                string
+}
+
+type TriggerContext struct {
+	scope   *Event
+	ability *Ability
+}
+
+// Starts with "enterPlay"
+// Any triggers will be prepended, before the actual enterPlay ability is
+// executed? How could we determine this, if they are the same event...
+// Since it is played last, it would run last, and any relevant triggers would
+// complete first.
+func ResolveEvent(g *Game, event *Event) {
+	triggers := getTriggersForEvents([]*Event{event})
+	t := triggers[len(triggers)-1]
+	for t != nil {
+		events := []*Event{}
+
+		events = append(events, t.ability.Apply(g)...)
+		events = append(events, ResolveUpdatedEffects(g.Entities)...)
+		events = append(events, ResolveRemovedCards(g)...)
+
+		for _, event := range events {
+			triggers = append(triggers, &TriggerContext{})
+		}
+
+		t = triggers[len(triggers)-1]
+	}
+}
+
+// cardPlayed, enterPlay, enterGraveyard
 func ResolveUpdatedEffectsAndRemoveEntities(g *Game) []*ChangeAttrResponse {
 	changes := ResolveUpdatedEffects(g.Entities)
 	ResolveRemovedCards(g)
@@ -86,12 +120,15 @@ func PayCardCost(g *Game, p *Player, c *Entity) {
 }
 
 func InvokeTrigger(g *Game, origin, target *Entity, event string) {
+	// energy sets max and current energy in 2 abilities, but lazy effect calc fucks it up
+	// we somehow need to run each ability in isolation, evaluate its effects, then repeat
+	panic("todo")
 	InvokeAbilityTrigger(g, origin, target, event)
 	InvokeEffectExpirationTrigger(g, event)
 }
 
 func InvokeAbilityTrigger(g *Game, origin, target *Entity, event string) {
-	for _, c := range OrderCardsByTimePlayed(g.AllBoardCards()) {
+	for _, c := range OrderCardsByTimePlayed(g.Entities) {
 		InvokeCardAbilityTrigger(g, c, origin, target, event)
 	}
 }
