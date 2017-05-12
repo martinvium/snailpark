@@ -28,15 +28,15 @@ func (a *Ability) ModificationAmount(c *Entity) int {
 	}
 }
 
-func (a *Ability) Apply(g *Game, c, target *Entity) error {
+func (a *Ability) Apply(g *Game, event *Event) error {
 	switch a.Target {
 	case "target":
-		return a.applyToTarget(g, c, target)
+		return a.applyToTarget(g, event.this, event.target)
 	case "all":
-		a.applyToAllValidTargets(g, c)
+		a.applyToAllValidTargets(g, event.this)
 		return nil
 	case "self":
-		return a.applyToTarget(g, c, c)
+		return a.applyToTarget(g, event.this, event.this)
 	default:
 		return fmt.Errorf("Unsupported Apply target: %v", a.Target)
 	}

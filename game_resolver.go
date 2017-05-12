@@ -34,21 +34,30 @@ type TriggerContext struct {
 // Since it is played last, it would run last, and any relevant triggers would
 // complete first.
 func ResolveEvent(g *Game, event *Event) {
-	triggers := getTriggersForEvents([]*Event{event})
+	triggers := getTriggersForEvent(event)
 	t := triggers[len(triggers)-1]
-	for t != nil {
-		events := []*Event{}
 
-		events = append(events, t.ability.Apply(g)...)
+	for t != nil {
+		t.ability.Apply(g, t.scope)
+
+		events := []*Event{}
 		events = append(events, ResolveUpdatedEffects(g.Entities)...)
 		events = append(events, ResolveRemovedCards(g)...)
 
-		for _, event := range events {
-			triggers = append(triggers, &TriggerContext{})
-		}
+		appendTriggersForAllEvents(triggers, events)
 
 		t = triggers[len(triggers)-1]
 	}
+}
+
+func appendTriggersForAllEvents(triggers []*TriggerContext, events []*Event) {
+	for _, event := range events {
+		triggers = append(triggers, getTriggersForEvent(event)...)
+	}
+}
+
+func getTriggersForEvent(event *Event) []*TriggerContext {
+	return []*TriggerContext{}
 }
 
 // cardPlayed, enterPlay, enterGraveyard
