@@ -6,34 +6,130 @@ func ResolveCurrentCard(g *Game, target *Entity) {
 	card := g.CurrentCard
 	g.CurrentCard = nil
 
-	InvokeTrigger(g, card, target, "cardPlayed")
+	card.Tags["location"] = "staging"
+
+	// Paying cost must happen before we update state in ResolveEvent
+	PayCardCost(g, g.CurrentPlayer, card)
+
+	event := NewTargetEvent(card, target, "enterPlay")
+	ResolveEvent(g, event)
 
 	if card.StaysOnBoard() {
 		card.Tags["location"] = "board"
 	} else {
 		card.Tags["location"] = "graveyard"
 	}
-
-	InvokeCardAbilityTrigger(g, card, card, target, "enterPlay")
-	PayCardCost(g, g.CurrentPlayer, card)
 }
 
-func ResolveUpdatedEffectsAndRemoveEntities(g *Game) []*ChangeAttrResponse {
-	changes := ResolveUpdatedEffects(g.Entities)
-	ResolveRemovedCards(g)
-	changes = append(changes, ResolveUpdatedEffects(g.Entities)...)
-	return changes
+func ResolveStateTriggers(g *Game, currentPlayerAvatar *Entity, state string) {
+	fmt.Println("Resolving game state trigger for:", state)
+	event := &Event{origin: currentPlayerAvatar, event: state}
+	ResolveEvent(g, event)
 }
 
-func ResolveUpdatedEffects(s []*Entity) []*ChangeAttrResponse {
-	changes := []*ChangeAttrResponse{}
+// TODO: Consider if this has no meaning in an event, which is more general... I think maybe we can remove it..
+type Event struct {
+	this, origin, target *Entity
+	event                string
+}
 
+func (e *Event) String() string {
+	return fmt.Sprintf("Event(%v, %v, %v, %v)", e.event, e.this, e.origin, e.target)
+}
+
+func NewGeneralEvent(this *Entity, event string) *Event {
+	return &Event{this: this, event: event}
+}
+
+func NewTargetEvent(this, target *Entity, event string) *Event {
+	return &Event{this: this, origin: this, target: target, event: event}
+}
+
+type TriggerContext struct {
+	event   *Event
+	this    *Entity
+	ability *Ability
+}
+
+func (t *TriggerContext) String() string {
+	return fmt.Sprintf("TriggerContext(%v, %v, %v)", t.event, t.this, t.ability)
+}
+
+func ResolveEvent(g *Game, event *Event) {
+	fmt.Println("Resolving event:", event)
+
+	// Must update effects in case there are no triggers that do it for us.
+	ResolveExpiredTriggers(g, event)
+	ResolveUpdatedEffects(g)
+
+	triggers := getTriggersForEvent(g, event)
+
+	fmt.Println("Initial number of triggers:", len(triggers))
+	for _, x := range triggers {
+		fmt.Println("- Initial trigger:", x.ability)
+	}
+
+	if len(triggers) == 0 {
+		fmt.Println("Ending resolve event early, nothing to resolve: ", event.event)
+		return
+	}
+
+	t, triggers := triggers[len(triggers)-1], triggers[:len(triggers)-1]
+
+	for t != nil {
+		fmt.Println("Processing trigger:", t)
+		fmt.Println("Remaining triggers:", len(triggers))
+		if err := t.ability.Apply(g, t); err != nil {
+			fmt.Println("ERROR:", err)
+		}
+
+		ResolveUpdatedEffects(g)
+
+		events := ResolveRemovedCards(g)
+		appendTriggersForAllEvents(g, triggers, events)
+
+		if len(triggers) == 0 {
+			t = nil
+		} else {
+			t, triggers = triggers[len(triggers)-1], triggers[:len(triggers)-1]
+		}
+	}
+}
+
+func appendTriggersForAllEvents(g *Game, triggers []*TriggerContext, events []*Event) {
+	for _, e := range events {
+		ResolveExpiredTriggers(g, e)
+		triggers = append(triggers, getTriggersForEvent(g, e)...)
+	}
+}
+
+func getTriggersForEvent(g *Game, event *Event) []*TriggerContext {
+	fmt.Println("Getting triggers for:", event)
+	triggers := []*TriggerContext{}
+
+	entities := FilterEntities(g.Entities, func(e *Entity) bool {
+		return e.Tags["location"] == "board" || e.Tags["location"] == "staging"
+	})
+
+	for _, e := range OrderCardsByTimePlayed(entities) {
+		for _, a := range e.Abilities {
+			trigger := &TriggerContext{event, e, a}
+			if a.ValidTrigger(trigger) {
+				triggers = append(triggers, trigger)
+			}
+		}
+	}
+
+	return triggers
+}
+
+func ResolveUpdatedEffects(g *Game) {
 	// Expired effects
-	for _, e := range s {
+	for _, e := range g.Entities {
 		for i := 0; i < len(e.Effects); i++ {
 			if e.Effects[i].Expired {
 				e.UpdateEffects()
-				changes = append(changes, newAttrChangesForEffect(e, e.Effects[i])...)
+				g.AttrChanges = append(g.AttrChanges, newAttrChangesForEffect(e, e.Effects[i])...)
 				e.Effects = append(e.Effects[:i], e.Effects[i+1:]...)
 				i--
 			}
@@ -41,17 +137,15 @@ func ResolveUpdatedEffects(s []*Entity) []*ChangeAttrResponse {
 	}
 
 	// Applied effects
-	for _, e := range s {
+	for _, e := range g.Entities {
 		for _, eff := range e.Effects {
 			if eff.Applied == false {
 				eff.Applier(eff, e)
 				eff.Applied = true
-				changes = append(changes, newAttrChangesForEffect(e, eff)...)
+				g.AttrChanges = append(g.AttrChanges, newAttrChangesForEffect(e, eff)...)
 			}
 		}
 	}
-
-	return changes
 }
 
 func newAttrChangesForEffect(e *Entity, eff *Effect) []*ChangeAttrResponse {
@@ -67,10 +161,12 @@ func newAttrChangesForEffect(e *Entity, eff *Effect) []*ChangeAttrResponse {
 	return changes
 }
 
-func InvokeEffectExpirationTrigger(g *Game, event string) {
+func ResolveExpiredTriggers(g *Game, ev *Event) {
+	fmt.Println("Expiring effects for:", ev.event)
 	for _, e := range g.Entities {
 		for _, eff := range e.Effects {
-			if eff.ExpireTrigger == event {
+			if eff.ExpireTrigger == ev.event {
+				fmt.Println("Expired effect from", ev.event, ":", eff)
 				eff.Expired = true
 			}
 		}
@@ -85,37 +181,17 @@ func PayCardCost(g *Game, p *Player, c *Entity) {
 	))
 }
 
-func InvokeTrigger(g *Game, origin, target *Entity, event string) {
-	InvokeAbilityTrigger(g, origin, target, event)
-	InvokeEffectExpirationTrigger(g, event)
-}
-
-func InvokeAbilityTrigger(g *Game, origin, target *Entity, event string) {
-	for _, c := range OrderCardsByTimePlayed(g.AllBoardCards()) {
-		InvokeCardAbilityTrigger(g, c, origin, target, event)
-	}
-}
-
-func InvokeCardAbilityTrigger(g *Game, c, origin, target *Entity, event string) {
-	for _, a := range c.Abilities {
-		if !a.ValidTrigger(event, c, origin) {
-			continue
-		}
-
-		fmt.Println("Applying", a)
-		if err := a.Apply(g, c, target); err != nil {
-			fmt.Println("ERROR:", err)
-		}
-	}
-}
-
-func ResolveRemovedCards(g *Game) {
+func ResolveRemovedCards(g *Game) []*Event {
+	events := []*Event{}
 	for _, e := range g.Entities {
 		if e.Removed() {
 			e.Tags["location"] = "graveyard"
-			InvokeTrigger(g, e, nil, "enterGraveyard")
+
+			events = append(events, NewGeneralEvent(e, "enterGraveyard"))
 		}
 	}
+
+	return events
 }
 
 func UnresolvedAttackers(s []*Entity) []*Entity {
@@ -135,9 +211,7 @@ func UnresolvedAttackers(s []*Entity) []*Entity {
 func ResolveEngagement(g *Game) {
 	for _, e := range UnresolvedAttackers(g.Entities) {
 		target := EntityById(g.Entities, e.Tags["attackTarget"])
-		a := ActivatedAbility(e.Abilities)
-		if err := a.Apply(g, e, target); err != nil {
-			fmt.Println("ERROR:", err)
-		}
+		event := NewTargetEvent(e, target, "activated")
+		ResolveEvent(g, event)
 	}
 }

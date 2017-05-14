@@ -118,8 +118,7 @@ func (g *GameServer) processClientRequest(msg *Message) {
 		return
 	}
 
-	changes := ResolveUpdatedEffectsAndRemoveEntities(g.game)
-	g.sendAttrChangesAll(changes)
+	g.flushAttrChangeResponseAll()
 
 	if g.game.AnyPlayerDead() {
 		g.game.State.Transition("finished")
@@ -260,10 +259,8 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 
 	blocker.Tags["blockTarget"] = attacker.Id
 
-	a := ActivatedAbility(attacker.Abilities)
-	if err := a.Apply(g.game, attacker, blocker); err != nil {
-		fmt.Println("ERROR:", err)
-	}
+	event := NewTargetEvent(attacker, blocker, "activated")
+	ResolveEvent(g.game, event)
 
 	g.game.CurrentCard = nil
 	g.game.State.Transition("blockers")
@@ -306,6 +303,7 @@ func (g *GameServer) targetAbility(msg *Message) {
 	}
 
 	ResolveCurrentCard(g.game, target)
+
 	g.game.State.Transition("main")
 }
 
@@ -336,13 +334,11 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 	} else {
 		log.Println("Client", msg.PlayerId, " asks for combat")
 		g.game.State.Transition("combat")
-
-		ResolveEngagement(g.game)
-		g.game.State.Transition("end")
 	}
 }
 
-func (g *GameServer) sendAttrChangesAll(changes []*ChangeAttrResponse) {
+func (g *GameServer) flushAttrChangeResponseAll() {
+	changes := g.game.AttrChanges
 	for _, client := range g.clients {
 		for _, c := range changes {
 			msg := &ResponseMessage{
@@ -354,6 +350,8 @@ func (g *GameServer) sendAttrChangesAll(changes []*ChangeAttrResponse) {
 			client.SendResponse(msg)
 		}
 	}
+
+	g.game.AttrChanges = []*ChangeAttrResponse{}
 }
 
 func anonymizeHiddenEntities(s []*Entity, playerId string) []*Entity {

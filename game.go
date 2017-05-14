@@ -8,6 +8,7 @@ type Game struct {
 	State         *StateMachine
 	CurrentCard   *Entity
 	Entities      []*Entity
+	AttrChanges   []*ChangeAttrResponse
 }
 
 func NewGame(players map[string]*Player, currentPlayerId string, entities []*Entity) *Game {
@@ -20,6 +21,7 @@ func NewGame(players map[string]*Player, currentPlayerId string, entities []*Ent
 		NewStateMachine(),
 		nil,
 		entities,
+		[]*ChangeAttrResponse{},
 	}
 }
 
@@ -99,7 +101,7 @@ func (g *Game) DrawCards(playerId string, num int) {
 	}
 }
 
+// TODO: order by when cards played not implemented
 func OrderCardsByTimePlayed(s []*Entity) []*Entity {
-	fmt.Println("WARN: OrderCardsByTimePlayed not implemented")
 	return s
 }

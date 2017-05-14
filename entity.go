@@ -134,7 +134,7 @@ func MapEntityIds(vs []*Entity) []string {
 }
 
 func (e *Entity) String() string {
-	return fmt.Sprintf("Entity(%v, %v, @%v)", e.Tags["title"], e.PlayerId, e.Tags["location"])
+	return fmt.Sprintf("Entity(%v, %v, @%v, %v)", e.Tags["title"], e.PlayerId, e.Tags["location"], e.Id)
 }
 
 func (e *Entity) CanAttack() bool {
