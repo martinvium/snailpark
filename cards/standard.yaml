@@ -1,6 +1,8 @@
 creature_attack: &creature_attack
   trigger: activated
-  trigger_conditions: []
+  trigger_conditions:
+  - attribute: origin
+    any_of: [self]
   target: target
   target_conditions:
     - attribute: type
@@ -41,16 +43,16 @@ cards:
           - attribute: player
             any_of: [me]
         target: self
-        behaviour: addMaxEnergy
+        attribute: energy
+        mod_factor: 1
+        mod_attr: maxEnergy
+        behaviour: modifyTargetUntilEndOfTurn
       - trigger: upkeep
         trigger_conditions:
           - attribute: player
             any_of: [me]
         target: self
-        attribute: energy
-        mod_factor: 1
-        mod_attr: maxEnergy
-        behaviour: modifyTargetUntilEndOfTurn
+        behaviour: addMaxEnergy
   dodgy_fella:
     tags:
       color: white
@@ -123,12 +125,14 @@ cards:
       toughness: 2
     abilities:
       - <<: *creature_attack
-      - trigger: cardPlayed
+      - trigger: enterPlay
         trigger_conditions:
           - attribute: type
             any_of: [creature]
           - attribute: player
             any_of: [me]
+          - attribute: origin
+            any_of: [other]
         target: self
         target_conditions: []
         attribute: power
@@ -148,7 +152,9 @@ cards:
     abilities:
       - <<: *creature_attack
       - trigger: enterPlay
-        trigger_conditions: []
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: self
         target_conditions: []
         attribute: not_used
@@ -166,6 +172,9 @@ cards:
       power: 5
     abilities:
       - trigger: enterPlay
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: target
         target_conditions:
         - attribute: type
@@ -189,6 +198,9 @@ cards:
       power: 3
     abilities:
       - trigger: enterPlay
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: target
         target_conditions:
         - attribute: type
@@ -212,6 +224,9 @@ cards:
       power: 5
     abilities:
       - trigger: enterPlay
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: target
         target_conditions:
         - attribute: type
@@ -235,6 +250,9 @@ cards:
       power: 3
     abilities:
       - trigger: enterPlay
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: target
         target_conditions:
         - attribute: type
@@ -258,6 +276,9 @@ cards:
       power: 2
     abilities:
       - trigger: enterPlay
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: all
         target_conditions:
         - attribute: type
@@ -281,6 +302,9 @@ cards:
       power: 2
     abilities:
       - trigger: enterPlay
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: all
         target_conditions:
         - attribute: type
@@ -304,6 +328,9 @@ cards:
       power: 2
     abilities:
       - trigger: enterPlay
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: all
         target_conditions:
         - attribute: type

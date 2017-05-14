@@ -28,15 +28,15 @@ func (a *Ability) ModificationAmount(c *Entity) int {
 	}
 }
 
-func (a *Ability) Apply(g *Game, event *Event) error {
+func (a *Ability) Apply(g *Game, ctx *TriggerContext) error {
 	switch a.Target {
 	case "target":
-		return a.applyToTarget(g, event.this, event.target)
+		return a.applyToTarget(g, ctx.this, ctx.event.target)
 	case "all":
-		a.applyToAllValidTargets(g, event.this)
+		a.applyToAllValidTargets(g, ctx.this)
 		return nil
 	case "self":
-		return a.applyToTarget(g, event.this, event.this)
+		return a.applyToTarget(g, ctx.this, ctx.this)
 	default:
 		return fmt.Errorf("Unsupported Apply target: %v", a.Target)
 	}
@@ -94,14 +94,14 @@ func (a *Ability) RequiresTarget() bool {
 	return a.Trigger == "enterPlay" && a.Target == "target"
 }
 
-func (a *Ability) ValidTrigger(event string, card, origin *Entity) bool {
-	if event != a.Trigger {
+func (a *Ability) ValidTrigger(ctx *TriggerContext) bool {
+	if ctx.event.event != ctx.ability.Trigger {
 		return false
 	}
 
-	for _, c := range a.TriggerConditions {
-		if c.Valid(card, origin) == false {
-			fmt.Println("- Condition", c, "failed for trigger", origin)
+	for _, c := range ctx.ability.TriggerConditions {
+		if c.Valid(ctx.this, ctx.event.origin) == false {
+			fmt.Println("- Condition", c, "failed for trigger", ctx.this, "=>", ctx.event.origin)
 			return false
 		}
 	}

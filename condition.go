@@ -25,6 +25,7 @@ func (c *Condition) Valid(card, target *Entity) bool {
 
 func (c *Condition) MatchesOrigin(card, target *Entity) bool {
 	if target == nil {
+		fmt.Println("MatchesOrigin returns false, target is nil")
 		return false
 	}
 
@@ -39,6 +40,7 @@ func (c *Condition) MatchesOrigin(card, target *Entity) bool {
 		}
 	}
 
+	fmt.Println("ERROR: MatchesOrigin returns false, no values")
 	return false
 }
 
