@@ -12,7 +12,7 @@
   </head>
   <body>
     <div id="board" ng-controller="BoardController" ng-class="{ 'targeting': data.targeting }" ng-cloak>
-      <modal-dialog data-state="data.state" data-player-avatar="data.player.avatar" new-game="newGame()"></modal-dialog>
+      <modal-dialog data-state="data.state" data-game="data.game" new-game="newGame()"></modal-dialog>
 
       <div next-button next="next()" data-state="data.state" data-current-player-id="data.currentPlayerId"></div>
 

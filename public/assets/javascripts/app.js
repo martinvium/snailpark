@@ -264,7 +264,7 @@ app.directive('modalDialog', function() {
   return {
     scope: {
       state: '=',
-      playerAvatar: '=',
+      game: '=',
       newGame: '&'
     },
     restrict : 'EA',
@@ -272,7 +272,7 @@ app.directive('modalDialog', function() {
     controllerAs: 'ctrl',
     link: function(scope) {
       scope.content = function() {
-        if(scope.ctrl.playerAvatar["attributes"]["toughness"] <= 0) {
+        if(scope.ctrl.game["tags"]["looser"] === 'player') {
           return 'You lost! :(';
         } else {
           return 'You won! :)';
@@ -281,7 +281,7 @@ app.directive('modalDialog', function() {
     },
     transclude: true,
     bindToController: true,
-    template: '<div id="myModal" ng-if="ctrl.state == \'finished\'" class="modal"><div class="modal-content">{{ content() }}</div></div>'
+    template: '<div id="myModal" ng-if="ctrl.game.tags.looser" class="modal"><div class="modal-content">{{ content() }}</div></div>'
   }
 });
 

@@ -94,6 +94,17 @@ func ResolveEvent(g *Game, event *Event) {
 			t, triggers = triggers[len(triggers)-1], triggers[:len(triggers)-1]
 		}
 	}
+
+	ResolveGameWinner(g)
+}
+
+func ResolveGameWinner(g *Game) {
+	for _, e := range FilterEntityByTag(g.Entities, "type", "avatar") {
+		if e.Attributes["toughness"] <= 0 {
+			g.GameEntity.Tags["looser"] = e.PlayerId
+			return
+		}
+	}
 }
 
 func appendTriggersForAllEvents(g *Game, triggers []*TriggerContext, events []*Event) {

@@ -2,7 +2,22 @@ package main
 
 import "testing"
 
-func TestResolveCurrentcard_PaidEnergyIsSubtracted(t *testing.T) {
+func TestResolveCurrentCard_PlayerWinsWhenAvatarDies(t *testing.T) {
+	g := NewTestGame()
+	avatar := PlayerAvatar(g.Entities, "p2")
+
+	spell := NewTestEntity("Goo-to-the-face", "p1")
+	spell.Attributes["power"] = 31
+	g.Entities = append(g.Entities, spell)
+	g.CurrentCard = spell
+	ResolveCurrentCard(g, avatar)
+
+	if g.GameEntity.Tags["looser"] != "p2" {
+		t.Errorf("Expected p2 to be looser, but got: %v", g.GameEntity.Tags["looser"])
+	}
+}
+
+func TestResolveCurrentCard_PaidEnergyIsSubtracted(t *testing.T) {
 	g := NewTestGame()
 	g.State.UnsafeForceTransition("upkeep")
 	a := PlayerAvatar(g.Entities, "p1")
@@ -141,5 +156,39 @@ func TestResolveEngagement_SkipBlockedEngagements(t *testing.T) {
 
 	if target.Attributes["toughness"] != 30 {
 		t.Errorf("target toughness: %v", target.Attributes["toughness"])
+	}
+}
+
+func TestResolveGameWinner_PlayerACanWin(t *testing.T) {
+	g := NewTestGame()
+	a := PlayerAvatar(g.Entities, "p1")
+	a.Attributes["toughness"] = 0
+
+	ResolveGameWinner(g)
+
+	if g.GameEntity.Tags["looser"] != "p1" {
+		t.Errorf("Expected p1 to loose, but found: %v", g.GameEntity.Tags["looser"])
+	}
+}
+
+func TestResolveGameWinner_PlayerCanLoose(t *testing.T) {
+	g := NewTestGame()
+	a := PlayerAvatar(g.Entities, "p2")
+	a.Attributes["toughness"] = 0
+
+	ResolveGameWinner(g)
+
+	if g.GameEntity.Tags["looser"] != "p2" {
+		t.Errorf("Expected p2 to loose, but found: %v", g.GameEntity.Tags["looser"])
+	}
+}
+
+func TestResolveGameWinner_NoOneHasToLoose(t *testing.T) {
+	g := NewTestGame()
+
+	ResolveGameWinner(g)
+
+	if g.GameEntity.Tags["looser"] != "" {
+		t.Errorf("Expected no one to loose, but found: %v", g.GameEntity.Tags["looser"])
 	}
 }

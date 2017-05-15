@@ -120,7 +120,7 @@ func (g *GameServer) processClientRequest(msg *Message) {
 
 	g.flushAttrChangeResponseAll()
 
-	if g.game.AnyPlayerDead() {
+	if g.game.Looser() != "" {
 		g.game.State.Transition("finished")
 	}
 
