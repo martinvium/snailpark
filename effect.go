@@ -10,13 +10,15 @@ import "fmt"
 const NeverExpires = "never"
 
 type EffectFactory func(*Game, *Ability, *Entity, *Entity)
-type EffectApplier func(*Game, *Effect, *Entity)
+type EffectApplier func(*Effect, *Entity)
 
 type Effect struct {
 	Applier       EffectApplier
 	Attributes    map[string]int
 	Tags          map[string]string
 	ExpireTrigger string
+	Applied       bool
+	Expired       bool
 }
 
 func NewEffectFactory(key string) EffectFactory {
@@ -46,10 +48,10 @@ func NewEffectFactory(key string) EffectFactory {
 }
 
 func (e *Effect) String() string {
-	return fmt.Sprintf("Effect(%v)", e.Attributes)
+	return fmt.Sprintf("Effect(%v, %v, %v)", e.Attributes, e.Expired, e.Applied)
 }
 
-func AttributeEffectApplier(g *Game, e *Effect, target *Entity) {
+func AttributeEffectApplier(e *Effect, target *Entity) {
 	for k, _ := range e.Attributes {
 		target.ModifyAttribute(k, e.Attributes[k])
 	}
@@ -67,12 +69,8 @@ func NewEffect(applier EffectApplier, attr map[string]int, expires string) *Effe
 	}
 }
 
-func (e *Effect) Apply(g *Game, target *Entity) {
-	e.Applier(g, e, target)
-}
-
 func ModifyTargetEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	target.AddEffect(g, NewAttrEffect(
+	target.AddEffect(NewAttrEffect(
 		a.Attribute,
 		a.ModificationAmount(c),
 		NeverExpires,
@@ -80,7 +78,7 @@ func ModifyTargetEffectFactory(g *Game, a *Ability, c, target *Entity) {
 }
 
 func ModifyTargetUntilEndOfTurnEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	target.AddEffect(g, NewAttrEffect(
+	target.AddEffect(NewAttrEffect(
 		a.Attribute,
 		a.ModificationAmount(c),
 		"endTurn",
@@ -108,7 +106,7 @@ func AddMaxEnergyEffectFactory(g *Game, a *Ability, c, target *Entity) {
 }
 
 func addMaxEnergyEffectHelper(g *Game, a *Ability, c, target *Entity, amount int) {
-	target.AddEffect(g, NewAttrEffect(
+	target.AddEffect(NewAttrEffect(
 		"maxEnergy",
 		amount,
 		NeverExpires,
@@ -120,7 +118,7 @@ func RestoreEnergyToMaxEffectFactory(g *Game, a *Ability, c, target *Entity) {
 }
 
 func ModifySelfEffectFactory(g *Game, a *Ability, c, target *Entity) {
-	target.AddEffect(g, NewAttrEffect(
+	target.AddEffect(NewAttrEffect(
 		a.Attribute,
 		1, // TODO: This should not be hardcoded, should probably come from card
 		NeverExpires,

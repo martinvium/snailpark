@@ -16,8 +16,8 @@ var transitions = map[string][]string{
 	"targeting":   []string{"main"},
 	"blockers":    []string{"combat", "blockers", "blockTarget"},
 	"blockTarget": []string{"blockers"},
-	"combat":      []string{"end", "finished"},
-	"end":         []string{"upkeep"},
+	"combat":      []string{"endTurn", "finished"},
+	"endTurn":     []string{"upkeep"},
 	"finished":    []string{},
 }
 
@@ -73,8 +73,8 @@ func (s *StateMachine) transitionCallback() {
 		s.toBlockers()
 	case "combat":
 		s.toCombat()
-	case "end":
-		s.toEnd()
+	case "endTurn":
+		s.toEndTurn()
 	}
 }
 
@@ -88,7 +88,7 @@ func (s *StateMachine) toMulligan() {
 
 func (s *StateMachine) toUpkeep() {
 	s.game.DrawCards(s.game.CurrentPlayer.Id, 1)
-	InvokeTrigger(s.game, s.game.CurrentPlayer.Avatar, nil, "upkeep")
+	ResolveStateTriggers(s.game, s.game.CurrentPlayer.Avatar, s.state)
 	s.game.ClearAttackers()
 	s.Transition("main")
 }
@@ -114,17 +114,11 @@ func (s *StateMachine) toAttackers() {
 
 func (s *StateMachine) toCombat() {
 	ResolveEngagement(s.game)
-	ResolveRemovedCards(s.game)
-
-	if s.game.AnyPlayerDead() {
-		s.Transition("finished")
-	} else {
-		s.Transition("end")
-	}
+	s.Transition("endTurn")
 }
 
-func (s *StateMachine) toEnd() {
-	InvokeTrigger(s.game, nil, nil, "endTurn")
+func (s *StateMachine) toEndTurn() {
+	ResolveStateTriggers(s.game, s.game.CurrentPlayer.Avatar, s.state)
 	s.game.NextPlayer()
 	s.Transition("upkeep")
 }

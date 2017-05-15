@@ -134,7 +134,7 @@ func MapEntityIds(vs []*Entity) []string {
 }
 
 func (e *Entity) String() string {
-	return fmt.Sprintf("Entity(%v, %v, @%v)", e.Tags["title"], e.PlayerId, e.Tags["location"])
+	return fmt.Sprintf("Entity(%v, %v, @%v, %v)", e.Tags["title"], e.PlayerId, e.Tags["location"], e.Id)
 }
 
 func (e *Entity) CanAttack() bool {
@@ -149,13 +149,12 @@ func (e *Entity) Removed() bool {
 	return false
 }
 
-func (e *Entity) AddEffect(g *Game, effect *Effect) {
-	fmt.Println("Addded and applied effect:", effect)
+func (e *Entity) AddEffect(effect *Effect) {
+	fmt.Println("Addded effect:", effect)
 	e.Effects = append(e.Effects, effect)
-	effect.Apply(g, e)
 }
 
-func (e *Entity) UpdateEffects(g *Game) {
+func (e *Entity) UpdateEffects() {
 	attributes := make(map[string]int)
 	for k, v := range e.proto.Attributes {
 		attributes[k] = v
@@ -163,8 +162,10 @@ func (e *Entity) UpdateEffects(g *Game) {
 
 	e.Attributes = attributes
 
-	for _, effect := range e.Effects {
-		effect.Apply(g, e)
+	for _, eff := range e.Effects {
+		if eff.Expired == false {
+			eff.Applier(eff, e)
+		}
 	}
 }
 

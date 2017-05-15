@@ -7,7 +7,9 @@ type Game struct {
 	CurrentPlayer *Player
 	State         *StateMachine
 	CurrentCard   *Entity
+	GameEntity    *Entity
 	Entities      []*Entity
+	AttrChanges   []*ChangeAttrResponse
 }
 
 func NewGame(players map[string]*Player, currentPlayerId string, entities []*Entity) *Game {
@@ -19,7 +21,9 @@ func NewGame(players map[string]*Player, currentPlayerId string, entities []*Ent
 		players[currentPlayerId], // currently always the player that starts
 		NewStateMachine(),
 		nil,
+		gameEntity,
 		entities,
+		[]*ChangeAttrResponse{},
 	}
 }
 
@@ -59,10 +63,8 @@ func (g *Game) NextPlayer() {
 	g.CurrentPlayer = g.DefendingPlayer()
 }
 
-func (g *Game) AnyPlayerDead() bool {
-	return AnyPlayer(g.Players, func(p *Player) bool {
-		return p.Avatar.Tags["location"] != "board"
-	})
+func (g *Game) Looser() string {
+	return g.GameEntity.Tags["looser"]
 }
 
 func (g *Game) ClearAttackers() {
@@ -99,7 +101,7 @@ func (g *Game) DrawCards(playerId string, num int) {
 	}
 }
 
+// TODO: order by when cards played not implemented
 func OrderCardsByTimePlayed(s []*Entity) []*Entity {
-	fmt.Println("WARN: OrderCardsByTimePlayed not implemented")
 	return s
 }
