@@ -20,13 +20,29 @@ app.factory('gameServer', function($websocket) {
   dataStream.onMessage(function(message) {
     var packet = JSON.parse(message.data)
 
-    if(packet.t != 'FULL_STATE') {
-      console.log('Only support FULL_STATE');
-      return;
+    switch(packet.t) {
+      case 'FULL_STATE':
+        handleFullState(packet.m);
+        break;
+      case 'CHANGE_ATTR':
+        handleChangeAttr(packet.m);
+        break;
+      default:
+        console.log('Unsupported msg type: ' + packet.t);
     }
+  });
 
-    var msg = packet.m;
+  function handleChangeAttr(msg) {
+    console.log(msg);
+    for(var i in data.entities) {
+      if(data.entities[i]['id'] == msg['EntityId']) {
+        console.log('Updated entity attr');
+        data.entities[i]['attributes'][msg['Key']] = msg['Value'];
+      }
+    }
+  }
 
+  function handleFullState(msg) {
     var filterAttackers = function(msg) {
       var attackers = [];
       for(var i in msg.entities) {
@@ -54,7 +70,7 @@ app.factory('gameServer', function($websocket) {
     data.entities = msg.entities
     data.player = msg.players["player"];
     data.enemy = msg.players["ai"];
-  });
+  }
 
   var methods = {
     data: data,
