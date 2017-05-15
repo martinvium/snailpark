@@ -119,6 +119,7 @@ func (g *GameServer) processClientRequest(msg *Message) {
 	}
 
 	g.flushAttrChangeResponseAll()
+	g.flushTagChangeResponseAll()
 
 	if g.game.Looser() != "" {
 		g.game.State.Transition("finished")
@@ -352,6 +353,23 @@ func (g *GameServer) flushAttrChangeResponseAll() {
 	}
 
 	g.game.AttrChanges = []*ChangeAttrResponse{}
+}
+
+func (g *GameServer) flushTagChangeResponseAll() {
+	changes := g.game.TagChanges
+	for _, client := range g.clients {
+		for _, c := range changes {
+			msg := &ResponseMessage{
+				Type:     "CHANGE_ATTR",
+				PlayerId: g.game.Priority().Id,
+				Message:  c, // TODO: anonymize
+			}
+
+			client.SendResponse(msg)
+		}
+	}
+
+	g.game.TagChanges = []*ChangeTagResponse{}
 }
 
 func anonymizeHiddenEntities(s []*Entity, playerId string) []*Entity {

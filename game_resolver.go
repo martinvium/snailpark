@@ -140,7 +140,8 @@ func ResolveUpdatedEffects(g *Game) {
 		for i := 0; i < len(e.Effects); i++ {
 			if e.Effects[i].Expired {
 				e.UpdateEffects()
-				g.AttrChanges = append(g.AttrChanges, newAttrChangesForEffect(e, e.Effects[i])...)
+				appendAttrChangesForEffect(g, e, e.Effects[i])
+				appendTagChangesForEffect(g, e, e.Effects[i])
 				e.Effects = append(e.Effects[:i], e.Effects[i+1:]...)
 				i--
 			}
@@ -153,23 +154,31 @@ func ResolveUpdatedEffects(g *Game) {
 			if eff.Applied == false {
 				eff.Applier(eff, e)
 				eff.Applied = true
-				g.AttrChanges = append(g.AttrChanges, newAttrChangesForEffect(e, eff)...)
+				appendAttrChangesForEffect(g, e, eff)
+				appendTagChangesForEffect(g, e, eff)
 			}
 		}
 	}
 }
 
-func newAttrChangesForEffect(e *Entity, eff *Effect) []*ChangeAttrResponse {
-	changes := []*ChangeAttrResponse{}
+func appendAttrChangesForEffect(g *Game, e *Entity, eff *Effect) {
 	for key, _ := range eff.Attributes {
-		changes = append(changes, &ChangeAttrResponse{
+		g.AttrChanges = append(g.AttrChanges, &ChangeAttrResponse{
 			e.Id,
 			key,
 			e.Attributes[key],
 		})
 	}
+}
 
-	return changes
+func appendTagChangesForEffect(g *Game, e *Entity, eff *Effect) {
+	for key, _ := range eff.Tags {
+		g.TagChanges = append(g.TagChanges, &ChangeTagResponse{
+			e.Id,
+			key,
+			e.Tags[key],
+		})
+	}
 }
 
 func ResolveExpiredTriggers(g *Game, ev *Event) {

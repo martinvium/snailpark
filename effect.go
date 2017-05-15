@@ -52,20 +52,30 @@ func (e *Effect) String() string {
 }
 
 func AttributeEffectApplier(e *Effect, target *Entity) {
-	for k, _ := range e.Attributes {
-		target.ModifyAttribute(k, e.Attributes[k])
+	for k, v := range e.Attributes {
+		target.ModifyAttribute(k, v)
+	}
+}
+
+func TagEffectApplier(e *Effect, target *Entity) {
+	for k, v := range e.Tags {
+		target.Tags[k] = v
 	}
 }
 
 func NewAttrEffect(k string, v int, expires string) *Effect {
-	return NewEffect(AttributeEffectApplier, map[string]int{k: v}, expires)
+	return &Effect{
+		Applier:       AttributeEffectApplier,
+		Attributes:    map[string]int{k: v},
+		ExpireTrigger: expires,
+	}
 }
 
-func NewEffect(applier EffectApplier, attr map[string]int, expires string) *Effect {
+func NewTagEffect(k, v string) *Effect {
 	return &Effect{
-		Applier:       applier,
-		Attributes:    attr,
-		ExpireTrigger: expires,
+		Applier:       TagEffectApplier,
+		Tags:          map[string]string{k: v},
+		ExpireTrigger: NeverExpires,
 	}
 }
 

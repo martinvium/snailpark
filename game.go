@@ -10,6 +10,7 @@ type Game struct {
 	GameEntity    *Entity
 	Entities      []*Entity
 	AttrChanges   []*ChangeAttrResponse
+	TagChanges    []*ChangeTagResponse
 }
 
 func NewGame(players map[string]*Player, currentPlayerId string, entities []*Entity) *Game {
@@ -24,6 +25,7 @@ func NewGame(players map[string]*Player, currentPlayerId string, entities []*Ent
 		gameEntity,
 		entities,
 		[]*ChangeAttrResponse{},
+		[]*ChangeTagResponse{},
 	}
 }
 
