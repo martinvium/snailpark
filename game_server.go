@@ -360,7 +360,7 @@ func (g *GameServer) flushTagChangeResponseAll() {
 	for _, client := range g.clients {
 		for _, c := range changes {
 			msg := &ResponseMessage{
-				Type:     "CHANGE_ATTR",
+				Type:     "CHANGE_TAG",
 				PlayerId: g.game.Priority().Id,
 				Message:  c, // TODO: anonymize
 			}

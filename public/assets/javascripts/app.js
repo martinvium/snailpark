@@ -25,19 +25,22 @@ app.factory('gameServer', function($websocket) {
         handleFullState(packet.m);
         break;
       case 'CHANGE_ATTR':
-        handleChangeAttr(packet.m);
+        handleChangeAttrTag(packet.m, 'attributes');
+        break;
+      case 'CHANGE_TAG':
+        handleChangeAttrTag(packet.m, 'tags');
         break;
       default:
         console.log('Unsupported msg type: ' + packet.t);
     }
   });
 
-  function handleChangeAttr(msg) {
+  function handleChangeAttrTag(msg, type) {
     console.log(msg);
     for(var i in data.entities) {
       if(data.entities[i]['id'] == msg['EntityId']) {
-        console.log('Updated entity attr');
-        data.entities[i]['attributes'][msg['Key']] = msg['Value'];
+        console.log('Updated entity ' + type);
+        data.entities[i][type][msg['Key']] = msg['Value'];
       }
     }
   }
