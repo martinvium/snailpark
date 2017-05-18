@@ -118,14 +118,14 @@ func (g *GameServer) processClientRequest(msg *Message) {
 		return
 	}
 
-	g.flushAttrChangeResponseAll()
-	g.flushTagChangeResponseAll()
-
 	if g.game.Looser() != "" {
 		g.game.State.Transition("finished")
 	}
 
 	g.game.UpdateGameEntity()
+
+	g.flushAttrChangeResponseAll()
+	g.flushTagChangeResponseAll()
 
 	options := FindOptionsForPlayer(g.game, g.game.Priority().Id)
 
