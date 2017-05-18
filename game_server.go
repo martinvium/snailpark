@@ -258,7 +258,7 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 		return
 	}
 
-	blocker.Tags["blockTarget"] = attacker.Id
+	g.game.ChangeEntityTag(blocker, "blockTarget", attacker.Id)
 
 	event := NewTargetEvent(attacker, blocker, "activated")
 	ResolveEvent(g.game, event)
@@ -285,7 +285,7 @@ func (g *GameServer) assignAttacker(msg *Message) {
 	}
 
 	log.Println("Assigned attacker:", msg.Card)
-	card.Tags["attackTarget"] = g.game.DefendingPlayer().Avatar.Id
+	g.game.ChangeEntityTag(card, "attackTarget", g.game.DefendingPlayer().Avatar.Id)
 }
 
 func (g *GameServer) targetAbility(msg *Message) {

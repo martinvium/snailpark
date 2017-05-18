@@ -15,9 +15,9 @@ func ResolveCurrentCard(g *Game, target *Entity) {
 	ResolveEvent(g, event)
 
 	if card.StaysOnBoard() {
-		card.Tags["location"] = "board"
+		g.ChangeEntityTag(card, "location", "board")
 	} else {
-		card.Tags["location"] = "graveyard"
+		g.ChangeEntityTag(card, "location", "graveyard")
 	}
 }
 
@@ -101,7 +101,7 @@ func ResolveEvent(g *Game, event *Event) {
 func ResolveGameWinner(g *Game) {
 	for _, e := range FilterEntityByTag(g.Entities, "type", "avatar") {
 		if e.Attributes["toughness"] <= 0 {
-			g.GameEntity.Tags["looser"] = e.PlayerId
+			g.ChangeEntityTag(g.GameEntity, "looser", e.PlayerId)
 			return
 		}
 	}
@@ -205,7 +205,7 @@ func ResolveRemovedCards(g *Game) []*Event {
 	events := []*Event{}
 	for _, e := range g.Entities {
 		if e.Removed() {
-			e.Tags["location"] = "graveyard"
+			g.ChangeEntityTag(e, "location", "graveyard")
 
 			events = append(events, NewGeneralEvent(e, "enterGraveyard"))
 		}

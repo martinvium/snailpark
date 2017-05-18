@@ -110,7 +110,7 @@ func (g *Game) AllBoardCards() []*Entity {
 func (g *Game) DrawCards(playerId string, num int) {
 	deck := FilterEntityByPlayerAndLocation(g.Entities, playerId, "library")
 	for _, e := range deck[len(deck)-num:] {
-		e.Tags["location"] = "hand"
+		g.ChangeEntityTag(e, "location", "hand")
 	}
 }
 
