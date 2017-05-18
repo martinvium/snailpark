@@ -4,7 +4,7 @@ A collectible card game written in Go and Javascript.
 
 ## Build and run locally
 
-    go build && PORT=8080 ./snailpark
+    go build && PORT=8081 ./snailpark
 
 ## Deploy to Heroku
 
