@@ -338,6 +338,7 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 	}
 }
 
+// TODO: Do not send changes to AI, since we keep direct entity references
 func (g *GameServer) flushAttrChangeResponseAll() {
 	changes := g.game.AttrChanges
 	for _, client := range g.clients {
@@ -355,6 +356,7 @@ func (g *GameServer) flushAttrChangeResponseAll() {
 	g.game.AttrChanges = []*ChangeAttrResponse{}
 }
 
+// TODO: Do not send changes to AI, since we keep direct entity references
 func (g *GameServer) flushTagChangeResponseAll() {
 	changes := g.game.TagChanges
 	for _, client := range g.clients {

@@ -25,7 +25,10 @@ func (a *AI) Send(packet *ResponseMessage) {
 	switch packet.Type {
 	case "FULL_STATE":
 		a.UpdateState(packet)
-		// a.ping()
+	case "CHANGE_ATTR":
+		// Not needed we maintain references to the actual entities
+	case "CHANGE_TAG":
+		// Not needed we maintain references to the actual entities
 	case "OPTIONS":
 		action := a.RespondWithAction(packet)
 		if action != nil {
