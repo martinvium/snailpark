@@ -41,13 +41,24 @@ func (g *Game) SetStateMachineDeps() {
 
 func (g *Game) UpdateGameEntity() {
 	e := FirstEntityByType(g.Entities, "game")
-	e.Tags["state"] = g.State.String()
-	e.Tags["currentPlayerId"] = g.Priority().Id
+
+	g.ChangeEntityTag(e, "state", g.State.String())
+	g.ChangeEntityTag(e, "currentPlayerId", g.Priority().Id)
 	if g.CurrentCard == nil {
-		e.Tags["currentCardId"] = ""
+		g.ChangeEntityTag(e, "currentCardId", "")
 	} else {
-		e.Tags["currentCardId"] = g.CurrentCard.Id
+		g.ChangeEntityTag(e, "currentCardId", g.CurrentCard.Id)
 	}
+}
+
+func (g *Game) ChangeEntityTag(e *Entity, k, v string) {
+	old, ok := e.Tags[k]
+	if ok && old == v {
+		return
+	}
+
+	e.Tags[k] = v
+	g.TagChanges = append(g.TagChanges, &ChangeTagResponse{e.Id, k, v})
 }
 
 func (g *Game) DefendingPlayer() *Player {
