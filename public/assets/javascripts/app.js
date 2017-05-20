@@ -59,11 +59,18 @@ app.factory('gameServer', function($websocket) {
   }
 
   function handleRevealEntity(msg) {
+    var found = false;
     for(var i in data.entities) {
       if(data.entities[i]['id'] == msg['entityId']) {
-        console.log('Revealed entity: ' + msg.entity);
+        console.log('Revealed existing entity: ' + msg.entity);
         data.entities[i] = msg.entity;
+        found = true;
       }
+    }
+
+    if(!found) {
+      console.log('Revealed new entity: ' + msg.entity);
+      data.entities.push(msg.entity);
     }
   }
 
