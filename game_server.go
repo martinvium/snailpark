@@ -124,13 +124,16 @@ func (g *GameServer) processClientRequest(msg *Message) {
 
 	g.game.UpdateGameEntity()
 
+	// Game start no longer unstarted
+	if msg.Action == "start" {
+		g.SendStateResponseAll()
+	}
+
 	g.flushAttrChangeResponseAll()
 	g.flushTagChangeResponseAll()
 
 	options := FindOptionsForPlayer(g.game, g.game.Priority().Id)
 
-	// Only send responses after all gameplay logic is done to avoid race conditions
-	g.SendStateResponseAll()
 	g.sendOptionsResponse(g.game.Priority(), options)
 }
 

@@ -23,12 +23,15 @@ app.factory('gameServer', function($websocket) {
     switch(packet.t) {
       case 'FULL_STATE':
         handleFullState(packet.m);
+        updateState();
         break;
       case 'CHANGE_ATTR':
         handleChangeAttrTag(packet.m, 'attributes');
+        updateState();
         break;
       case 'CHANGE_TAG':
         handleChangeAttrTag(packet.m, 'tags');
+        updateState();
         break;
       default:
         console.log('Unsupported msg type: ' + packet.t);
@@ -46,33 +49,35 @@ app.factory('gameServer', function($websocket) {
   }
 
   function handleFullState(msg) {
-    var filterAttackers = function(msg) {
+    data.entities = msg.entities
+    data.player = msg.players["player"];
+    data.enemy = msg.players["ai"];
+  }
+
+  function updateState() {
+    var filterAttackers = function(entities) {
       var attackers = [];
-      for(var i in msg.entities) {
-        if (msg.entities[i].tags["attackTarget"]) {
-          attackers.push(msg.entities[i]);
+      for(var i in entities) {
+        if (entities[i].tags["attackTarget"]) {
+          attackers.push(entities[i]);
         }
       }
 
       return attackers;
     }
 
-    var findGameEntity = function(msg) {
-      for(var i in msg.entities) {
-        if(msg.entities[i].tags.type == "game") {
-          return msg.entities[i];
+    var findGameEntity = function(entities) {
+      for(var i in entities) {
+        if(entities[i].tags.type == "game") {
+          return entities[i];
         }
       }
     }
 
-    data.game = findGameEntity(msg);
+    data.game = findGameEntity(data.entities);
     data.currentPlayerId = data.game.tags.currentPlayerId;
     data.state = data.game.tags.state;
     data.targeting = ['targeting', 'blockTarget'].indexOf(data.state) !== -1;
-    data.attackers = filterAttackers(msg);
-    data.entities = msg.entities
-    data.player = msg.players["player"];
-    data.enemy = msg.players["ai"];
   }
 
   var methods = {
@@ -114,28 +119,8 @@ app.controller('BoardController', ['$scope', 'gameServer', function ($scope, gam
   $scope.playCard = gameServer.playCard
   $scope.targetCard = gameServer.targetCard
 
-  $scope.$watch('data.entities', function(n) {
-    $scope.entities = {
-      ai: {
-        hand: filterPlayerAndLocation(gameServer.data.entities, 'ai', 'hand'),
-        board: filterPlayerAndLocation(gameServer.data.entities, 'ai', 'board'),
-      },
-      player: {
-        hand: filterPlayerAndLocation(gameServer.data.entities, 'player', 'hand'),
-        board: filterPlayerAndLocation(gameServer.data.entities, 'player', 'board')
-      }
-    }
-  });
-
-  function filterPlayerAndLocation(s, p, l) {
-    var filtered = [];
-    for(var i in s) {
-      if(s[i].playerId == p && s[i].tags['location'] == l) {
-        filtered.push(s[i])
-      }
-    }
-
-    return filtered;
+  $scope.attackersFilter = function(v) {
+    return v.tags['attackTarget'];
   }
 
   $scope.newGame = function() {
@@ -149,22 +134,6 @@ app.controller('BoardController', ['$scope', 'gameServer', function ($scope, gam
 
   gameServer.ping();
 }])
-
-app.directive('cardList', function() {
-  return {
-    scope: {
-      cards: '=',
-      cardDetails: '&',
-      clickCard: '&'
-    },
-    restrict : 'EA',
-    controller: function() {},
-    controllerAs: 'ctrl',
-    transclude: true,
-    bindToController: true,
-    template: '<card ng-repeat="card in ctrl.cards" data-set="card" data-card-details="ctrl.cardDetails({card: card})" click-card="ctrl.clickCard({ id: id })"></card>'
-  }
-});
 
 app.directive('card', function() {
   return {
