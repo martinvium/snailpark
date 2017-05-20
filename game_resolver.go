@@ -14,6 +14,7 @@ func ResolveCurrentCard(g *Game, target *Entity) {
 	event := NewTargetEvent(card, target, "enterPlay")
 	ResolveEvent(g, event)
 
+	g.RevealEntity(card, g.DefendingPlayer().Id)
 	if card.StaysOnBoard() {
 		g.ChangeEntityTag(card, "location", "board")
 	} else {

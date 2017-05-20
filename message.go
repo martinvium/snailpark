@@ -26,9 +26,10 @@ type ChangeTagResponse struct {
 	Value    string
 }
 
-type AddEntityResponse struct {
-	EntityId string
-	Entity   *Entity
+type RevealEntityResponse struct {
+	EntityId string  `json:"entityId"`
+	Entity   *Entity `json:"entity"`
+	PlayerId string  `json:"playerId"`
 }
 
 type CreateGameResponse struct {

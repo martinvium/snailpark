@@ -20,6 +20,8 @@ app.factory('gameServer', function($websocket) {
   dataStream.onMessage(function(message) {
     var packet = JSON.parse(message.data)
 
+    console.log(packet.t, packet.m);
+
     switch(packet.t) {
       case 'FULL_STATE':
         handleFullState(packet.m);
@@ -33,16 +35,18 @@ app.factory('gameServer', function($websocket) {
         handleChangeAttrTag(packet.m, 'tags');
         updateState();
         break;
+      case 'REVEAL_ENTITY':
+        handleRevealEntity(packet.m);
+        updateState();
+        break;
       default:
         console.log('Unsupported msg type: ' + packet.t);
     }
   });
 
   function handleChangeAttrTag(msg, type) {
-    console.log(msg);
     for(var i in data.entities) {
       if(data.entities[i]['id'] == msg['EntityId']) {
-        console.log('Updated entity ' + type);
         data.entities[i][type][msg['Key']] = msg['Value'];
       }
     }
@@ -52,6 +56,15 @@ app.factory('gameServer', function($websocket) {
     data.entities = msg.entities
     data.player = msg.players["player"];
     data.enemy = msg.players["ai"];
+  }
+
+  function handleRevealEntity(msg) {
+    for(var i in data.entities) {
+      if(data.entities[i]['id'] == msg['entityId']) {
+        console.log('Revealed entity: ' + msg.entity);
+        data.entities[i] = msg.entity;
+      }
+    }
   }
 
   function updateState() {

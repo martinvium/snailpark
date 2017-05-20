@@ -29,6 +29,8 @@ func (a *AI) Send(packet *ResponseMessage) {
 		// Not needed we maintain references to the actual entities
 	case "CHANGE_TAG":
 		// Not needed we maintain references to the actual entities
+	case "REVEAL_ENTITY":
+		a.RevealEntity(packet)
 	case "OPTIONS":
 		action := a.RespondWithAction(packet)
 		if action != nil {
@@ -51,6 +53,22 @@ func (a *AI) UpdateState(packet *ResponseMessage) {
 	gameEntity := FirstEntityByType(msg.Entities, "game")
 	a.state = gameEntity.Tags["state"]
 	a.currentCard = EntityById(a.entities, gameEntity.Tags["currentCardId"])
+}
+
+func (a *AI) RevealEntity(packet *ResponseMessage) {
+	fmt.Println("packet", packet.Message)
+	msg, ok := packet.Message.(*RevealEntityResponse)
+	if ok == false {
+		fmt.Println("Unable to cast message to RevealEntityResponse")
+		return
+	}
+
+	for i, e := range a.entities {
+		if e.Id == msg.EntityId {
+			fmt.Println("AI revealed entity:", msg.Entity)
+			a.entities[i] = msg.Entity
+		}
+	}
 }
 
 func (a *AI) RespondWithAction(packet *ResponseMessage) *Message {

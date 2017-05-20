@@ -3,14 +3,15 @@ package main
 import "fmt"
 
 type Game struct {
-	Players       map[string]*Player
-	CurrentPlayer *Player
-	State         *StateMachine
-	CurrentCard   *Entity
-	GameEntity    *Entity
-	Entities      []*Entity
-	AttrChanges   []*ChangeAttrResponse
-	TagChanges    []*ChangeTagResponse
+	Players          map[string]*Player
+	CurrentPlayer    *Player
+	State            *StateMachine
+	CurrentCard      *Entity
+	GameEntity       *Entity
+	Entities         []*Entity
+	AttrChanges      []*ChangeAttrResponse
+	TagChanges       []*ChangeTagResponse
+	RevealedEntities []*RevealEntityResponse
 }
 
 func NewGame(players map[string]*Player, currentPlayerId string, entities []*Entity) *Game {
@@ -26,6 +27,7 @@ func NewGame(players map[string]*Player, currentPlayerId string, entities []*Ent
 		entities,
 		[]*ChangeAttrResponse{},
 		[]*ChangeTagResponse{},
+		[]*RevealEntityResponse{},
 	}
 }
 
@@ -61,19 +63,23 @@ func (g *Game) ChangeEntityTag(e *Entity, k, v string) {
 	g.TagChanges = append(g.TagChanges, &ChangeTagResponse{e.Id, k, v})
 }
 
+func (g *Game) NextPlayer() {
+	g.CurrentPlayer = g.DefendingPlayer()
+}
+
 func (g *Game) DefendingPlayer() *Player {
+	return g.OpposingPlayer(g.CurrentPlayer.Id)
+}
+
+func (g *Game) OpposingPlayer(playerId string) *Player {
 	for _, p := range g.Players {
-		if p.Id != g.CurrentPlayer.Id {
+		if p.Id != playerId {
 			return p
 		}
 	}
 
 	fmt.Println("ERROR: There should always be at least 2 players")
 	return nil
-}
-
-func (g *Game) NextPlayer() {
-	g.CurrentPlayer = g.DefendingPlayer()
 }
 
 func (g *Game) Looser() string {
@@ -110,8 +116,13 @@ func (g *Game) AllBoardCards() []*Entity {
 func (g *Game) DrawCards(playerId string, num int) {
 	deck := FilterEntityByPlayerAndLocation(g.Entities, playerId, "library")
 	for _, e := range deck[len(deck)-num:] {
-		g.ChangeEntityTag(e, "location", "hand")
+		e.Tags["location"] = "hand"
+		g.RevealEntity(e, playerId)
 	}
+}
+
+func (g *Game) RevealEntity(e *Entity, p string) {
+	g.RevealedEntities = append(g.RevealedEntities, &RevealEntityResponse{e.Id, e, p})
 }
 
 // TODO: order by when cards played not implemented

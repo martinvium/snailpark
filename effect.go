@@ -142,7 +142,9 @@ func SummonCreaturesEffectFactory(g *Game, a *Ability, c, target *Entity) {
 	})
 
 	for _, e := range entities {
-		g.ChangeEntityTag(e, "location", "board")
+		e.Tags["location"] = "board"
 		g.Entities = append(g.Entities, e)
+		g.RevealEntity(e, c.PlayerId)
+		g.RevealEntity(e, g.OpposingPlayer(c.PlayerId).Id)
 	}
 }

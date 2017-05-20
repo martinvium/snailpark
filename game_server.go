@@ -129,6 +129,7 @@ func (g *GameServer) processClientRequest(msg *Message) {
 		g.SendStateResponseAll()
 	}
 
+	g.flushRevealedEntityResponses()
 	g.flushAttrChangeResponseAll()
 	g.flushTagChangeResponseAll()
 
@@ -341,6 +342,20 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 	}
 }
 
+func (g *GameServer) flushRevealedEntityResponses() {
+	for _, r := range g.game.RevealedEntities {
+		msg := &ResponseMessage{
+			Type:     "REVEAL_ENTITY",
+			PlayerId: r.PlayerId,
+			Message:  r,
+		}
+
+		g.clients[r.PlayerId].SendResponse(msg)
+	}
+
+	g.game.RevealedEntities = []*RevealEntityResponse{}
+}
+
 // TODO: Do not send changes to AI, since we keep direct entity references
 func (g *GameServer) flushAttrChangeResponseAll() {
 	for _, client := range g.clients {
@@ -377,13 +392,13 @@ func (g *GameServer) flushTagChangeResponseAll() {
 
 func anonymizeHiddenEntities(s []*Entity, playerId string) []*Entity {
 	anonymized := []*Entity{}
-	for _, v := range s {
-		if v.Tags["location"] == "hand" && v.PlayerId != playerId {
-			a := NewEntity(AnonymousEntityProto, "anon", v.PlayerId)
+	for _, e := range s {
+		if e.Tags["location"] == "hand" && e.PlayerId != playerId {
+			a := NewEntity(AnonymousEntityProto, e.Id, e.PlayerId)
 			a.Tags["location"] = "hand"
 			anonymized = append(anonymized, a)
-		} else if v.Tags["location"] == "board" || v.Tags["location"] == "hand" || v.Tags["location"] == "meta" {
-			anonymized = append(anonymized, v)
+		} else if e.Tags["location"] == "board" || e.Tags["location"] == "hand" || e.Tags["location"] == "meta" {
+			anonymized = append(anonymized, e)
 		}
 	}
 
