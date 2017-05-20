@@ -173,7 +173,7 @@ func (g *GameServer) handleStartAction(msg *Message) {
 
 func (g *GameServer) handlePlayCardAction(msg *Message) {
 	if g.game.State.String() != "main" {
-		log.Println("ERROR: Playing card out of main phase:", msg.PlayerId)
+		log.Println("ERROR: Player", msg.PlayerId, "playing card out of main phase:", g.game.State.String())
 		return
 	}
 
@@ -343,9 +343,8 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 
 // TODO: Do not send changes to AI, since we keep direct entity references
 func (g *GameServer) flushAttrChangeResponseAll() {
-	changes := g.game.AttrChanges
 	for _, client := range g.clients {
-		for _, c := range changes {
+		for _, c := range g.game.AttrChanges {
 			msg := &ResponseMessage{
 				Type:     "CHANGE_ATTR",
 				PlayerId: g.game.Priority().Id,
@@ -361,9 +360,8 @@ func (g *GameServer) flushAttrChangeResponseAll() {
 
 // TODO: Do not send changes to AI, since we keep direct entity references
 func (g *GameServer) flushTagChangeResponseAll() {
-	changes := g.game.TagChanges
 	for _, client := range g.clients {
-		for _, c := range changes {
+		for _, c := range g.game.TagChanges {
 			msg := &ResponseMessage{
 				Type:     "CHANGE_TAG",
 				PlayerId: g.game.Priority().Id,
