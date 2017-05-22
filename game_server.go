@@ -232,7 +232,7 @@ func (g *GameServer) assignBlocker(msg *Message) {
 		return
 	}
 
-	if _, ok := card.Tags["blockTarget"]; ok {
+	if card.Tags["blockTarget"] != "" {
 		log.Println("ERROR: Blocker already assigned another target:", card)
 		return
 	}
@@ -251,7 +251,7 @@ func (g *GameServer) assignBlockTarget(msg *Message) {
 		return
 	}
 
-	if _, ok := blocker.Tags["blockTarget"]; ok {
+	if blocker.Tags["blockTarget"] != "" {
 		fmt.Println("ERROR: Already blocked")
 		return
 	}
@@ -283,8 +283,8 @@ func (g *GameServer) assignAttacker(msg *Message) {
 		return
 	}
 
-	if _, ok := card.Tags["attackTarget"]; ok {
-		log.Println("Invalid attacker already used:", card.Id)
+	if card.Tags["attackTarget"] != "" {
+		log.Println("Invalid attacker already used:", card.Id, ",", card.Tags["attackTarget"])
 		return
 	}
 

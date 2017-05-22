@@ -88,11 +88,11 @@ func (g *Game) Looser() string {
 
 func (g *Game) ClearAttackers() {
 	for _, e := range g.Entities {
-		if _, ok := e.Tags["blockTarget"]; ok {
+		if e.Tags["blockTarget"] != "" {
 			g.ChangeEntityTag(e, "blockTarget", "")
 		}
 
-		if _, ok := e.Tags["attackTarget"]; ok {
+		if e.Tags["attackTarget"] != "" {
 			g.ChangeEntityTag(e, "attackTarget", "")
 		}
 	}

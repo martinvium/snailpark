@@ -204,8 +204,8 @@ func ResolveRemovedCards(g *Game) []*Event {
 func UnresolvedAttackers(s []*Entity) []*Entity {
 	blockedAttackers := []string{}
 	for _, e := range s {
-		target, ok := e.Tags["blockTarget"]
-		if ok {
+		target := e.Tags["blockTarget"]
+		if target != "" {
 			blockedAttackers = append(blockedAttackers, target)
 		}
 	}

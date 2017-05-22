@@ -80,7 +80,7 @@ func (s *AIScorer) BestBlocker() *Entity {
 			continue
 		}
 
-		if _, ok := blocker.Tags["blockTarget"]; ok {
+		if blocker.Tags["blockTarget"] != "" {
 			continue
 		}
 
