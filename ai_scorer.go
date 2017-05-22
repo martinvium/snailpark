@@ -173,8 +173,6 @@ func highestScoreWithScore(scores []*Score) *Score {
 		return scores[i].Score > scores[j].Score
 	})
 
-	fmt.Println("Sorted scores:", scores)
-
 	if len(scores) > 0 && scores[0].Score > 0 {
 		return scores[0]
 	} else {
@@ -185,7 +183,6 @@ func highestScoreWithScore(scores []*Score) *Score {
 func (s *AIScorer) scoreTargets(card *Entity, a *Ability, targets []*Entity) []*Score {
 	scores := []*Score{}
 	for _, target := range targets {
-		fmt.Println("Scoring", a, "of", card, "vs", target)
 		score := s.scoreTarget(card, a, target)
 		scores = append(scores, score)
 	}
@@ -196,7 +193,6 @@ func (s *AIScorer) scoreTargets(card *Entity, a *Ability, targets []*Entity) []*
 func (s *AIScorer) scoreTarget(card *Entity, a *Ability, target *Entity) *Score {
 	// ignore invalid targets
 	if !a.ValidTarget(card, target) {
-		fmt.Println("- Target is invalid")
 		return &Score{0, target}
 	}
 
@@ -216,10 +212,8 @@ func (s *AIScorer) scoreTarget(card *Entity, a *Ability, target *Entity) *Score 
 
 func (s *AIScorer) calcPowerRemoved(card *Entity, a *Ability, target *Entity) int {
 	if a.TestApplyRemovesCard(card, target) {
-		fmt.Println("- Removes target", target)
 		return target.Attributes["power"]
 	} else {
-		fmt.Println("- Doesn't remove target")
 		return 0
 	}
 }

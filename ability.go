@@ -38,7 +38,7 @@ func (a *Ability) Apply(g *Game, ctx *TriggerContext) error {
 	case "self":
 		return a.applyToTarget(g, ctx.this, ctx.this)
 	default:
-		return fmt.Errorf("Unsupported Apply target: %v", a.Target)
+		return fmt.Errorf("ERROR: Unsupported Apply target: %v", a.Target)
 	}
 }
 
@@ -57,12 +57,10 @@ func (a *Ability) applyToTarget(g *Game, c, target *Entity) error {
 		return errors.New("applyToTarget failed, target was invalid")
 	}
 
-	fmt.Println("Applying ability to target:", target)
-
 	if f := NewEffectFactory(a.EffectFactory); f != nil {
 		f(g, a, c, target)
 	} else {
-		fmt.Println("Unable to apply ability, could not create effect factory: %v", a.EffectFactory)
+		fmt.Println("ERROR: Unable to apply ability, could not create effect factory: %v", a.EffectFactory)
 	}
 
 	return nil
@@ -81,7 +79,6 @@ func (a *Ability) TestApplyRemovesCard(c, target *Entity) bool {
 
 	// The modifier is negative if e.g. dealing damage
 	result := toughness + a.ModificationAmount(c)
-	fmt.Println("- Checking if card would be removed (", toughness, "+", a.ModificationAmount(c), "=", result, "<= 0)")
 	if result <= 0 {
 		return true
 	}
@@ -101,7 +98,6 @@ func (a *Ability) ValidTrigger(ctx *TriggerContext) bool {
 
 	for _, c := range ctx.ability.TriggerConditions {
 		if c.Valid(ctx.this, ctx.event.origin) == false {
-			fmt.Println("- Condition", c, "failed for trigger", ctx.this, "=>", ctx.event.origin)
 			return false
 		}
 	}
@@ -113,7 +109,6 @@ func (a *Ability) ValidTrigger(ctx *TriggerContext) bool {
 func (a *Ability) ValidTarget(card, target *Entity) bool {
 	for _, c := range a.TargetConditions {
 		if c.Valid(card, target) == false {
-			fmt.Println("- Condition", c, "failed for target", target)
 			return false
 		}
 	}

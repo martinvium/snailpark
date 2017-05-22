@@ -23,7 +23,6 @@ func ResolveCurrentCard(g *Game, target *Entity) {
 }
 
 func ResolveStateTriggers(g *Game, currentPlayerAvatar *Entity, state string) {
-	fmt.Println("Resolving game state trigger for:", state)
 	event := &Event{origin: currentPlayerAvatar, event: state}
 	ResolveEvent(g, event)
 }
@@ -57,29 +56,19 @@ func (t *TriggerContext) String() string {
 }
 
 func ResolveEvent(g *Game, event *Event) {
-	fmt.Println("Resolving event:", event)
-
 	// Must update effects in case there are no triggers that do it for us.
 	ResolveExpiredTriggers(g, event)
 	ResolveUpdatedEffects(g)
 
 	triggers := getTriggersForEvent(g, event)
 
-	fmt.Println("Initial number of triggers:", len(triggers))
-	for _, x := range triggers {
-		fmt.Println("- Initial trigger:", x.ability)
-	}
-
 	if len(triggers) == 0 {
-		fmt.Println("Ending resolve event early, nothing to resolve: ", event.event)
 		return
 	}
 
 	t, triggers := triggers[len(triggers)-1], triggers[:len(triggers)-1]
 
 	for t != nil {
-		fmt.Println("Processing trigger:", t)
-		fmt.Println("Remaining triggers:", len(triggers))
 		if err := t.ability.Apply(g, t); err != nil {
 			fmt.Println("ERROR:", err)
 		}
@@ -116,7 +105,6 @@ func appendTriggersForAllEvents(g *Game, triggers []*TriggerContext, events []*E
 }
 
 func getTriggersForEvent(g *Game, event *Event) []*TriggerContext {
-	fmt.Println("Getting triggers for:", event)
 	triggers := []*TriggerContext{}
 
 	entities := FilterEntities(g.Entities, func(e *Entity) bool {
@@ -183,11 +171,9 @@ func appendTagChangesForEffect(g *Game, e *Entity, eff *Effect) {
 }
 
 func ResolveExpiredTriggers(g *Game, ev *Event) {
-	fmt.Println("Expiring effects for:", ev.event)
 	for _, e := range g.Entities {
 		for _, eff := range e.Effects {
 			if eff.ExpireTrigger == ev.event {
-				fmt.Println("Expired effect from", ev.event, ":", eff)
 				eff.Expired = true
 			}
 		}

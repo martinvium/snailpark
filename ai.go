@@ -43,7 +43,7 @@ func (a *AI) UpdateState(packet *ResponseMessage) {
 	fmt.Println("packet", packet.Message)
 	msg, ok := packet.Message.(*FullStateResponse)
 	if ok == false {
-		fmt.Println("Unable to cast message to FullStateResponse")
+		fmt.Println("ERROR: Unable to cast message to FullStateResponse")
 		return
 	}
 
@@ -59,7 +59,7 @@ func (a *AI) RevealEntity(packet *ResponseMessage) {
 	fmt.Println("packet", packet.Message)
 	msg, ok := packet.Message.(*RevealEntityResponse)
 	if ok == false {
-		fmt.Println("Unable to cast message to RevealEntityResponse")
+		fmt.Println("ERROR: Unable to cast message to RevealEntityResponse")
 		return
 	}
 
@@ -75,7 +75,7 @@ func (a *AI) RespondWithAction(packet *ResponseMessage) *Message {
 	fmt.Println("packet", packet.Message)
 	_, ok := packet.Message.(*OptionsResponse)
 	if ok == false {
-		fmt.Println("Unable to cast message to OptionsResponse")
+		fmt.Println("ERROR: Unable to cast message to OptionsResponse")
 		return nil
 	}
 
