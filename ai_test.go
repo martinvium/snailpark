@@ -31,7 +31,7 @@ func TestAI_RespondWithAction_PlaysCard(t *testing.T) {
 		"Dodgy Fella",
 	})...)
 
-	client.UpdateState(newTestFullStateMessage(game))
+	client.UpdateFullState(newTestFullStateMessage(game))
 	msg := NewOptionsResponse("p1", map[string][]string{})
 	action := client.RespondWithAction(msg)
 	if err := assertResponse(t, game, action, "playCard", "Hungry Goat Herder"); err != nil {
@@ -46,7 +46,7 @@ func TestAI_RespondWithAction_PlaysSpell(t *testing.T) {
 	game.Players["p1"].Avatar.Attributes["energy"] = 3
 	game.Entities = append(game.Entities, newTestCards("p1", "hand", []string{"Awkward conversation"})...)
 
-	client.UpdateState(newTestFullStateMessage(game))
+	client.UpdateFullState(newTestFullStateMessage(game))
 	msg := NewOptionsResponse("p1", map[string][]string{})
 	action := client.RespondWithAction(msg)
 	if err := assertResponse(t, game, action, "playCard", "Awkward conversation"); err != nil {
@@ -61,7 +61,7 @@ func TestAI_RespondWithAction_PlaysHeal(t *testing.T) {
 	game.Players["p1"].Avatar.Attributes["energy"] = 3
 	game.Entities = append(game.Entities, newTestCards("p1", "hand", []string{"Green smelly liquid"})...)
 
-	client.UpdateState(newTestFullStateMessage(game))
+	client.UpdateFullState(newTestFullStateMessage(game))
 	msg := NewOptionsResponse("p1", map[string][]string{})
 	action := client.RespondWithAction(msg)
 	if err := assertResponse(t, game, action, "playCard", "Green smelly liquid"); err != nil {
@@ -77,7 +77,7 @@ func TestAI_RespondWithAction_HealTargetsOwnAvatar(t *testing.T) {
 	game.Entities = append(game.Entities, spell)
 	game.CurrentCard = spell
 
-	client.UpdateState(newTestFullStateMessage(game))
+	client.UpdateFullState(newTestFullStateMessage(game))
 	msg := NewOptionsResponse("p1", map[string][]string{})
 	action := client.RespondWithAction(msg)
 	avatar := game.Players["p1"].Avatar
@@ -96,7 +96,7 @@ func TestAI_RespondWithAction_SpellTargetsCreature(t *testing.T) {
 
 	expected_target := FirstEntityByType(FilterEntityByPlayerAndLocation(game.Entities, "p2", "board"), "creature")
 
-	client.UpdateState(newTestFullStateMessage(game))
+	client.UpdateFullState(newTestFullStateMessage(game))
 	msg := NewOptionsResponse("p1", map[string][]string{})
 	action := client.RespondWithAction(msg)
 	if err := assertResponse(t, game, action, "target", expected_target.Id); err != nil {
@@ -112,7 +112,7 @@ func TestAI_RespondWithAction_SpellTargetsAvatar(t *testing.T) {
 	game.Entities = append(game.Entities, spell)
 	game.CurrentCard = spell
 
-	client.UpdateState(newTestFullStateMessage(game))
+	client.UpdateFullState(newTestFullStateMessage(game))
 	msg := NewOptionsResponse("p1", map[string][]string{})
 	action := client.RespondWithAction(msg)
 	avatar := game.Players["p2"].Avatar
@@ -127,7 +127,7 @@ func TestAI_RespondWithAction_AssignsAttacker(t *testing.T) {
 
 	expected_target := FirstEntityByType(FilterEntityByPlayerAndLocation(game.Entities, "p1", "board"), "creature")
 
-	client.UpdateState(newTestFullStateMessage(game))
+	client.UpdateFullState(newTestFullStateMessage(game))
 	msg := NewOptionsResponse("p1", map[string][]string{})
 	action := client.RespondWithAction(msg)
 	if err := assertResponse(t, game, action, "target", expected_target.Id); err != nil {
@@ -143,7 +143,7 @@ func TestAI_RespondWithAction_EndsTurnAfterAssigningAllAttackers(t *testing.T) {
 	creature := FirstEntityByType(creatures, "creature")
 	creature.Tags["attackTarget"] = game.Players["p1"].Avatar.Id
 
-	client.UpdateState(newTestFullStateMessage(game))
+	client.UpdateFullState(newTestFullStateMessage(game))
 	msg := NewOptionsResponse("p1", map[string][]string{})
 	action := client.RespondWithAction(msg)
 	if action == nil {
@@ -166,7 +166,7 @@ func TestAI_RespondWithAction_AssignsBlocker(t *testing.T) {
 
 	expected_target := FirstEntityByType(FilterEntityByPlayerAndLocation(game.Entities, "p1", "board"), "creature")
 
-	client.UpdateState(newTestFullStateMessage(game))
+	client.UpdateFullState(newTestFullStateMessage(game))
 	msg := NewOptionsResponse("p1", map[string][]string{})
 	action := client.RespondWithAction(msg)
 	if err := assertResponse(t, game, action, "target", expected_target.Id); err != nil {
@@ -185,7 +185,7 @@ func TestAI_RespondWithAction_AssignsBlockTarget(t *testing.T) {
 	game.Entities = append(game.Entities, blocker)
 	game.CurrentCard = blocker
 
-	client.UpdateState(newTestFullStateMessage(game))
+	client.UpdateFullState(newTestFullStateMessage(game))
 	msg := NewOptionsResponse("p1", map[string][]string{})
 	action := client.RespondWithAction(msg)
 	if err := assertResponse(t, game, action, "target", attacker.Id); err != nil {
@@ -201,7 +201,7 @@ func TestAI_RespondWithAction_EndsTurnWhenNoBlockers(t *testing.T) {
 	game.Entities = append(game.Entities, attacker)
 	game.State.Transition("blockers")
 
-	client.UpdateState(newTestFullStateMessage(game))
+	client.UpdateFullState(newTestFullStateMessage(game))
 	msg := NewOptionsResponse("p1", map[string][]string{})
 	action := client.RespondWithAction(msg)
 	if action == nil {

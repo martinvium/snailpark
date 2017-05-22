@@ -24,11 +24,13 @@ func NewAI(playerId string) *AI {
 func (a *AI) Send(packet *ResponseMessage) {
 	switch packet.Type {
 	case "FULL_STATE":
-		a.UpdateState(packet)
+		a.UpdateFullState(packet)
 	case "CHANGE_ATTR":
 		// Not needed we maintain references to the actual entities
+		a.UpdateState()
 	case "CHANGE_TAG":
 		// Not needed we maintain references to the actual entities
+		a.UpdateState()
 	case "REVEAL_ENTITY":
 		a.RevealEntity(packet)
 	case "OPTIONS":
@@ -39,7 +41,7 @@ func (a *AI) Send(packet *ResponseMessage) {
 	}
 }
 
-func (a *AI) UpdateState(packet *ResponseMessage) {
+func (a *AI) UpdateFullState(packet *ResponseMessage) {
 	fmt.Println("packet", packet.Message)
 	msg, ok := packet.Message.(*FullStateResponse)
 	if ok == false {
@@ -50,7 +52,11 @@ func (a *AI) UpdateState(packet *ResponseMessage) {
 	a.entities = msg.Entities
 	a.players = msg.Players
 
-	gameEntity := FirstEntityByType(msg.Entities, "game")
+	a.UpdateState()
+}
+
+func (a *AI) UpdateState() {
+	gameEntity := FirstEntityByType(a.entities, "game")
 	a.state = gameEntity.Tags["state"]
 	a.currentCard = EntityById(a.entities, gameEntity.Tags["currentCardId"])
 }
@@ -63,11 +69,18 @@ func (a *AI) RevealEntity(packet *ResponseMessage) {
 		return
 	}
 
+	found := false
 	for i, e := range a.entities {
 		if e.Id == msg.EntityId {
-			fmt.Println("AI revealed entity:", msg.Entity)
+			fmt.Println("AI revealed existing entity:", msg.Entity)
 			a.entities[i] = msg.Entity
+			found = true
 		}
+	}
+
+	if !found {
+		fmt.Println("AI revealed new entity:", msg.Entity)
+		a.entities = append(a.entities, msg.Entity)
 	}
 }
 
@@ -155,7 +168,6 @@ func (a *AI) ping() {
 }
 
 func (a *AI) firstAvailableAttacker(board []*Entity) *Entity {
-	fmt.Println("board:", board)
 	for _, e := range board {
 		if e.Tags["attackTarget"] == "" && e.CanAttack() {
 			return e
