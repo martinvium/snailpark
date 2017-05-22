@@ -9,11 +9,6 @@ import (
 
 const channelBufSize = 100
 
-type MessageSender interface {
-	SendStateResponseAll()
-	SendOptionsResponse()
-}
-
 type GameServer struct {
 	clients   map[string]Client
 	doneCh    chan bool
@@ -52,13 +47,9 @@ func NewGameServer() *GameServer {
 		game,
 	}
 
-	gs.SetStateMachineDeps()
+	gs.game.SetStateMachineDeps()
 
 	return gs
-}
-
-func (g *GameServer) SetStateMachineDeps() {
-	g.game.SetStateMachineDeps(g)
 }
 
 func (g *GameServer) SetClient(c *SocketClient) {
@@ -103,10 +94,13 @@ func (g *GameServer) ListenAndConsumeClientRequests() {
 }
 
 func (g *GameServer) processClientRequest(msg *Message) {
+	if msg.Action == "ping" {
+		// do nothing
+		return
+	}
+
 	if msg.Action == "start" {
 		g.handleStartAction(msg)
-	} else if msg.Action == "ping" {
-		// do nothing
 	} else if msg.Action == "playCard" {
 		g.handlePlayCardAction(msg)
 	} else if msg.Action == "endTurn" {
@@ -114,31 +108,56 @@ func (g *GameServer) processClientRequest(msg *Message) {
 	} else if msg.Action == "target" {
 		g.handleTarget(msg)
 	} else {
-		log.Println("No handler for client action!")
+		log.Println("ERROR: No handler for client action!")
+		return
 	}
+
+	// kind of awkward, because we go from unstarted to main when the second player
+	// sends the start ping
+	if g.game.State.String() == "unstarted" {
+		return
+	}
+
+	if g.game.Looser() != "" {
+		g.game.State.Transition("finished")
+	}
+
+	g.game.UpdateGameEntity()
+
+	// Game start no longer unstarted
+	if msg.Action == "start" {
+		g.SendStateResponseAll()
+	}
+
+	g.flushRevealedEntityResponses()
+	g.flushAttrChangeResponseAll()
+	g.flushTagChangeResponseAll()
+
+	options := FindOptionsForPlayer(g.game, g.game.Priority().Id)
+
+	g.sendOptionsResponse(g.game.Priority(), options)
+}
+
+func (g *GameServer) sendOptionsResponse(p *Player, options map[string][]string) {
+	g.clients[p.Id].SendResponse(NewOptionsResponse(p.Id, options))
 }
 
 func (g *GameServer) SendStateResponseAll() {
 	for _, client := range g.clients {
-		g.sendBoardStateToClient(client, []string{})
+		msg := NewResponseMessage(
+			g.game.Priority().Id,
+			g.game.Players,
+			anonymizeHiddenEntities(g.game.Entities, client.PlayerId()),
+		)
+
+		client.SendResponse(msg)
 	}
-}
-
-func (g *GameServer) SendOptionsResponse() {
-	cards := FilterEntities(g.game.AllBoardCards(), func(target *Entity) bool {
-		return g.validTargetForCurrentCard(target)
-	})
-
-	options := MapEntityIds(cards)
-	log.Println("Options:", options)
-	g.sendBoardStateToClient(g.clients[g.game.CurrentPlayer.Id], options)
 }
 
 // private
 
 func (g *GameServer) handleStartAction(msg *Message) {
 	if g.game.State.String() != "unstarted" {
-		g.SendStateResponseAll()
 		return
 	}
 
@@ -155,7 +174,7 @@ func (g *GameServer) handleStartAction(msg *Message) {
 
 func (g *GameServer) handlePlayCardAction(msg *Message) {
 	if g.game.State.String() != "main" {
-		log.Println("ERROR: Playing card out of main phase:", msg.PlayerId)
+		log.Println("ERROR: Player", msg.PlayerId, "playing card out of main phase:", g.game.State.String())
 		return
 	}
 
@@ -181,12 +200,14 @@ func (g *GameServer) handlePlayCardAction(msg *Message) {
 	if requireTarget {
 		g.game.State.Transition("targeting")
 	} else {
+		fmt.Println("Playing card ", g.game.CurrentCard, "for cost", g.game.CurrentCard.Attributes["cost"])
 		ResolveCurrentCard(g.game, nil)
 		g.game.State.Transition("main")
 	}
 }
 
 func (g *GameServer) handleTarget(msg *Message) {
+	fmt.Println("Current state:", g.game.State.String())
 	if g.game.Priority().Id != msg.PlayerId {
 		log.Println("ERROR: Client calling action", msg.Action, "out of priority:", msg.PlayerId)
 		return
@@ -194,8 +215,6 @@ func (g *GameServer) handleTarget(msg *Message) {
 
 	switch g.game.State.String() {
 	case "main":
-		fallthrough
-	case "attackers":
 		g.assignAttacker(msg)
 	case "targeting":
 		g.targetAbility(msg)
@@ -213,34 +232,40 @@ func (g *GameServer) assignBlocker(msg *Message) {
 		return
 	}
 
-	if AnyAssignedBlockerWithId(g.game.Engagements, card.Id) == false {
-		log.Println("Current blocker:", msg.Card)
-		g.game.CurrentCard = card
-		g.game.State.Transition("blockTarget")
-	} else {
+	if card.Tags["blockTarget"] != "" {
 		log.Println("ERROR: Blocker already assigned another target:", card)
+		return
 	}
+
+	log.Println("Current blocker:", msg.Card)
+	g.game.CurrentCard = card
+	g.game.State.Transition("blockTarget")
 }
 
 func (g *GameServer) assignBlockTarget(msg *Message) {
-	card := EntityById(g.game.Entities, msg.Card)
-	if card == nil {
+	attacker := EntityById(g.game.Entities, msg.Card)
+	blocker := g.game.CurrentCard
+
+	if attacker == nil {
 		log.Println("ERROR: Invalid blocker target:", msg.Card)
 		return
 	}
 
-	log.Println("Assigned blocker target:", card)
-
-	for _, e := range g.game.Engagements {
-		if e.Attacker == card {
-			e.Blocker = g.game.CurrentCard
-
-			a := ActivatedAbility(e.Attacker.Abilities)
-			if err := a.Apply(g.game, e.Attacker, g.game.CurrentCard); err != nil {
-				fmt.Println("ERROR:", err)
-			}
-		}
+	if blocker.Tags["blockTarget"] != "" {
+		fmt.Println("ERROR: Already blocked")
+		return
 	}
+
+	log.Println("Assigned blocker target:", attacker)
+
+	if _, ok := attacker.Tags["attackTarget"]; !ok {
+		return
+	}
+
+	g.game.ChangeEntityTag(blocker, "blockTarget", attacker.Id)
+
+	event := NewTargetEvent(attacker, blocker, "activated")
+	ResolveEvent(g.game, event)
 
 	g.game.CurrentCard = nil
 	g.game.State.Transition("blockers")
@@ -258,14 +283,13 @@ func (g *GameServer) assignAttacker(msg *Message) {
 		return
 	}
 
-	if AnyAssignedAttackerWithId(g.game.Engagements, card.Id) == false {
-		log.Println("Assigned attacker:", msg.Card)
-		card.Tags["attackTarget"] = g.game.DefendingPlayer().Avatar.Id
-		g.game.Engagements = append(g.game.Engagements, NewEngagement(card, g.game.DefendingPlayer().Avatar))
-		g.game.State.Transition("attackers")
-	} else {
-		log.Println("Invalid attacker already used:", card.Id)
+	if card.Tags["attackTarget"] != "" {
+		log.Println("Invalid attacker already used:", card.Id, ",", card.Tags["attackTarget"])
+		return
 	}
+
+	log.Println("Assigned attacker:", msg.Card)
+	g.game.ChangeEntityTag(card, "attackTarget", g.game.DefendingPlayer().Avatar.Id)
 }
 
 func (g *GameServer) targetAbility(msg *Message) {
@@ -284,6 +308,7 @@ func (g *GameServer) targetAbility(msg *Message) {
 	}
 
 	ResolveCurrentCard(g.game, target)
+
 	g.game.State.Transition("main")
 }
 
@@ -317,29 +342,63 @@ func (g *GameServer) handleEndTurn(msg *Message) {
 	}
 }
 
-func (g *GameServer) sendBoardStateToClient(client Client, options []string) {
-	msg := NewResponseMessage(
-		g.game.State.String(),
-		g.game.Priority().Id,
-		g.game.Players,
-		options,
-		g.game.Engagements,
-		g.game.CurrentCard,
-		anonymizeHiddenEntities(g.game.Entities, client.PlayerId()),
-	)
+func (g *GameServer) flushRevealedEntityResponses() {
+	for _, r := range g.game.RevealedEntities {
+		msg := &ResponseMessage{
+			Type:     "REVEAL_ENTITY",
+			PlayerId: r.PlayerId,
+			Message:  r,
+		}
 
-	client.SendResponse(msg)
+		g.clients[r.PlayerId].SendResponse(msg)
+	}
+
+	g.game.RevealedEntities = []*RevealEntityResponse{}
+}
+
+// TODO: Do not send changes to AI, since we keep direct entity references
+func (g *GameServer) flushAttrChangeResponseAll() {
+	for _, client := range g.clients {
+		for _, c := range g.game.AttrChanges {
+			msg := &ResponseMessage{
+				Type:     "CHANGE_ATTR",
+				PlayerId: g.game.Priority().Id,
+				Message:  c, // TODO: anonymize
+			}
+
+			client.SendResponse(msg)
+		}
+	}
+
+	g.game.AttrChanges = []*ChangeAttrResponse{}
+}
+
+// TODO: Do not send changes to AI, since we keep direct entity references
+func (g *GameServer) flushTagChangeResponseAll() {
+	for _, client := range g.clients {
+		for _, c := range g.game.TagChanges {
+			msg := &ResponseMessage{
+				Type:     "CHANGE_TAG",
+				PlayerId: g.game.Priority().Id,
+				Message:  c, // TODO: anonymize
+			}
+
+			client.SendResponse(msg)
+		}
+	}
+
+	g.game.TagChanges = []*ChangeTagResponse{}
 }
 
 func anonymizeHiddenEntities(s []*Entity, playerId string) []*Entity {
 	anonymized := []*Entity{}
-	for _, v := range s {
-		if v.Location == "hand" && v.PlayerId != playerId {
-			a := NewEntity(AnonymousEntityProto, "anon", v.PlayerId)
-			a.Location = "hand"
+	for _, e := range s {
+		if e.Tags["location"] == "hand" && e.PlayerId != playerId {
+			a := NewEntity(AnonymousEntityProto, e.Id, e.PlayerId)
+			a.Tags["location"] = "hand"
 			anonymized = append(anonymized, a)
-		} else if v.Location == "board" || v.Location == "hand" {
-			anonymized = append(anonymized, v)
+		} else if e.Tags["location"] == "board" || e.Tags["location"] == "hand" || e.Tags["location"] == "meta" {
+			anonymized = append(anonymized, e)
 		}
 	}
 
@@ -347,11 +406,11 @@ func anonymizeHiddenEntities(s []*Entity, playerId string) []*Entity {
 }
 
 func CanPlayCard(p *Player, e *Entity) bool {
-	if p.CurrentMana < e.Attributes["cost"] {
-		log.Println("ERROR: Client trying to use card without enough mana", p.CurrentMana, ":", e.Attributes["cost"])
+	energy := p.Avatar.Attributes["energy"]
+	if energy < e.Attributes["cost"] {
+		log.Println("ERROR: Not enough energy:", energy, ":", e.Attributes["cost"])
 		return false
 	}
 
-	log.Println("Approved casting card because mana is good", p.CurrentMana, ":", e.Attributes["cost"])
 	return true
 }

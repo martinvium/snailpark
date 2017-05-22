@@ -3,32 +3,26 @@ package main
 import "log"
 
 type StateMachine struct {
-	game      *Game
-	msgSender MessageSender
-	state     string
+	game  *Game
+	state string
 }
 
 var transitions = map[string][]string{
 	"unstarted":   []string{"mulligan"},
 	"mulligan":    []string{"upkeep"},
 	"upkeep":      []string{"main"},
-	"main":        []string{"attackers", "playingCard", "blockers"},
+	"main":        []string{"playingCard", "blockers"},
 	"playingCard": []string{"targeting", "main"},
 	"targeting":   []string{"main"},
-	"attackers":   []string{"blockers", "attackers"},
 	"blockers":    []string{"combat", "blockers", "blockTarget"},
 	"blockTarget": []string{"blockers"},
-	"combat":      []string{"end", "finished"},
-	"end":         []string{"upkeep"},
+	"combat":      []string{"endTurn", "finished"},
+	"endTurn":     []string{"upkeep"},
 	"finished":    []string{},
 }
 
 func NewStateMachine() *StateMachine {
-	return &StateMachine{nil, nil, "unstarted"}
-}
-
-func (s *StateMachine) SetMessageSender(msgSender MessageSender) {
-	s.msgSender = msgSender
+	return &StateMachine{nil, "unstarted"}
 }
 
 func (s *StateMachine) SetGame(g *Game) {
@@ -79,10 +73,8 @@ func (s *StateMachine) transitionCallback() {
 		s.toBlockers()
 	case "combat":
 		s.toCombat()
-	case "end":
-		s.toEnd()
-	default:
-		s.msgSender.SendStateResponseAll()
+	case "endTurn":
+		s.toEndTurn()
 	}
 }
 
@@ -96,49 +88,40 @@ func (s *StateMachine) toMulligan() {
 
 func (s *StateMachine) toUpkeep() {
 	s.game.DrawCards(s.game.CurrentPlayer.Id, 1)
-	s.game.CurrentPlayer.AddMaxMana(1)
-	s.game.CurrentPlayer.ResetCurrentMana()
+	ResolveStateTriggers(s.game, s.game.CurrentPlayer.Avatar, s.state)
 	s.game.ClearAttackers()
 	s.Transition("main")
 }
 
 func (s *StateMachine) toMain() {
-	s.msgSender.SendStateResponseAll()
 }
 
 func (s *StateMachine) toTargeting() {
-	s.msgSender.SendOptionsResponse()
 }
 
 func (s *StateMachine) toBlockers() {
-	if s.game.AnyEngagements() == false {
+	any_attackers := AnyEntity(s.game.Entities, func(e *Entity) bool {
+		return e.Tags["attackTarget"] != ""
+	})
+
+	if any_attackers == false {
 		s.Transition("combat")
-	} else {
-		s.msgSender.SendStateResponseAll()
 	}
 }
 
 func (s *StateMachine) toAttackers() {
-	s.msgSender.SendOptionsResponse()
 }
 
 func (s *StateMachine) toCombat() {
-	ResolveEngagement(s.game, s.game.Engagements)
-	ResolveRemovedCards(s.game)
-
-	if s.game.AnyPlayerDead() {
-		s.Transition("finished")
-	} else {
-		s.Transition("end")
-	}
+	ResolveEngagement(s.game)
+	s.Transition("endTurn")
 }
 
-func (s *StateMachine) toEnd() {
-	InvokeTrigger(s.game, nil, nil, "endTurn")
+func (s *StateMachine) toEndTurn() {
+	ResolveStateTriggers(s.game, s.game.CurrentPlayer.Avatar, s.state)
 	s.game.NextPlayer()
 	s.Transition("upkeep")
 }
 
 func (s *StateMachine) toFinished() {
-	s.msgSender.SendStateResponseAll()
 }

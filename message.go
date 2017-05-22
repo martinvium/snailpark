@@ -26,9 +26,10 @@ type ChangeTagResponse struct {
 	Value    string
 }
 
-type AddEntityResponse struct {
-	EntityId string
-	Entity   *Entity
+type RevealEntityResponse struct {
+	EntityId string  `json:"entityId"`
+	Entity   *Entity `json:"entity"`
+	PlayerId string  `json:"playerId"`
 }
 
 type CreateGameResponse struct {
@@ -38,38 +39,38 @@ type CreateGameResponse struct {
 }
 
 type OptionsResponse struct {
-	Options map[string]string
+	Mode    string // normal, targeting
+	Options map[string][]string
 }
 
 type FullStateResponse struct {
-	State           string                     `json:"state"`
-	CurrentPlayerId string                     `json:"currentPlayerId"`
-	Players         map[string]*ResponsePlayer `json:"players"`
-	Options         []string                   `json:"options"`
-	Engagements     []*Engagement              `json:"engagements"`
-	CurrentCard     *Entity                    `json:"currentCard"`
-	Entities        []*Entity                  `json:"entities"`
+	Players  map[string]*ResponsePlayer `json:"players"`
+	Entities []*Entity                  `json:"entities"`
 }
 
 type ResponsePlayer struct {
-	Id          string  `json:"id"`
-	CurrentMana int     `json:"currentMana"`
-	MaxMana     int     `json:"maxMana"`
-	Avatar      *Entity `json:"avatar"`
+	Id     string  `json:"id"`
+	Avatar *Entity `json:"avatar"`
 }
 
-func NewResponseMessage(state string, playerId string, players map[string]*Player, options []string, engagements []*Engagement, currentCard *Entity, entities []*Entity) *ResponseMessage {
+func NewOptionsResponse(playerId string, options map[string][]string) *ResponseMessage {
+	return &ResponseMessage{
+		Type:     "OPTIONS",
+		PlayerId: playerId,
+		Message: &OptionsResponse{
+			Mode:    "normal",
+			Options: options,
+		},
+	}
+}
+
+func NewResponseMessage(playerId string, players map[string]*Player, entities []*Entity) *ResponseMessage {
 	responsePlayers := newResponsePlayers(players)
 	return &ResponseMessage{
 		Type:     "FULL_STATE",
 		PlayerId: playerId,
 		Message: &FullStateResponse{
-			state,
-			playerId,
 			responsePlayers,
-			options,
-			engagements,
-			currentCard,
 			entities,
 		},
 	}
@@ -88,8 +89,6 @@ func newResponsePlayers(players map[string]*Player) map[string]*ResponsePlayer {
 	for key, player := range players {
 		responsePlayers[key] = &ResponsePlayer{
 			player.Id,
-			player.CurrentMana,
-			player.MaxMana,
 			player.Avatar,
 		}
 	}

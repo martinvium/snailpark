@@ -1,6 +1,8 @@
 creature_attack: &creature_attack
   trigger: activated
-  trigger_conditions: []
+  trigger_conditions:
+  - attribute: origin
+    any_of: [self]
   target: target
   target_conditions:
     - attribute: type
@@ -15,6 +17,16 @@ creature_attack: &creature_attack
   behaviour: modifyBoth
 
 cards:
+  game:
+    tags:
+      title: "Game"
+      type: game
+      state: "unstarted"
+      currentPlayerId: ""
+      currentCardId: ""
+      winningPlayerId: ""
+    attributes:
+      remainingTime: 30
   the_bald_one:
     tags:
       color: gold
@@ -22,8 +34,25 @@ cards:
       type: avatar
       description: "When this card dies, the opponent player wins!"
     attributes:
-      # power: 0
       toughness: 30
+      energy: 0
+      maxEnergy: 0
+    abilities:
+      - trigger: upkeep
+        trigger_conditions:
+          - attribute: player
+            any_of: [me]
+        target: self
+        attribute: energy
+        mod_factor: 1
+        mod_attr: maxEnergy
+        behaviour: modifyTargetUntilEndOfTurn
+      - trigger: upkeep
+        trigger_conditions:
+          - attribute: player
+            any_of: [me]
+        target: self
+        behaviour: addMaxEnergy
   dodgy_fella:
     tags:
       color: white
@@ -96,12 +125,14 @@ cards:
       toughness: 2
     abilities:
       - <<: *creature_attack
-      - trigger: cardPlayed
+      - trigger: enterPlay
         trigger_conditions:
           - attribute: type
             any_of: [creature]
           - attribute: player
             any_of: [me]
+          - attribute: origin
+            any_of: [other]
         target: self
         target_conditions: []
         attribute: power
@@ -121,7 +152,9 @@ cards:
     abilities:
       - <<: *creature_attack
       - trigger: enterPlay
-        trigger_conditions: []
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: self
         target_conditions: []
         attribute: not_used
@@ -139,6 +172,9 @@ cards:
       power: 5
     abilities:
       - trigger: enterPlay
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: target
         target_conditions:
         - attribute: type
@@ -162,6 +198,9 @@ cards:
       power: 3
     abilities:
       - trigger: enterPlay
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: target
         target_conditions:
         - attribute: type
@@ -185,6 +224,9 @@ cards:
       power: 5
     abilities:
       - trigger: enterPlay
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: target
         target_conditions:
         - attribute: type
@@ -203,12 +245,14 @@ cards:
       title: "Creatine powder"
       type: spell
       description: "Increase creatures power by 3 until end of turn"
-      effectExpireTrigger: endTurn
     attributes:
       cost: 2
       power: 3
     abilities:
       - trigger: enterPlay
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: target
         target_conditions:
         - attribute: type
@@ -220,19 +264,21 @@ cards:
         attribute: power
         mod_factor: 1
         mod_attr: power
-        behaviour: modifyTarget
+        behaviour: modifyTargetUntilEndOfTurn
   make_lemonade:
     tags:
       color: white
       title: "Make lemonade"
       type: spell
       description: "Add 2 power to all creatures on your board until end of turn."
-      effectExpireTrigger: endTurn
     attributes:
       cost: 2
       power: 2
     abilities:
       - trigger: enterPlay
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: all
         target_conditions:
         - attribute: type
@@ -244,7 +290,7 @@ cards:
         attribute: power
         mod_factor: 1
         mod_attr: power
-        behaviour: modifyTarget
+        behaviour: modifyTargetUntilEndOfTurn
   more_draw:
     tags:
       color: white
@@ -256,6 +302,9 @@ cards:
       power: 2
     abilities:
       - trigger: enterPlay
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: all
         target_conditions:
         - attribute: type
@@ -273,12 +322,15 @@ cards:
       color: white
       title: "Ramp"
       type: spell
-      description: "Permanently add 2 mana to your mana pool"
+      description: "Permanently add 2 to your energy pool"
     attributes:
       cost: 2
       power: 2
     abilities:
       - trigger: enterPlay
+        trigger_conditions:
+        - attribute: origin
+          any_of: [self]
         target: all
         target_conditions:
         - attribute: type
@@ -290,4 +342,4 @@ cards:
         attribute: not_used
         mod_factor: 1
         mod_attr: power
-        behaviour: addMana
+        behaviour: addEnergy

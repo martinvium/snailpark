@@ -4,6 +4,20 @@ import (
 	"testing"
 )
 
+func TestEntityProto_EnergyManagement(t *testing.T) {
+	g := NewTestGame()
+	g.State.UnsafeForceTransition("upkeep")
+	a := PlayerAvatar(g.Entities, "p1")
+
+	if a.Attributes["maxEnergy"] != 1 {
+		t.Errorf("Max energy ability not executed at upkeep")
+	}
+
+	if a.Attributes["energy"] != 1 {
+		t.Errorf("energy ability not executed at upkeep, or wrong order")
+	}
+}
+
 func TestEntityProto_BuffSelf(t *testing.T) {
 	game := NewTestGame()
 
@@ -36,7 +50,11 @@ func TestEntityProto_BuffSelf(t *testing.T) {
 
 func TestEntityProto_SummonCreature(t *testing.T) {
 	game := NewTestGame()
-	game.CurrentCard = NewTestEntity("School Bully", "p1")
+
+	creature := NewTestEntity("School Bully", "p1")
+	game.CurrentCard = creature
+	game.Entities = append(game.Entities, creature)
+
 	ResolveCurrentCard(game, nil)
 
 	tokens := FilterEntityByTitle(game.AllBoardCards(), "Dodgy Fella")
@@ -70,7 +88,9 @@ func TestEntityProto_SummonCreatureDoesntRetrigger(t *testing.T) {
 
 func TestEntityProto_AvatarSpellLeavesBoard(t *testing.T) {
 	game := NewTestGame()
-	game.CurrentCard = NewTestEntity("Goo-to-the-face", "p1")
+	spell := NewTestEntity("Goo-to-the-face", "p1")
+	game.Entities = append(game.Entities, spell)
+	game.CurrentCard = spell
 	ResolveCurrentCard(game, game.Players["p2"].Avatar)
 
 	if game.Players["p2"].Avatar.Attributes["toughness"] != 25 {
@@ -82,7 +102,7 @@ func TestEntityProto_AvatarSpellLeavesBoard(t *testing.T) {
 	}
 }
 
-func TestEntityProto_SpellTargetTwice(t *testing.T) {
+func TestEntityProto_SpellTargetTwiceExpires(t *testing.T) {
 	game := NewTestGame()
 
 	creature := NewTestEntityOnBoard("Dodgy Fella", "p1")
@@ -110,7 +130,7 @@ func TestEntityProto_SpellTargetTwice(t *testing.T) {
 		t.Errorf("Wrong power for dude: %v", creature.Attributes["power"])
 	}
 
-	game.State.UnsafeForceTransition("end")
+	game.State.UnsafeForceTransition("endTurn")
 
 	if creature.Attributes["power"] != 1 {
 		t.Errorf("Wrong power for dude: %v", creature.Attributes["power"])

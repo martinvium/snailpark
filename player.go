@@ -1,22 +1,18 @@
 package main
 
 type Player struct {
-	Ready       bool
-	Id          string
-	CurrentMana int
-	MaxMana     int
-	Avatar      *Entity
+	Ready  bool
+	Id     string
+	Avatar *Entity
 }
 
 func NewPlayer(id string, deck []*Entity) *Player {
 	avatar := FirstEntityByType(deck, "avatar")
-	avatar.Location = "board"
+	avatar.Tags["location"] = "board"
 
 	return &Player{
 		false,
 		id,
-		0,
-		0,
 		avatar,
 	}
 }
@@ -57,13 +53,5 @@ func AnyPlayer(vs map[string]*Player, f func(*Player) bool) bool {
 }
 
 func (p *Player) PayCardCost(c *Entity) {
-	p.CurrentMana -= c.Attributes["cost"]
-}
-
-func (p *Player) AddMaxMana(num int) {
-	p.MaxMana += num
-}
-
-func (p *Player) ResetCurrentMana() {
-	p.CurrentMana = p.MaxMana
+	p.Avatar.Attributes["energy"] -= c.Attributes["cost"]
 }

@@ -3,58 +3,98 @@ package main
 import "fmt"
 
 type Game struct {
-	Players       map[string]*Player
-	CurrentPlayer *Player
-	State         *StateMachine
-	Engagements   []*Engagement
-	CurrentCard   *Entity
-	Entities      []*Entity
+	Players          map[string]*Player
+	CurrentPlayer    *Player
+	State            *StateMachine
+	CurrentCard      *Entity
+	GameEntity       *Entity
+	Entities         []*Entity
+	AttrChanges      []*ChangeAttrResponse
+	TagChanges       []*ChangeTagResponse
+	RevealedEntities []*RevealEntityResponse
 }
 
 func NewGame(players map[string]*Player, currentPlayerId string, entities []*Entity) *Game {
+	gameEntity := NewGameEntity("unstarted", currentPlayerId)
+	entities = append(entities, gameEntity)
+
 	return &Game{
 		players,
 		players[currentPlayerId], // currently always the player that starts
 		NewStateMachine(),
-		[]*Engagement{},
 		nil,
+		gameEntity,
 		entities,
+		[]*ChangeAttrResponse{},
+		[]*ChangeTagResponse{},
+		[]*RevealEntityResponse{},
 	}
 }
 
-func (g *Game) SetStateMachineDeps(msgSender MessageSender) {
+func NewGameEntity(state, currentPlayerId string) *Entity {
+	e := NewEntityByTitle(StandardRepo(), "none", "Game")
+	e.Tags["location"] = "meta"
+	return e
+}
+
+func (g *Game) SetStateMachineDeps() {
 	g.State.SetGame(g)
-	g.State.SetMessageSender(msgSender)
+}
+
+func (g *Game) UpdateGameEntity() {
+	e := FirstEntityByType(g.Entities, "game")
+
+	g.ChangeEntityTag(e, "state", g.State.String())
+	g.ChangeEntityTag(e, "currentPlayerId", g.Priority().Id)
+	if g.CurrentCard == nil {
+		g.ChangeEntityTag(e, "currentCardId", "")
+	} else {
+		g.ChangeEntityTag(e, "currentCardId", g.CurrentCard.Id)
+	}
+}
+
+func (g *Game) ChangeEntityTag(e *Entity, k, v string) {
+	old, ok := e.Tags[k]
+	if ok && old == v {
+		return
+	}
+
+	e.Tags[k] = v
+	g.TagChanges = append(g.TagChanges, &ChangeTagResponse{e.Id, k, v})
 }
 
 func (g *Game) NextPlayer() {
-	for _, p := range g.Players {
-		if p.Id != g.CurrentPlayer.Id {
-			g.CurrentPlayer = p
-			return
-		}
-	}
-}
-
-func (g *Game) AnyPlayerDead() bool {
-	return AnyPlayer(g.Players, func(p *Player) bool {
-		return p.Avatar.Location != "board"
-	})
-}
-
-func (g *Game) AnyEngagements() bool {
-	return len(g.Engagements) > 0
-}
-
-func (g *Game) ClearAttackers() {
-	g.Engagements = []*Engagement{}
+	g.CurrentPlayer = g.DefendingPlayer()
 }
 
 func (g *Game) DefendingPlayer() *Player {
-	if g.CurrentPlayer.Id == "player" {
-		return g.Players["ai"]
-	} else {
-		return g.Players["player"]
+	return g.OpposingPlayer(g.CurrentPlayer.Id)
+}
+
+func (g *Game) OpposingPlayer(playerId string) *Player {
+	for _, p := range g.Players {
+		if p.Id != playerId {
+			return p
+		}
+	}
+
+	fmt.Println("ERROR: There should always be at least 2 players")
+	return nil
+}
+
+func (g *Game) Looser() string {
+	return g.GameEntity.Tags["looser"]
+}
+
+func (g *Game) ClearAttackers() {
+	for _, e := range g.Entities {
+		if e.Tags["blockTarget"] != "" {
+			g.ChangeEntityTag(e, "blockTarget", "")
+		}
+
+		if e.Tags["attackTarget"] != "" {
+			g.ChangeEntityTag(e, "attackTarget", "")
+		}
 	}
 }
 
@@ -76,11 +116,16 @@ func (g *Game) AllBoardCards() []*Entity {
 func (g *Game) DrawCards(playerId string, num int) {
 	deck := FilterEntityByPlayerAndLocation(g.Entities, playerId, "library")
 	for _, e := range deck[len(deck)-num:] {
-		e.Location = "hand"
+		e.Tags["location"] = "hand"
+		g.RevealEntity(e, playerId)
 	}
 }
 
+func (g *Game) RevealEntity(e *Entity, p string) {
+	g.RevealedEntities = append(g.RevealedEntities, &RevealEntityResponse{e.Id, e, p})
+}
+
+// TODO: order by when cards played not implemented
 func OrderCardsByTimePlayed(s []*Entity) []*Entity {
-	fmt.Println("WARN: OrderCardsByTimePlayed not implemented")
 	return s
 }

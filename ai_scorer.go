@@ -9,18 +9,17 @@ var attributeFactors = map[string]int{
 	"cost":      1,
 	"toughness": -1,
 	"power":     -1,
-	"mana":      -2,
 	"draw":      -2,
 }
 
 var powerFactor = 3
 
 type AIScorer struct {
-	playerId    string
-	entities    []*Entity
-	players     map[string]*ResponsePlayer // board state
-	playerMods  map[string]int             // e.g. player 1, ai -1
-	currentMana int
+	playerId   string
+	entities   []*Entity
+	players    map[string]*ResponsePlayer // board state
+	playerMods map[string]int             // e.g. player 1, ai -1
+	energy     int
 }
 
 type Score struct {
@@ -32,9 +31,17 @@ func (s *Score) String() string {
 	return fmt.Sprintf("Score(%v, %v)", s.Score, s.Entity)
 }
 
-func NewAIScorer(playerId string, msg *FullStateResponse) *AIScorer {
+func NewAIScorer(playerId string, entities []*Entity, players map[string]*ResponsePlayer) *AIScorer {
+	playerMods := playerModsFromPlayers(playerId, players)
+	avatar := PlayerAvatar(entities, playerId)
+	energy := avatar.Attributes["energy"]
+
+	return &AIScorer{playerId, entities, players, playerMods, energy}
+}
+
+func playerModsFromPlayers(playerId string, players map[string]*ResponsePlayer) map[string]int {
 	playerMods := map[string]int{}
-	for _, player := range msg.Players {
+	for _, player := range players {
 		mod := 1
 		if player.Id == playerId {
 			// power removed from our side of the board is generally bad (tm)
@@ -44,9 +51,7 @@ func NewAIScorer(playerId string, msg *FullStateResponse) *AIScorer {
 		playerMods[player.Id] = mod
 	}
 
-	currentMana := msg.Players[playerId].CurrentMana
-
-	return &AIScorer{playerId, msg.Entities, msg.Players, playerMods, currentMana}
+	return playerMods
 }
 
 func (s *AIScorer) BestPlayableCard() *Entity {
@@ -61,13 +66,10 @@ func (s *AIScorer) BestPlayableCard() *Entity {
 	return HighestScore(scores)
 }
 
-func (s *AIScorer) BestBlocker(engagements []*Engagement) *Entity {
-	attackers := []*Entity{}
-	for _, eng := range engagements {
-		if eng.Blocker == nil {
-			attackers = append(attackers, eng.Attacker)
-		}
-	}
+func (s *AIScorer) BestBlocker() *Entity {
+	attackers := FilterEntities(s.entities, func(e *Entity) bool {
+		return e.Tags["attackTarget"] != ""
+	})
 
 	scores := []*Score{}
 	board := FilterEntityByPlayerAndLocation(s.entities, s.playerId, "board")
@@ -78,7 +80,7 @@ func (s *AIScorer) BestBlocker(engagements []*Engagement) *Entity {
 			continue
 		}
 
-		if AnyAssignedBlockerWithId(engagements, blocker.Id) {
+		if blocker.Tags["blockTarget"] != "" {
 			continue
 		}
 
@@ -95,18 +97,15 @@ func (s *AIScorer) BestBlocker(engagements []*Engagement) *Entity {
 	return HighestScore(scores)
 }
 
-func (s *AIScorer) BestBlockTarget(currentCard *Entity, engagements []*Engagement) *Entity {
+func (s *AIScorer) BestBlockTarget(currentCard *Entity) *Entity {
 	if currentCard == nil {
 		fmt.Println("ERROR: Cannot find blockTarget without a currentCard")
 		return nil
 	}
 
-	attackers := []*Entity{}
-	for _, eng := range engagements {
-		if eng.Blocker == nil {
-			attackers = append(attackers, eng.Attacker)
-		}
-	}
+	attackers := FilterEntities(s.entities, func(e *Entity) bool {
+		return e.Tags["attackTarget"] != ""
+	})
 
 	a := ActivatedAbility(currentCard.Abilities)
 	scores := s.scoreTargets(currentCard, a, attackers)
@@ -116,7 +115,7 @@ func (s *AIScorer) BestBlockTarget(currentCard *Entity, engagements []*Engagemen
 func (s *AIScorer) scoreCardForPlay(card *Entity) *Score {
 	score := 0
 
-	if card.Attributes["cost"] > s.currentMana {
+	if card.Attributes["cost"] > s.energy {
 		return &Score{0, card}
 	}
 
@@ -174,8 +173,6 @@ func highestScoreWithScore(scores []*Score) *Score {
 		return scores[i].Score > scores[j].Score
 	})
 
-	fmt.Println("Sorted scores:", scores)
-
 	if len(scores) > 0 && scores[0].Score > 0 {
 		return scores[0]
 	} else {
@@ -186,7 +183,6 @@ func highestScoreWithScore(scores []*Score) *Score {
 func (s *AIScorer) scoreTargets(card *Entity, a *Ability, targets []*Entity) []*Score {
 	scores := []*Score{}
 	for _, target := range targets {
-		fmt.Println("Scoring", a, "of", card, "vs", target)
 		score := s.scoreTarget(card, a, target)
 		scores = append(scores, score)
 	}
@@ -197,7 +193,6 @@ func (s *AIScorer) scoreTargets(card *Entity, a *Ability, targets []*Entity) []*
 func (s *AIScorer) scoreTarget(card *Entity, a *Ability, target *Entity) *Score {
 	// ignore invalid targets
 	if !a.ValidTarget(card, target) {
-		fmt.Println("- Target is invalid")
 		return &Score{0, target}
 	}
 
@@ -217,10 +212,8 @@ func (s *AIScorer) scoreTarget(card *Entity, a *Ability, target *Entity) *Score 
 
 func (s *AIScorer) calcPowerRemoved(card *Entity, a *Ability, target *Entity) int {
 	if a.TestApplyRemovesCard(card, target) {
-		fmt.Println("- Removes target", target)
 		return target.Attributes["power"]
 	} else {
-		fmt.Println("- Doesn't remove target")
 		return 0
 	}
 }

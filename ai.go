@@ -7,77 +7,124 @@ import (
 )
 
 type AI struct {
-	outCh    chan *Message
-	playerId string
+	outCh       chan *Message
+	playerId    string
+	entities    []*Entity
+	players     map[string]*ResponsePlayer
+	state       string
+	currentCard *Entity
 }
 
 func NewAI(playerId string) *AI {
 	outCh := make(chan *Message, channelBufSize)
 	outCh <- NewActionMessage(playerId, "start")
-	return &AI{outCh, playerId}
+	return &AI{outCh: outCh, playerId: playerId}
 }
 
 func (a *AI) Send(packet *ResponseMessage) {
-	action := a.RespondWithAction(packet)
-	if action != nil {
-		a.respondDelayed(action)
+	switch packet.Type {
+	case "FULL_STATE":
+		a.UpdateFullState(packet)
+	case "CHANGE_ATTR":
+		// Not needed we maintain references to the actual entities
+		a.UpdateState()
+	case "CHANGE_TAG":
+		// Not needed we maintain references to the actual entities
+		a.UpdateState()
+	case "REVEAL_ENTITY":
+		a.RevealEntity(packet)
+	case "OPTIONS":
+		action := a.RespondWithAction(packet)
+		if action != nil {
+			a.respondDelayed(action)
+		}
+	}
+}
+
+func (a *AI) UpdateFullState(packet *ResponseMessage) {
+	fmt.Println("packet", packet.Message)
+	msg, ok := packet.Message.(*FullStateResponse)
+	if ok == false {
+		fmt.Println("ERROR: Unable to cast message to FullStateResponse")
+		return
+	}
+
+	a.entities = msg.Entities
+	a.players = msg.Players
+
+	a.UpdateState()
+}
+
+func (a *AI) UpdateState() {
+	gameEntity := FirstEntityByType(a.entities, "game")
+	a.state = gameEntity.Tags["state"]
+	a.currentCard = EntityById(a.entities, gameEntity.Tags["currentCardId"])
+}
+
+func (a *AI) RevealEntity(packet *ResponseMessage) {
+	fmt.Println("packet", packet.Message)
+	msg, ok := packet.Message.(*RevealEntityResponse)
+	if ok == false {
+		fmt.Println("ERROR: Unable to cast message to RevealEntityResponse")
+		return
+	}
+
+	found := false
+	for i, e := range a.entities {
+		if e.Id == msg.EntityId {
+			fmt.Println("AI revealed existing entity:", msg.Entity)
+			a.entities[i] = msg.Entity
+			found = true
+		}
+	}
+
+	if !found {
+		fmt.Println("AI revealed new entity:", msg.Entity)
+		a.entities = append(a.entities, msg.Entity)
 	}
 }
 
 func (a *AI) RespondWithAction(packet *ResponseMessage) *Message {
-	log.Println("AI ack it received: ", packet)
-
-	// we dont yet support multiple message types
-	if packet.Type != "FULL_STATE" {
-		return nil
-	}
-
 	fmt.Println("packet", packet.Message)
-	msg, ok := packet.Message.(*FullStateResponse)
+	_, ok := packet.Message.(*OptionsResponse)
 	if ok == false {
-		fmt.Println("Unable to cast message to FullStateResponse")
+		fmt.Println("ERROR: Unable to cast message to OptionsResponse")
 		return nil
 	}
 
-	if msg.CurrentPlayerId != a.playerId {
-		return nil
-	}
+	scorer := NewAIScorer(a.playerId, a.entities, a.players)
 
-	scorer := NewAIScorer(a.playerId, msg)
-
-	switch msg.State {
+	switch a.state {
 	case "main":
 		if card := scorer.BestPlayableCard(); card != nil {
 			return a.playCard(card)
 		} else {
-			return a.attackOrEndTurn(msg)
+			return a.attackOrEndTurn()
 		}
-	case "attackers":
-		return a.attackOrEndTurn(msg)
 	case "blockers":
-		if card := scorer.BestBlocker(msg.Engagements); card != nil {
+		if card := scorer.BestBlocker(); card != nil {
 			return NewCardActionMessage(a.playerId, "target", card.Id)
 		} else {
 			return NewActionMessage(a.playerId, "endTurn")
 		}
 	case "blockTarget":
-		if card := scorer.BestBlockTarget(msg.CurrentCard, msg.Engagements); card != nil {
+		if card := scorer.BestBlockTarget(a.currentCard); card != nil {
 			return NewCardActionMessage(a.playerId, "target", card.Id)
 		} else {
 			fmt.Println("ERROR: There should always be a block target")
 		}
 	case "targeting":
-		return a.targetSpell(msg)
+		return a.targetSpell()
 	}
 
 	return nil
 }
 
-func (a *AI) attackOrEndTurn(msg *FullStateResponse) *Message {
+func (a *AI) attackOrEndTurn() *Message {
 	fmt.Println("Nothing more to play, lets attack or end turn")
 
-	myBoard := FilterEntityByPlayerAndLocation(msg.Entities, a.playerId, "board")
-	card := a.firstAvailableAttacker(myBoard, msg.Engagements)
+	myBoard := FilterEntityByPlayerAndLocation(a.entities, a.playerId, "board")
+	card := a.firstAvailableAttacker(myBoard)
 	if card != nil {
 		return NewCardActionMessage(a.playerId, "target", card.Id)
 	} else {
@@ -85,15 +132,15 @@ func (a *AI) attackOrEndTurn(msg *FullStateResponse) *Message {
 	}
 }
 
-func (a *AI) targetSpell(msg *FullStateResponse) *Message {
-	scorer := NewAIScorer(a.playerId, msg)
+func (a *AI) targetSpell() *Message {
+	scorer := NewAIScorer(a.playerId, a.entities, a.players)
 
-	for _, ability := range msg.CurrentCard.Abilities {
+	for _, ability := range a.currentCard.Abilities {
 		if ability.Trigger != "enterPlay" {
 			continue
 		}
 
-		target := scorer.BestTargetByPowerRemoved(msg.CurrentCard, ability)
+		target := scorer.BestTargetByPowerRemoved(a.currentCard, ability)
 		if target == nil {
 			fmt.Println("ERROR: Failed to find target, should never happen")
 			return nil
@@ -116,22 +163,16 @@ func (a *AI) respondDelayed(msg *Message) {
 	a.outCh <- msg
 }
 
-func (a *AI) firstAvailableAttacker(board []*Entity, engagements []*Engagement) *Entity {
-	for _, card := range board {
-		if !a.isAttacking(engagements, card) && card.CanAttack() {
-			return card
+func (a *AI) ping() {
+	a.outCh <- NewActionMessage(a.playerId, "ping")
+}
+
+func (a *AI) firstAvailableAttacker(board []*Entity) *Entity {
+	for _, e := range board {
+		if e.Tags["attackTarget"] == "" && e.CanAttack() {
+			return e
 		}
 	}
 
 	return nil
-}
-
-func (a *AI) isAttacking(engagements []*Engagement, card *Entity) bool {
-	for _, e := range engagements {
-		if card.Id == e.Attacker.Id {
-			return true
-		}
-	}
-
-	return false
 }

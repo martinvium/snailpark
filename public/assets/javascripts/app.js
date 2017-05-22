@@ -20,31 +20,85 @@ app.factory('gameServer', function($websocket) {
   dataStream.onMessage(function(message) {
     var packet = JSON.parse(message.data)
 
-    if(packet.t != 'FULL_STATE') {
-      console.log('Only support FULL_STATE');
-      return;
+    console.log(packet.t, packet.m);
+
+    switch(packet.t) {
+      case 'FULL_STATE':
+        handleFullState(packet.m);
+        updateState();
+        break;
+      case 'CHANGE_ATTR':
+        handleChangeAttrTag(packet.m, 'attributes');
+        updateState();
+        break;
+      case 'CHANGE_TAG':
+        handleChangeAttrTag(packet.m, 'tags');
+        updateState();
+        break;
+      case 'REVEAL_ENTITY':
+        handleRevealEntity(packet.m);
+        updateState();
+        break;
+      default:
+        console.log('Unsupported msg type: ' + packet.t);
+    }
+  });
+
+  function handleChangeAttrTag(msg, type) {
+    for(var i in data.entities) {
+      if(data.entities[i]['id'] == msg['EntityId']) {
+        data.entities[i][type][msg['Key']] = msg['Value'];
+      }
+    }
+  }
+
+  function handleFullState(msg) {
+    data.entities = msg.entities
+    data.player = msg.players["player"];
+    data.enemy = msg.players["ai"];
+  }
+
+  function handleRevealEntity(msg) {
+    var found = false;
+    for(var i in data.entities) {
+      if(data.entities[i]['id'] == msg['entityId']) {
+        console.log('Revealed existing entity: ' + msg.entity);
+        data.entities[i] = msg.entity;
+        found = true;
+      }
     }
 
-    var msg = packet.m;
+    if(!found) {
+      console.log('Revealed new entity: ' + msg.entity);
+      data.entities.push(msg.entity);
+    }
+  }
 
-    var filterAttackers = function(msg) {
+  function updateState() {
+    var filterAttackers = function(entities) {
       var attackers = [];
-      for(var i in msg.engagements) {
-        var e = msg.engagements[i];
-        attackers.push(e.attacker);
+      for(var i in entities) {
+        if (entities[i].tags["attackTarget"]) {
+          attackers.push(entities[i]);
+        }
       }
 
       return attackers;
     }
 
-    data.currentPlayerId = msg.currentPlayerId;
-    data.state = msg.state;
+    var findGameEntity = function(entities) {
+      for(var i in entities) {
+        if(entities[i].tags.type == "game") {
+          return entities[i];
+        }
+      }
+    }
+
+    data.game = findGameEntity(data.entities);
+    data.currentPlayerId = data.game.tags.currentPlayerId;
+    data.state = data.game.tags.state;
     data.targeting = ['targeting', 'blockTarget'].indexOf(data.state) !== -1;
-    data.attackers = filterAttackers(msg);
-    data.entities = msg.entities
-    data.player = msg.players["player"];
-    data.enemy = msg.players["ai"];
-  });
+  }
 
   var methods = {
     data: data,
@@ -85,28 +139,8 @@ app.controller('BoardController', ['$scope', 'gameServer', function ($scope, gam
   $scope.playCard = gameServer.playCard
   $scope.targetCard = gameServer.targetCard
 
-  $scope.$watch('data.entities', function(n) {
-    $scope.entities = {
-      ai: {
-        hand: filterPlayerAndLocation(gameServer.data.entities, 'ai', 'hand'),
-        board: filterPlayerAndLocation(gameServer.data.entities, 'ai', 'board'),
-      },
-      player: {
-        hand: filterPlayerAndLocation(gameServer.data.entities, 'player', 'hand'),
-        board: filterPlayerAndLocation(gameServer.data.entities, 'player', 'board')
-      }
-    }
-  });
-
-  function filterPlayerAndLocation(s, p, l) {
-    var filtered = [];
-    for(var i in s) {
-      if(s[i].playerId == p && s[i].location == l) {
-        filtered.push(s[i])
-      }
-    }
-
-    return filtered;
+  $scope.attackersFilter = function(v) {
+    return v.tags['attackTarget'];
   }
 
   $scope.newGame = function() {
@@ -120,22 +154,6 @@ app.controller('BoardController', ['$scope', 'gameServer', function ($scope, gam
 
   gameServer.ping();
 }])
-
-app.directive('cardList', function() {
-  return {
-    scope: {
-      cards: '=',
-      cardDetails: '&',
-      clickCard: '&'
-    },
-    restrict : 'EA',
-    controller: function() {},
-    controllerAs: 'ctrl',
-    transclude: true,
-    bindToController: true,
-    template: '<card ng-repeat="card in ctrl.cards" data-set="card" data-card-details="ctrl.cardDetails({card: card})" click-card="ctrl.clickCard({ id: id })"></card>'
-  }
-});
 
 app.directive('card', function() {
   return {
@@ -254,7 +272,7 @@ app.directive('modalDialog', function() {
   return {
     scope: {
       state: '=',
-      playerAvatar: '=',
+      game: '=',
       newGame: '&'
     },
     restrict : 'EA',
@@ -262,7 +280,7 @@ app.directive('modalDialog', function() {
     controllerAs: 'ctrl',
     link: function(scope) {
       scope.content = function() {
-        if(scope.ctrl.playerAvatar["attributes"]["toughness"] <= 0) {
+        if(scope.ctrl.game["tags"]["looser"] === 'player') {
           return 'You lost! :(';
         } else {
           return 'You won! :)';
@@ -271,7 +289,7 @@ app.directive('modalDialog', function() {
     },
     transclude: true,
     bindToController: true,
-    template: '<div id="myModal" ng-if="ctrl.state == \'finished\'" class="modal"><div class="modal-content">{{ content() }}</div></div>'
+    template: '<div id="myModal" ng-if="ctrl.game.tags.looser" class="modal"><div class="modal-content">{{ content() }}</div></div>'
   }
 });
 

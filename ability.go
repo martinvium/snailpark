@@ -23,22 +23,22 @@ func (a *Ability) ModificationAmount(c *Entity) int {
 	if val, ok := c.Attributes[a.ModAttr]; ok {
 		return val * a.ModFactor
 	} else {
-		fmt.Println("ERROR: Failed to find ModificationAmount attr on card")
+		fmt.Println("ERROR: Failed to find ModificationAmount attr on card:", c)
 		return 0
 	}
 }
 
-func (a *Ability) Apply(g *Game, c, target *Entity) error {
+func (a *Ability) Apply(g *Game, ctx *TriggerContext) error {
 	switch a.Target {
 	case "target":
-		return a.applyToTarget(g, c, target)
+		return a.applyToTarget(g, ctx.this, ctx.event.target)
 	case "all":
-		a.applyToAllValidTargets(g, c)
+		a.applyToAllValidTargets(g, ctx.this)
 		return nil
 	case "self":
-		return a.applyToTarget(g, c, c)
+		return a.applyToTarget(g, ctx.this, ctx.this)
 	default:
-		return fmt.Errorf("Unsupported Apply target: %v", a.Target)
+		return fmt.Errorf("ERROR: Unsupported Apply target: %v", a.Target)
 	}
 }
 
@@ -57,9 +57,11 @@ func (a *Ability) applyToTarget(g *Game, c, target *Entity) error {
 		return errors.New("applyToTarget failed, target was invalid")
 	}
 
-	fmt.Println("Applying ability to target:", target)
-
-	NewEffectFactory(a.EffectFactory)(g, a, c, target)
+	if f := NewEffectFactory(a.EffectFactory); f != nil {
+		f(g, a, c, target)
+	} else {
+		fmt.Println("ERROR: Unable to apply ability, could not create effect factory: %v", a.EffectFactory)
+	}
 
 	return nil
 }
@@ -77,7 +79,6 @@ func (a *Ability) TestApplyRemovesCard(c, target *Entity) bool {
 
 	// The modifier is negative if e.g. dealing damage
 	result := toughness + a.ModificationAmount(c)
-	fmt.Println("- Checking if card would be removed (", toughness, "+", a.ModificationAmount(c), "=", result, "<= 0)")
 	if result <= 0 {
 		return true
 	}
@@ -90,14 +91,13 @@ func (a *Ability) RequiresTarget() bool {
 	return a.Trigger == "enterPlay" && a.Target == "target"
 }
 
-func (a *Ability) ValidTrigger(event string, card, origin *Entity) bool {
-	if event != a.Trigger {
+func (a *Ability) ValidTrigger(ctx *TriggerContext) bool {
+	if ctx.event.event != ctx.ability.Trigger {
 		return false
 	}
 
-	for _, c := range a.TriggerConditions {
-		if c.Valid(card, origin) == false {
-			fmt.Println("- Condition", c, "failed for trigger", origin)
+	for _, c := range ctx.ability.TriggerConditions {
+		if c.Valid(ctx.this, ctx.event.origin) == false {
 			return false
 		}
 	}
@@ -109,7 +109,6 @@ func (a *Ability) ValidTrigger(event string, card, origin *Entity) bool {
 func (a *Ability) ValidTarget(card, target *Entity) bool {
 	for _, c := range a.TargetConditions {
 		if c.Valid(card, target) == false {
-			fmt.Println("- Condition", c, "failed for target", target)
 			return false
 		}
 	}
@@ -136,13 +135,19 @@ func FilterAbility(vs []*Ability, f func(*Ability) bool) []*Ability {
 	return vsf
 }
 
-// we only support a single activated ability
-func ActivatedAbility(as []*Ability) *Ability {
-	for _, a := range as {
-		if a.Trigger == "activated" {
-			return a
+func FirstAbility(vs []*Ability, f func(*Ability) bool) *Ability {
+	for _, v := range vs {
+		if f(v) {
+			return v
 		}
 	}
 
 	return nil
+}
+
+// we only support a single activated ability
+func ActivatedAbility(as []*Ability) *Ability {
+	return FirstAbility(as, func(a *Ability) bool {
+		return a.Trigger == "activated"
+	})
 }
