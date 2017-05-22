@@ -23,7 +23,7 @@ func (a *Ability) ModificationAmount(c *Entity) int {
 	if val, ok := c.Attributes[a.ModAttr]; ok {
 		return val * a.ModFactor
 	} else {
-		fmt.Println("ERROR: Failed to find ModificationAmount attr on card")
+		fmt.Println("ERROR: Failed to find ModificationAmount attr on card:", c)
 		return 0
 	}
 }
