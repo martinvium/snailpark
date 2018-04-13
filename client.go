@@ -52,7 +52,7 @@ func NewAIClient(ai *AI) *AIClient {
 			make(chan *ResponseMessage, channelBufSize),
 			make(chan bool),
 		},
-		NewAI("ai"),
+		ai,
 	}
 }
 
