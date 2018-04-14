@@ -1,5 +1,8 @@
 const initialState = {
-  playerId: "player"
+  gameState: "test",
+  playerId: "player",
+  entities: [],
+  players: {}
 }
 
 export const appReducer = (state = initialState, action) => {
@@ -7,9 +10,9 @@ export const appReducer = (state = initialState, action) => {
     case 'FULL_STATE':
       return fullStateReducer(state, action)
     case 'CHANGE_ATTR':
-      return changeAttrReducer(state, action)
+      return { ...state, entities: entitiesReducer(state.entities, action) }
     case 'CHANGE_TAG':
-      return changeTagReducer(state, action)
+      return { ...state, entities: entitiesReducer(state.entities, action) }
     case 'REVEAL_ENTITY':
       return revealEntityReducer(state, action)
     default:
@@ -17,22 +20,51 @@ export const appReducer = (state = initialState, action) => {
   }
 }
 
+// updateState();
 export const fullStateReducer = (state, action) => {
-  // handleFullState(packet.m);
-  // updateState();
-  return state
+  const { entities, players } = action
+
+  return {
+    ...state,
+    player: players["player"],
+    enemy: players["ai"],
+    entities
+  }
 }
 
-export const changeAttrReducer = (state, action) => {
-  // handleChangeAttrTag(packet.m, 'attributes');
-  // updateState();
-  return state
+export const entitiesReducer = (state, action) => {
+  switch(action.type) {
+    case 'CHANGE_ATTR':
+    case 'CHANGE_TAG':
+      return state.map(e => entityReducer(e, action))
+    default:
+      return state
+  }
 }
 
-export const changeTagReducer = (state, action) => {
-  // handleChangeAttrTag(packet.m, 'tags');
-  // updateState();
-  return state
+export const entityReducer = (state, action) => {
+  const { Key, Value } = action
+
+  if(state.id !== action.entityId) {
+    return state
+  }
+
+  switch(action.type) {
+    case 'CHANGE_ATTR':
+      let { attributes } = state
+      attributes[Key] = Value
+      return { ...state, attributes }
+    case 'CHANGE_TAG':
+      if(state.id !== action.entityId) {
+        return state
+      }
+
+      let { tags } = state
+      tags[Key] = Value
+      return { ...state, tags }
+    default:
+      return state
+  }
 }
 
 export const revealEntityReducer = (state, action) => {

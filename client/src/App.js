@@ -3,6 +3,7 @@ import logo from './logo.svg';
 import './App.css';
 import { connect } from 'react-redux'
 import { receiveMessageAction, repeatingPingAction, startAction } from './actions'
+import GameState from './components/GameState'
 
 const socketUrl = () => {
   const gameId = Date.now()
@@ -11,12 +12,6 @@ const socketUrl = () => {
   // return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname + path
   return 'ws://localhost:8081/' + path
 }
-
-// dispatch(fullStateAction(socket))
-// dispatch(changeAttrAction)
-// dispatch(changeTagAction)
-// dispatch(revealEntityAction)
-
 
 class App extends Component {
   componentDidMount = () => {
@@ -40,6 +35,8 @@ class App extends Component {
         <p className="App-intro">
           To get started, edit <code>src/App.js</code> and save to reload.
         </p>
+
+        <GameState/>
       </div>
     );
   }
