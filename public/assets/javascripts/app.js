@@ -75,17 +75,6 @@ app.factory('gameServer', function($websocket) {
   }
 
   function updateState() {
-    var filterAttackers = function(entities) {
-      var attackers = [];
-      for(var i in entities) {
-        if (entities[i].tags["attackTarget"]) {
-          attackers.push(entities[i]);
-        }
-      }
-
-      return attackers;
-    }
-
     var findGameEntity = function(entities) {
       for(var i in entities) {
         if(entities[i].tags.type == "game") {

@@ -15,6 +15,7 @@ const mapStateToProps = (state) => {
   }
 
   return {
+    entities: state.entities,
     gameState: game.tags.state
   }
 }

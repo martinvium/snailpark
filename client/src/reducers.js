@@ -10,17 +10,14 @@ export const appReducer = (state = initialState, action) => {
     case 'FULL_STATE':
       return fullStateReducer(state, action)
     case 'CHANGE_ATTR':
-      return { ...state, entities: entitiesReducer(state.entities, action) }
     case 'CHANGE_TAG':
-      return { ...state, entities: entitiesReducer(state.entities, action) }
     case 'REVEAL_ENTITY':
-      return revealEntityReducer(state, action)
+      return { ...state, entities: entitiesReducer(state.entities, action) }
     default:
       return state
   }
 }
 
-// updateState();
 export const fullStateReducer = (state, action) => {
   const { entities, players } = action
 
@@ -37,22 +34,26 @@ export const entitiesReducer = (state, action) => {
     case 'CHANGE_ATTR':
     case 'CHANGE_TAG':
       return state.map(e => entityReducer(e, action))
+    case 'REVEAL_ENTITY':
+      if(state.find(e => e.id === action.id)) {
+        return state.map(e => entityReducer(e, { ...action, type: 'UPDATE_ENTITY' }))
+      } else {
+        return [...state, entityReducer(undefined, {...action, type: 'ADD_ENTITY'})]
+      }
     default:
       return state
   }
 }
 
 export const entityReducer = (state, action) => {
-  const { Key, Value } = action
-
-  if(state.id !== action.entityId) {
-    return state
-  }
-
   switch(action.type) {
     case 'CHANGE_ATTR':
+      if(state.id !== action.entityId) {
+        return state
+      }
+
       let { attributes } = state
-      attributes[Key] = Value
+      attributes[action.Key] = action.Value
       return { ...state, attributes }
     case 'CHANGE_TAG':
       if(state.id !== action.entityId) {
@@ -60,15 +61,23 @@ export const entityReducer = (state, action) => {
       }
 
       let { tags } = state
-      tags[Key] = Value
+      tags[action.Key] = action.Value
       return { ...state, tags }
+    case 'UPDATE_ENTITY':
+      if(state.id !== action.entityId) {
+        return state
+      }
+
+      return {
+        ...state,
+        ...action.entity
+      }
+    case 'ADD_ENTITY':
+      return {
+        ...state,
+        ...action.entity
+      }
     default:
       return state
   }
-}
-
-export const revealEntityReducer = (state, action) => {
-  // handleRevealEntity(packet.m);
-  // updateState();
-  return state
 }
