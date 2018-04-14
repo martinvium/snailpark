@@ -8,9 +8,15 @@ import (
 	"time"
 )
 
+func checkOrigin(r *http.Request) bool {
+	// TODO actually check origin...
+	return true
+}
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin:     checkOrigin,
 }
 
 // Chat server.
