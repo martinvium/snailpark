@@ -4,6 +4,7 @@ import './App.css';
 import { connect } from 'react-redux'
 import { receiveMessageAction, repeatingPingAction, startAction } from './actions'
 import GameState from './components/GameState'
+import CardList from './components/CardList'
 
 const socketUrl = () => {
   const gameId = Date.now()
@@ -37,6 +38,7 @@ class App extends Component {
         </p>
 
         <GameState/>
+        <CardList/>
       </div>
     );
   }
