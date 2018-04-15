@@ -35,7 +35,7 @@ export const entitiesReducer = (state, action) => {
     case 'CHANGE_TAG':
       return state.map(e => entityReducer(e, action))
     case 'REVEAL_ENTITY':
-      if(state.find(e => e.id === action.id)) {
+      if(state.some(e => e.id === action.entityId)) {
         return state.map(e => entityReducer(e, { ...action, type: 'UPDATE_ENTITY' }))
       } else {
         return [...state, entityReducer(undefined, {...action, type: 'ADD_ENTITY'})]

@@ -1,9 +1,8 @@
 import React from 'react';
-import { connect } from 'react-redux';
 
-export default ({ entity, onClickCard }) => {
+const Card = ({ entity, onClickCard }) => {
   var value = entity.tags.attackTarget;
-  const attacking = typeof value != 'undefined' && value != '';
+  const attacking = typeof value !== 'undefined' && value !== '';
 
   let classNames = [ 'card' ]
   classNames.push(entity.tags.color)
@@ -22,6 +21,8 @@ export default ({ entity, onClickCard }) => {
     </div>
   )
 }
+
+export default Card
 
 const CardBody = ({ id, anonymous, tags, attributes, damage, onClickCard }) => {
   if(anonymous) {
@@ -48,7 +49,6 @@ const CardBody = ({ id, anonymous, tags, attributes, damage, onClickCard }) => {
 }
 
 const PowerLabel = ({ power, toughness }) => {
-  // console.log(power, toughness)
   if(typeof toughness === 'undefined' || typeof power === 'undefined') {
     return null
   }
@@ -69,7 +69,6 @@ const ToughnessLabel = ({ toughness }) => {
 }
 
 const DamageBaloon = ({ damage }) => {
-  console.log(damage)
   if(typeof damage === 'undefined') {
     return null
   }
