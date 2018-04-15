@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 let GameState = ({ gameState }) => (
   <div>
-    <h1>{ gameState }</h1>
+    <h1>State: { gameState }</h1>
   </div>
 );
 
