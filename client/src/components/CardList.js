@@ -2,9 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 import Card from './Card'
 
-let CardList = ({ entities }) => {
+let CardList = ({ id, entities }) => {
+  let classNames = [id, "cl"]
+
   return (
-    <div>
+    <div className={classNames.join(' ')}>
       {entities.map(e => (
         <Card key={e.id} entity={e} />
       ))}
@@ -13,9 +15,10 @@ let CardList = ({ entities }) => {
 }
 
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state, ownProps) => {
   return {
-    entities: state.entities
+    id: ownProps.id,
+    entities: state.entities.filter(entity => entity.playerId === ownProps.id)
   }
 }
 

@@ -2,14 +2,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 import CardList from '../CardList'
 
-let PlayerTerritory = () => {
+let PlayerTerritory = ({ id }) => {
   return (
-    <div>
-      <CardList/>
-    </div>
+    <CardList id={id}/>
   )
 }
-
-PlayerTerritory = connect()(PlayerTerritory);
 
 export default PlayerTerritory;

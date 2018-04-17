@@ -11,7 +11,8 @@ let Board = ({ targeting }) => {
 
   return (
     <div id="board" className={classNames}>
-      <PlayerTerritory type={`opponent`}/>
+      <PlayerTerritory id={`ai`}/>
+      <PlayerTerritory id={`player`}/>
     </div>
   )
 
