@@ -1,13 +1,15 @@
 import React from 'react';
 
-const Card = ({ entity, onClickCard }) => {
-  var value = entity.tags.attackTarget;
+const Card = (props) => {
+  const { id, tags, anonymous } = props
+
+  var value = tags.attackTarget;
   const attacking = typeof value !== 'undefined' && value !== '';
 
   let classNames = [ 'card' ]
-  classNames.push(entity.tags.color)
+  classNames.push(tags.color)
 
-  if(entity.anonymous) {
+  if(anonymous) {
     classNames.push('card-back')
   }
 
@@ -16,8 +18,8 @@ const Card = ({ entity, onClickCard }) => {
   }
 
   return (
-    <div className={classNames.join(' ')} id={entity.id}>
-      <CardBody {...entity } />
+    <div className={classNames.join(' ')} id={id}>
+      <CardBody { ...props } />
     </div>
   )
 }
@@ -28,13 +30,13 @@ const artUrl = type => (
   require(`../../images/${type}.png`)
 )
 
-const CardBody = ({ id, anonymous, tags, attributes, damage, onClickCard }) => {
+const CardBody = ({ id, anonymous, tags, attributes, damage, onMouseOver, onMouseOut, onClick }) => {
   if(anonymous) {
     return null
   }
 
   return (
-    <div onClick={e => onClickCard({ id })}>
+    <div onMouseOver={e => onMouseOver(e, id)} onMouseOut={e => onMouseOut(e, id)} onClick={e => onClick({ id })}>
       <div className="header">
         <div className="title pull-left">{ tags.title }</div>
         <div className="cost pull-right">{ attributes.cost }</div>

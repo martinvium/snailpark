@@ -2,7 +2,8 @@ const initialState = {
   gameState: "test",
   playerId: "player",
   entities: [],
-  players: {}
+  players: {},
+  cardDetails: null
 }
 
 export const appReducer = (state = initialState, action) => {
@@ -13,6 +14,8 @@ export const appReducer = (state = initialState, action) => {
     case 'CHANGE_TAG':
     case 'REVEAL_ENTITY':
       return { ...state, entities: entitiesReducer(state.entities, action) }
+    case 'CARD_DETAILS':
+      return { ...state, cardDetails: action.id }
     default:
       return state
   }
