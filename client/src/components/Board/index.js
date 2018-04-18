@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import CardDetails from './CardDetails'
+import NextButton from './NextButton'
 import PlayerTerritory from './PlayerTerritory'
 
 let Board = ({ targeting }) => {
@@ -13,6 +14,7 @@ let Board = ({ targeting }) => {
   return (
     <div id="board" className={classNames}>
       <CardDetails/>
+      <NextButton/>
 
       <PlayerTerritory id={`ai`}/>
       <PlayerTerritory id={`player`}/>

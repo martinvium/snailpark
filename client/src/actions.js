@@ -43,3 +43,18 @@ export const clickCardAction = (entityId) => {
     connection.send(message);
   }
 }
+
+export const nextAction = () => {
+  console.log('next')
+
+  return (dispatch, getState) => {
+    const { connection, playerId } = getState()
+
+    const message = JSON.stringify({
+      action: 'endTurn',
+      playerId: playerId
+    })
+
+    connection.send(message);
+  }
+}
