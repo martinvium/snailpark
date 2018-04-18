@@ -29,7 +29,7 @@
   white-space: nowrap;
 }
 
-.board-wrapper {
+.battlefield-wrapper {
   position: fixed;
   top: 150px;
   left: 0;
@@ -37,13 +37,13 @@
   height: 100%;
 }
 
-.board {
+.battlefield {
   margin: auto;
   width: 1000px;
   height: 750px;
 }
 
-.board .cl {
+.battlefield .cl {
   height: 27%;
   margin-top: 3%;
   margin-bottom: 3%;
@@ -92,11 +92,11 @@
   text-align: center;
 }
 
-.board .card.attacking {
+.battlefield .card.attacking {
   opacity: 0.5;
 }
 
-.board .attackers .card.attacking {
+.battlefield .attackers .card.attacking {
   opacity: 1;
 }
 
@@ -113,21 +113,21 @@
   height: 320px;
 }
 
-/* Board */
-.board .card {
+/* battlefield */
+.battlefield .card {
   border: 2px solid black;
   padding: 8px 5px;
   width: 106px;
   height: 160px;
 }
 
-.board .card .art {
+.battlefield .card .art {
   width: 106px;
   height: 150px;
   background-position: -75px -22px;
 }
 
-.board .card .title, .board .card .description, .board .card .type, .board .card .cost {
+.battlefield .card .title, .battlefield .card .description, .battlefield .card .type, .battlefield .card .cost {
   display: none;
 }
 

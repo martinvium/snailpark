@@ -3,24 +3,24 @@ import { connect } from 'react-redux';
 import Card from './Card'
 
 let CardList = ({ id, entities }) => {
-  let classNames = [id, "cl"]
-
   return (
-    <div className={classNames.join(' ')}>
-      <ul class="hand cl">
-        {entities.map(e => (
-          <Card key={e.id} entity={e} />
-        ))}
-      </ul>
+    <div>
+      {entities.map(e => (
+        <Card key={e.id} entity={e} />
+      ))}
     </div>
   )
 }
 
 
 const mapStateToProps = (state, ownProps) => {
+  const entities = state.entities.filter(entity => (
+    entity.playerId === ownProps.id && entity.tags.location === ownProps.location
+  ))
+
   return {
     id: ownProps.id,
-    entities: state.entities.filter(entity => entity.playerId === ownProps.id)
+    entities 
   }
 }
 

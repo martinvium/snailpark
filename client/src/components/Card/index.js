@@ -24,6 +24,10 @@ const Card = ({ entity, onClickCard }) => {
 
 export default Card
 
+const artUrl = type => (
+  require(`../../images/${type}.png`)
+)
+
 const CardBody = ({ id, anonymous, tags, attributes, damage, onClickCard }) => {
   if(anonymous) {
     return null
@@ -36,7 +40,7 @@ const CardBody = ({ id, anonymous, tags, attributes, damage, onClickCard }) => {
         <div className="cost pull-right">{ attributes.cost }</div>
         <div className="cf"></div>
       </div>
-      <div className="art" style={{backgroundImage: `url('/assets/images/${tags.type}.png')`}}></div>
+      <div className="art" style={{backgroundImage: `url(${artUrl(tags.type)})`}}></div>
       <div className="description">{ tags.description }</div>
       <div className="power-toughness">
         <PowerLabel {...attributes} />
