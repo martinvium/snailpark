@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { clickCardAction } from '../actions'
 import Card from './Card'
 
 let CardList = ({ id, entities, onMouseOver, onMouseOut, onClick }) => {
@@ -27,13 +28,13 @@ const mapStateToProps = (state, ownProps) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     onMouseOver: (e, entityId) => {
-      dispatch({ type: "CARD_DETAILS", id: entityId })
+      dispatch({ type: "UPDATE_CARD_DETAILS", id: entityId })
     },
-    onMouseOut: (e, entity) => {
-      dispatch({ type: "CARD_DETAILS", id: null })
+    onMouseOut: (e) => {
+      dispatch({ type: "UPDATE_CARD_DETAILS", id: null })
     },
-    onClick: (e, entity) => {
-      console.log("TODO")
+    onClick: (e, entityId) => {
+      dispatch(clickCardAction(entityId))
     }
   }
 }

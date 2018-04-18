@@ -4,11 +4,11 @@ export const receiveMessageAction = (dispatch, event) => {
   dispatch({ type: message.t, ...message.m })
 }
 
-export const repeatingPingAction = (socket) => {
+export const repeatingPingAction = (connection) => {
   return (dispatch, getState) => {
     const { playerId } = getState()
 
-    socket.send(JSON.stringify({
+    connection.send(JSON.stringify({
       action: 'ping',
       playerId: playerId
     }));
@@ -17,7 +17,7 @@ export const repeatingPingAction = (socket) => {
   }
 }
 
-export const startAction = (socket) => {
+export const startAction = (connection) => {
   return (dispatch, getState) => {
     const { playerId } = getState()
 
@@ -26,6 +26,20 @@ export const startAction = (socket) => {
       playerId: playerId
     })
 
-    socket.send(message);
+    connection.send(message);
+  }
+}
+
+export const clickCardAction = (entityId) => {
+  return (dispatch, getState) => {
+    const { connection, playerId } = getState()
+
+    const message = JSON.stringify({
+      action: 'playCard',
+      playerId: playerId, // TODO why do we need to include this?
+      card: entityId
+    })
+
+    connection.send(message);
   }
 }

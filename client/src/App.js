@@ -16,12 +16,14 @@ const socketUrl = () => {
 class App extends Component {
   componentDidMount = () => {
     const { dispatch } = this.props;
-    const socket = new WebSocket(socketUrl())
+    const connection = new WebSocket(socketUrl())
 
-    socket.onmessage = (event) => receiveMessageAction(dispatch, event)
-    socket.onopen = () => {
-      dispatch(repeatingPingAction(socket))
-      dispatch(startAction(socket))
+    connection.onmessage = (event) => receiveMessageAction(dispatch, event)
+
+    connection.onopen = () => {
+      dispatch(repeatingPingAction(connection))
+      dispatch(startAction(connection))
+      dispatch({ type: "UPDATE_CONNECTION", connection })
     }
   }
 

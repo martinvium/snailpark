@@ -36,7 +36,7 @@ const CardBody = ({ id, anonymous, tags, attributes, damage, onMouseOver, onMous
   }
 
   return (
-    <div onMouseOver={e => onMouseOver(e, id)} onMouseOut={e => onMouseOut(e, id)} onClick={e => onClick({ id })}>
+    <div onMouseOver={e => onMouseOver(e, id)} onMouseOut={e => onMouseOut(e, id)} onClick={e => onClick(e, id)}>
       <div className="header">
         <div className="title pull-left">{ tags.title }</div>
         <div className="cost pull-right">{ attributes.cost }</div>

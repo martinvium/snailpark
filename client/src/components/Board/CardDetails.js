@@ -16,7 +16,7 @@ let CardDetails = ({ entity }) => {
 
 const mapStateToProps = (state, ownProps) => {
   return {
-    entity: state.entities.find(e => state.cardDetails === e.id) 
+    entity: state.entities.find(e => state.cardDetails === e.id)
   }
 }
 

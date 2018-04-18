@@ -14,8 +14,10 @@ export const appReducer = (state = initialState, action) => {
     case 'CHANGE_TAG':
     case 'REVEAL_ENTITY':
       return { ...state, entities: entitiesReducer(state.entities, action) }
-    case 'CARD_DETAILS':
+    case 'UPDATE_CARD_DETAILS':
       return { ...state, cardDetails: action.id }
+    case 'UPDATE_CONNECTION':
+      return { ...state, connection: action.connection }
     default:
       return state
   }
