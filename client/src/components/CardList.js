@@ -7,9 +7,11 @@ let CardList = ({ id, entities }) => {
 
   return (
     <div className={classNames.join(' ')}>
-      {entities.map(e => (
-        <Card key={e.id} entity={e} />
-      ))}
+      <ul class="hand cl">
+        {entities.map(e => (
+          <Card key={e.id} entity={e} />
+        ))}
+      </ul>
     </div>
   )
 }
